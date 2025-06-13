@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "proto-parser": "^0.0.9"
+  }
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "entity-tmpl/entity-feature-service.proto";
+
+package entity.feature;
+
+
+message ApiService {
+  oneof service {
+    ServersideEntityCRUD serverside_entity_crud = 1;
+    ServersideSingletonCRUD serverside_singleton_crud = 2;
+  }
+}
+
+extend google.protobuf.MessageOptions {
+  // .
+  ApiService api_service = 2002;
+  string entity_json_name = 2003;
+}
+

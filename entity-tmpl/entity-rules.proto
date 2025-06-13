@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package entity.rules;
+
+import "google/protobuf/descriptor.proto";
+import "google/api/field_behavior.proto";
+
+extend google.protobuf.MessageOptions {
+  google.api.FieldBehavior key_field_behavior = 4001;
+}
+

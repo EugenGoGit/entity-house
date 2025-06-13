@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package entity.api;
+
+import "google/protobuf/descriptor.proto";
+import "google/api/http.proto";
+import "google/api/field_behavior.proto";
+
+message RequestDtoTemplate {
+  oneof variant {
+    EntityId entity_id = 1 ;
+  }
+}
+
+message ResponseDtoTemplate {
+  oneof variant {
+    OneEntity one_entity = 1;
+  }
+}
+
+message EntityDescriptor {}
+
+message EntityIdDescriptor {}
+
+message OneEntity {
+  // Тип ответа
+  oneof type {
+    // {EntityDescription}
+    EntityDescriptor data = 1;
+  }
+}
+
+message EntityId {
+}
+
+message EntityIdBody {
+  // {EntityIdDescription}
+  EntityIdDescriptor entity_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message MethodComponentTemplateSet {
+  string name_template = 1;
+  string request_dto_name_template = 2;
+  string response_dto_name_template = 3;
+  RequestDtoTemplate request_dto_template = 4;
+  ResponseDtoTemplate response_dto_template = 5;
+}
+
+extend google.protobuf.MessageOptions {
+  string name_template = 3001;
+  MethodComponentTemplateSet method_component_template_set = 3002;
+  google.api.HttpRule http_rule = 3003;
+}
+
+extend google.protobuf.FieldOptions {
+
+}
