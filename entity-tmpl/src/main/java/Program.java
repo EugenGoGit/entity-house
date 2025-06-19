@@ -40,7 +40,7 @@ public final class Program {
 
         final List<Message> messages = proto.getMessages();
         messages.forEach(message -> System.out.println(message.getOptions().get("method_component_template_set")));
-        System.out.println(String.format("Messages: %s", proto.getMessages().get(0).getCommentLines()));
-        System.out.println(String.format("Messages: %s", proto.getCommentLines()));
+        System.out.printf("Messages: %s%n", proto.getMessages().get(0).getCommentLines());
+        System.out.printf("Messages: %s%n", proto.getCommentLines());
     }
 }
