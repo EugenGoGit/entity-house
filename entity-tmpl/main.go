@@ -115,47 +115,127 @@ func printFieldMap(n string, m map[string]Field) {
 	}
 }
 
-// func getMessageBuilderFromTemplate(templateMessage Field, messageTemplateDescFd *desc.FileDescriptor, name string) *builder.MessageBuilder {
-// 	var template pref.Message
-// 	for _, value := range getFieldMap(templateMessage.val.Message()) {
-// 		template = value.val.Message()
-// 		break
-// 	}
-
-// 	var num int
-// 	for i := range messageTemplateDescFd.GetMessageTypes() {
-// 		if messageTemplateDescFd.GetMessageTypes()[i].GetName() == string(template.Descriptor().Name()) {
-// 			num = i
-// 			break
-// 		}
-// 	}
-// 	messageBuilder, err := builder.FromMessage(messageTemplateDescFd.GetMessageTypes()[num])
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	messageBuilder.SetName(name)
-// 	desc.ToFileDescriptorSet()
-// 	return messageBuilder
-// }
-
 func printEnumEl(el Field) {
 	fmt.Println(el.desc.FullName(), " ", el.desc.Enum().FullName(), " ", el.val, " ", el.desc.Enum().Values().Get(int(el.val.Enum())).Name())
 	fmt.Println()
 }
 
-// type ServiceDescriptorProtoWComment struct {
-// 	proto   *descriptorpb.ServiceDescriptorProto
-// 	comment string
-// }
+func createMessageDescByTemplate(template *pref.Value, messageName string, replaceFromType string, replaceTo *descriptorpb.DescriptorProto) *descriptorpb.DescriptorProto {
+	var requestMessageProtodesc *descriptorpb.DescriptorProto
+	fmt.Println(template)
+	if template.String() != "<nil>" {
+		fmt.Println(messageName)
+		// Берем шаблон из поля, поле там одно
+		for _, v := range getFieldMap(template.Message()) {
+			requestMessageProtodesc = protodesc.ToDescriptorProto(v.val.Message().Descriptor())
+			break
+		}
+		requestMessageProtodesc.Name = &messageName
+		ReplaceFieldDescriptor(requestMessageProtodesc, replaceFromType, replaceTo)
+		fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
+	} else {
+		// Если template не задан используем пустой message
+
+		requestMessageProtodesc = &descriptorpb.DescriptorProto{
+			Name: &messageName,
+		}
+		fmt.Println("requestTemplateVal empty")
+	}
+	return requestMessageProtodesc
+}
+
+func OptionExclude(messageDesc pref.MessageDescriptor, excludeOptFullName string) *descriptorpb.MessageOptions {
+	var opt descriptorpb.MessageOptions = descriptorpb.MessageOptions{}
+	entityOpts := getFieldMap(messageDesc.Options().ProtoReflect())
+	for _, optField := range entityOpts {
+		if optField.fullName != "entity.feature.api_service" {
+			var valOptS string
+			if optField.desc.Kind() == pref.MessageKind {
+				valOpt, _ := protojson.MarshalOptions{
+					Multiline:     true,
+					UseProtoNames: true,
+				}.Marshal(optField.val.Message().Interface())
+				valOptS = string(valOpt)
+			} else {
+				valOptS = optField.val.String()
+			}
+			n := string(optField.desc.Name())
+			e := strings.Index(string(optField.desc.FullName()), "google.protobuf.MessageOptions") == -1
+			if e {
+				n = string(optField.desc.FullName())
+			}
+			opt.UninterpretedOption = append(opt.UninterpretedOption,
+				&descriptorpb.UninterpretedOption{
+					Name: []*descriptorpb.UninterpretedOption_NamePart{
+						{
+							NamePart:    &n,
+							IsExtension: &e,
+						},
+					},
+					IdentifierValue: &valOptS,
+				},
+			)
+
+		}
+	}
+	return &opt
+}
 
 func ReplaceFieldDescriptor(source *descriptorpb.DescriptorProto, replaceFromType string, replaceTo *descriptorpb.DescriptorProto) {
 	for i := range source.Field {
-		fn:=source.Field[i].TypeName
+		fn := source.Field[i].TypeName
 		if string(*fn) == replaceFromType {
 			n := replaceTo.GetName()
 			source.Field[i].TypeName = &n
 		}
 	}
+}
+
+func getUniqueFieldGroup(entityDesc pref.MessageDescriptor, uniqueFieldGroupEl pref.EnumNumber) []string {
+	var res []string
+	var m map[pref.EnumNumber][]string = make(map[pref.EnumNumber][]string)
+	var min pref.EnumNumber = 10000
+	for i := range entityDesc.Fields().Len() {
+		optMap := getFieldMap(entityDesc.Fields().Get(i).Options().ProtoReflect())
+		if val, ok := optMap["unique_field_group"]; ok {
+			m[val.val.Enum()] = append(m[val.val.Enum()], string(entityDesc.Fields().Get(i).Name()))
+			if val.val.Enum() < min {
+				min = val.val.Enum()
+			}
+		}
+	}
+	if val, ok := m[uniqueFieldGroupEl]; ok {
+		res = val
+	} else {
+		res = m[min]
+	}
+	return res
+}
+
+func getKeyFields(keyFieldsDefinition *pref.Value, entityDesc pref.MessageDescriptor) []string {
+	var res []string
+	if keyFieldsDefinition.String() == "<nil>" {
+		res = getUniqueFieldGroup(entityDesc, 0)
+	} else {
+		fieldMap := getFieldMap(keyFieldsDefinition.Message())
+		if val, ok := fieldMap["key_field_list"]; ok {
+			keyFieldsFieldMap := getFieldMap(val.val.Message())
+			if val1, ok := keyFieldsFieldMap["key_fields"]; ok {
+				for i := range val1.val.List().Len() {
+					res = append(res, val1.val.List().Get(i).String())
+				}
+			} else {
+				res = getUniqueFieldGroup(entityDesc, 0)
+			}
+		} else {
+			if val1, ok := fieldMap["unique_field_group"]; ok {
+				res = getUniqueFieldGroup(entityDesc, val1.val.Enum())
+			} else {
+				res = getUniqueFieldGroup(entityDesc, 0)
+			}
+		}
+	}
+	return res
 }
 
 func main() {
@@ -185,8 +265,6 @@ func main() {
 		},
 	)
 
-	// reph := reporter.NewHandler(rep)
-
 	compiler := protocompile.Compiler{
 		Resolver: protocompile.WithStandardImports(&protocompile.SourceResolver{
 			ImportPaths: []string{
@@ -198,37 +276,12 @@ func main() {
 		RetainASTs:     true,
 	}
 
-	// compiler2 := protocompile.Compiler{
-	// 	Resolver: protocompile.WithStandardImports(&protocompile.SourceResolver{
-	// 		ImportPaths: []string{
-	// 			".", //"proto_deps",
-	// 		},
-	// 	}),
-	// 	Reporter:       rep,
-	// 	SourceInfoMode: protocompile.SourceInfoMode(2),
-	// 	RetainASTs:     true,
-	// }
-
 	entityFiles, err := compiler.Compile(context.Background(), "templates/device/v1/deviceapis_device_dtmf_v1.proto")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("entityFiles", entityFiles)
-	messageTemplateFiles, err := compiler.Compile(context.Background(), "entity-tmpl/entity-feature-api-template.proto")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("messageTemplateFiles", messageTemplateFiles)
-	field_behaviorFiles, err := compiler.Compile(context.Background(), "google/api/field_behavior.proto")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("field_behaviorFiles", field_behaviorFiles)
-	// descriptorFiles, err := compiler2.Compile(context.Background(), "google/protobuf/descriptor.proto")
-	// 		if err != nil {
-	// 			panic(err)
-	// 		}
-	// fmt.Println("descriptorFiles", descriptorFiles)
+
 	for _, entityFileDesc := range entityFiles {
 		entitiesToGenerateApiFeature := make(map[pref.MessageDescriptor]pref.Message)
 		for i := range entityFileDesc.Messages().Len() {
@@ -253,73 +306,16 @@ func main() {
 
 		if len(entitiesToGenerateApiFeature) > 0 {
 			// Если есть сущности с фичами entity.feature, то создаем файл для генерации
-
 			sourcefileDescriptorProto := protodesc.ToFileDescriptorProto(entityFileDesc)
 			fmt.Println("sourcefileDescriptorProto", sourcefileDescriptorProto.MessageType[0].Options.ProtoReflect())
-			messageTemplateDescriptorProto := protodesc.ToFileDescriptorProto(messageTemplateFiles[0])
-
-			// fieldBehaviorFilesDescriptorProto := protodesc.ToFileDescriptorProto(field_behaviorFiles[0])
-			// descriptorDescriptorProto := protodesc.ToFileDescriptorProto(descriptorFiles[0])
-			s := "fgfgfhfhfhfhfhfhfh33333"
-			sourcefileDescriptorProto.SourceCodeInfo.Location[12].LeadingComments = &s
-
-			// m:=internal.CreateSourceInfoMap(sourcefileDescriptorProto)
-			//  = append(sourcefileDescriptorProto.SourceCodeInfo.Location,
-			// 	&descriptorpb.SourceCodeInfo_Location{
-			// 		Path:            []int32{4, 3, 2, 0, 6},
-			// 		Span:            []int32{20, 2, 21},
-			// 		LeadingComments: &s,
-			// 	},
-			// )
-			// fileDescriptorProto := &descriptorpb.FileDescriptorProto{
-			// 	// оставляем от исходного
-			// 	Name:           sourcefileDescriptorProto.Name,
-			// 	Package:        sourcefileDescriptorProto.Package,
-			// 	// Dependency:     sourcefileDescriptorProto.Dependency,
-			// 	Syntax:         sourcefileDescriptorProto.Syntax,
-			// 	MessageType:    sourcefileDescriptorProto.MessageType,
-			// 	Service:        sourcefileDescriptorProto.Service,
-			// 	Extension:      sourcefileDescriptorProto.Extension,
-			// 	Options:        sourcefileDescriptorProto.Options,
-			// 	SourceCodeInfo: sourcefileDescriptorProto.SourceCodeInfo,
-			// }
 
 			sourcefileDescriptorProto.Dependency = nil
-			// messageTemplateDescriptorProto.Dependency = nil
-			// descriptorDescFd, err := desc.CreateFileDescriptor(descriptorDescriptorProto)
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// fieldBehaviorDescFd, err := desc.CreateFileDescriptor(fieldBehaviorFilesDescriptorProto)
-			// if err != nil {
-			// 	panic(err)
-			// }
-
-			fmt.Println("messageTemplateDescriptorProto", messageTemplateDescriptorProto)
-			for i := range messageTemplateDescriptorProto.MessageType {
-				for j := range messageTemplateDescriptorProto.MessageType[i].Field {
-					fmt.Println("messageTemplateDescriptorProto.MessageType[i].Field[j].TypeName",
-						messageTemplateDescriptorProto.MessageType[i].Field[j].Type.Descriptor().Name())
-				}
-			}
 
 			sourcefileDescFd, err := desc.CreateFileDescriptor(sourcefileDescriptorProto)
 			if err != nil {
 				panic(err)
 			}
 
-			messageTemplateDescFd, err := desc.CreateFileDescriptor(messageTemplateDescriptorProto)
-			if err != nil {
-				panic(err)
-			}
-			for i := range messageTemplateDescFd.GetMessageTypes() {
-				fmt.Println("messageTemplateDescFd.GetMessageTypes()", messageTemplateDescFd.GetMessageTypes()[i])
-			}
-
-			// sourcefileDescriptor, _ := desc.CreateFileDescriptor(sourcefileDescriptorProto)
-			// genFileBuilder := builder.NewFile(string(entityFileDesc.Package()) + "_gen.proto")
-			// genFileBuilder.SetPackageName(string(entityFileDesc.Package()))
-			// genFileBuilder.SetProto3(true)
 			genFileProto := &descriptorpb.FileDescriptorProto{
 				Syntax:  proto.String("proto3"),
 				Name:    proto.String(string(entityFileDesc.Package()) + "_gen.proto"),
@@ -336,24 +332,19 @@ func main() {
 				// в опциях шаблон имени
 				serviceOptsMap := getFieldMap(serviceDef.Descriptor().Options().ProtoReflect())
 				serviceName := strings.Replace(serviceOptsMap["name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
-				// serviceFullName := strings.Replace(serviceOptsMap["name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
 
-				// pfs := builder.NewService(serviceName)
-				// pfs.SetComments(builder.Comments{
-				// 	LeadingComment: "Сервис управления сущностью " + string(entityDesc.Name()),
-				// })
-				// genFileBuilder.AddService(pfs)
 				// в полях сервиса требуемые методы в method_set
 				serviceFieldsMap := getFieldMap(serviceDef)
 				methodsDefMap := getFieldMap(serviceFieldsMap["method_set"].val.Message())
 				// Корневой httpPath в http_root, он же - признак добавления опций http
 				httpRoot := serviceFieldsMap["http_root"].val.String()
-				// Уникальный ключ используется, если не переопределен на уровне метода
-				serviceUniqueKey := serviceFieldsMap["key_fields"].val.List()
+				// Определение уникальных полей сервиса, будет использовано, если не переопределено на уровне метода
+				serviceKeyFieldsDefinition := serviceFieldsMap["key_fields_definition"].val
 
 				genServiceProto := &descriptorpb.ServiceDescriptorProto{
 					Name: proto.String(serviceName),
 				}
+				genFileComments[serviceName] = "Сервис управления сущностью " + string(entityDesc.Name())
 
 				// Найдем комменты Entity
 				var num int
@@ -364,62 +355,21 @@ func main() {
 				}
 				entityMessageDesc := sourcefileDescFd.GetMessageTypes()[num]
 				genFileComments[string(entityDesc.Name())] = *entityMessageDesc.GetSourceInfo().LeadingComments
-				// messageBuilder, err := builder.FromMessage(entityMessageDesc)
-				// if err != nil {
-				// 	panic(err)
-				// }
-				// genFileBuilder.AddMessage(messageBuilder)
 
 				// Добавим сам Entity
-
 				// Сохраним все опции, кроме entity.feature.api_service, которую используем в данной генерации
-				var opt descriptorpb.MessageOptions = descriptorpb.MessageOptions{}
-				entityOpts := getFieldMap(entityDesc.Options().ProtoReflect())
-				for _, optField := range entityOpts {
-					if optField.fullName != "entity.feature.api_service" {
-						var valOptS string
-						if optField.desc.Kind() == pref.MessageKind {
-							valOpt, _ := protojson.MarshalOptions{
-								Multiline:     true,
-								UseProtoNames: true,
-							}.Marshal(optField.val.Message().Interface())
-							valOptS = string(valOpt)
-						} else {
-							valOptS = optField.val.String()
-						}
-						n := string(optField.desc.Name())
-						e := strings.Index(string(optField.desc.FullName()), "google.protobuf.MessageOptions") == -1
-						if e {
-							n = string(optField.desc.FullName())
-						}
-						opt.UninterpretedOption = append(opt.UninterpretedOption,
-							&descriptorpb.UninterpretedOption{
-								Name: []*descriptorpb.UninterpretedOption_NamePart{
-									{
-										NamePart:    &n,
-										IsExtension: &e,
-									},
-								},
-								IdentifierValue: &valOptS,
-							},
-						)
-
-					}
-				}
 				entityMessageProtodesc := protodesc.ToDescriptorProto(entityDesc)
-				entityMessageProtodesc.Options = &opt
-
-				genFileComments[serviceName] = "Сервис управления сущностью " + string(entityDesc.Name())
+				entityMessageProtodesc.Options = OptionExclude(entityDesc, "entity.feature.api_service")
 
 				for _, methodDef := range methodsDefMap {
-					method_unique_key := serviceUniqueKey
 					// в полях заданы параметры метода
 					methodFieldMap := getFieldMap(methodDef.val.Message())
-					// переопределяем уникальный ключ
-					if val, ok := methodFieldMap["unique_key"]; ok {
-						method_unique_key = val.val.List()
+					// переопределяем Определение уникальных полей сервиса
+					keyFieldsDefinition := serviceKeyFieldsDefinition
+					if val, ok := methodFieldMap["key_fields_definition"]; ok {
+						keyFieldsDefinition = val.val
 					}
-					fmt.Println("method_unique_key", method_unique_key)
+					fmt.Println("method_unique_key", keyFieldsDefinition)
 					// в опциях параметры генерации метода
 					methodOptsMap := getFieldMap(methodDef.val.Message().Descriptor().Options().ProtoReflect())
 					// в полях entity.api.method_component_template_set шаблоны компонент метода
@@ -435,63 +385,26 @@ func main() {
 					// responseFullName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
 					// шаблон запроса в request_template
 					// там только одно поле
-					// var requestMessageBuilder *builder.MessageBuilder
-					var requestMessageProtodesc *descriptorpb.DescriptorProto
-					if val, ok := methodTemplatesMap["request_template"]; ok {
-						// Берем шаблон из поля, поле там одно
-						for _, v := range getFieldMap(methodTemplatesMap["request_template"].val.Message()) {
-							requestMessageProtodesc = protodesc.ToDescriptorProto(v.val.Message().Descriptor())
-							break
-						}
-						requestMessageProtodesc.Name = &requestName
-						ReplaceFieldDescriptor(requestMessageProtodesc, ".entity.feature.api.options.EntityKeyDescriptor", entityMessageProtodesc)
-						fmt.Println("requestMessageProtodesc", val.val.Message().Descriptor())
-						// requestMessageProtodesc.NestedType
-						fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
-						// dd := desc.MessageDescriptor{proto:requestMessageProtodesc}
-						// requestMessageBuilder = getMessageBuilderFromTemplate(val, messageTemplateDescFd, requestName)
-					} else {
-						// Если template не задан используем пустой message
-						// requestMessageBuilder = builder.NewMessage(requestName)
-						requestMessageProtodesc = &descriptorpb.DescriptorProto{
-							Name: &requestName,
-						}
-						fmt.Println("requestTemplateVal empty")
-					}
+					tmpl := methodTemplatesMap["request_template"]
+					requestMessageProtodesc := createMessageDescByTemplate(
+						&tmpl.val,
+						requestName,
+						".entity.feature.api.options.EntityKeyDescriptor",
+						entityMessageProtodesc,
+					)
 					genFileComments[requestName] = "Запрос метода " + methodName
 
-					// fmt.Println("requestMessageBuilder", requestMessageBuilder)
-					// var responseMessageBuilder *builder.MessageBuilder
-					var responseMessageProtodesc *descriptorpb.DescriptorProto
-					if val, ok := methodTemplatesMap["response_template"]; ok {
-						responseMessageProtodesc = protodesc.ToDescriptorProto(val.val.Message().Descriptor())
-						fmt.Println("responseMessageProtodesc", val.val.Message().Descriptor())
-						// responseMessageProtodesc.NestedType
-						fmt.Println("responseMessageProtodesc", responseMessageProtodesc.Field[0])
-						// dd := desc.MessageDescriptor{proto:responseMessageProtodesc}
-						// responseMessageBuilder = getMessageBuilderFromTemplate(val, messageTemplateDescFd, responseName)
-					} else {
-						// Если template не задан используем пустой message
-						// responseMessageBuilder = builder.NewMessage(responseName)
-						responseMessageProtodesc = &descriptorpb.DescriptorProto{
-							Name: &responseName,
-						}
-						fmt.Println("responseTemplateVal empty")
-					}
-					genFileComments[responseName] = "Запрос метода " + methodName
+					tmpl = methodTemplatesMap["response_template"]
+					responseMessageProtodesc := createMessageDescByTemplate(
+						&tmpl.val,
+						responseName,
+						".entity.feature.api.options.EntityKeyDescriptor",
+						entityMessageProtodesc,
+					)
+					genFileComments[responseName] = "Ответ на запрос метода " + methodName
 
-					// genFileBuilder.AddMessage(requestMessageBuilder)
-					// genFileBuilder.AddMessage(responseMessageBuilder)
 					genFileProto.MessageType = append(genFileProto.MessageType, requestMessageProtodesc)
 					genFileProto.MessageType = append(genFileProto.MessageType, responseMessageProtodesc)
-
-					// pfm := builder.NewMethod(methodName,
-					// 	builder.RpcTypeMessage(requestMessageBuilder, false),
-					// 	builder.RpcTypeMessage(responseMessageBuilder, false),
-					// )
-					// pfm.SetComments(builder.Comments{
-					// 	LeadingComment: "Метод " + methodName,
-					// })
 
 					genMethodProto := &descriptorpb.MethodDescriptorProto{
 						Name:            proto.String(methodName),
@@ -501,15 +414,15 @@ func main() {
 						ClientStreaming: proto.Bool(true),
 					}
 
-					// pfs.AddMethod(pfm)
 					// в полях entity.api.http_rule http опции google.api.HttpRule
 					if val, ok := methodOptsMap["http_rule"]; ok {
 						if httpRoot != "" && httpRoot != "<nil>" {
-							var keyFields string
-							for i := 0; i < method_unique_key.Len(); i++ {
-								keyFields = keyFields + method_unique_key.Get(i).String() + "/{" + method_unique_key.Get(i).String() + "}"
-								if i != method_unique_key.Len()-1 {
-									keyFields = keyFields + "/"
+							keyFieldList := getKeyFields(&keyFieldsDefinition, entityDesc)
+							var keyFieldPath string
+							for i := range keyFieldList {
+								keyFieldPath = keyFieldPath + keyFieldList[i] + "/{" + keyFieldList[i] + "}"
+								if i != len(keyFieldList)-1 {
+									keyFieldPath = keyFieldPath + "/"
 								}
 							}
 							methodHttpRuleMap := getFieldMap(val.val.Message())
@@ -518,7 +431,7 @@ func main() {
 							var valOpt string = "{ "
 							for k, v := range methodHttpRuleMap {
 								valOpt = valOpt + k + ": \"" +
-									strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFields, -1) +
+									strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
 									"\", "
 							}
 							valOpt = valOpt + "}"

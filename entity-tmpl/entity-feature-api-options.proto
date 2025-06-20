@@ -4,7 +4,7 @@ syntax = "proto3";
 import "google/api/field_behavior.proto";
 import "google/protobuf/descriptor.proto";
 import "google/api/http.proto";
-import "entity-tmpl/entity-feature-api-template.proto";
+import "entity-tmpl/entity-feature-options.proto";
 
 
 package entity.feature.api.options;
@@ -53,8 +53,8 @@ message OneEntityResponse {
 message EntityKeyRequest {
   // {EntityKeyDescription}
   EntityKeyDescriptor entity_key = 1;
-//  string error = 2;
-//  int32 code = 3;
+  //  string error = 2;
+  //  int32 code = 3;
 }
 
 

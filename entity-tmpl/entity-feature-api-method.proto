@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "entity-tmpl/entity-feature-api-options.proto";
+import "entity-tmpl/entity-feature-options.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/descriptor.proto";
 import "google/api/http.proto";
@@ -151,8 +152,9 @@ message GetMethodById {
     get: "/{HttpRoot}/{KeyFields}"
   };
   option (entity.feature.api.options.key_field_behavior) = REQUIRED;
+  // Определение ключевых полей сущности для использования в методе
   // Переопределяет key_fields сервиса
-  repeated string key_fields = 1;
+  entity.feature.options.KeyFieldsDefinition key_fields_definition = 1;
 }
 
 message GetMethod {
