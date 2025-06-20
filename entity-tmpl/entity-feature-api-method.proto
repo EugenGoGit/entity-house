@@ -146,6 +146,7 @@ message GetMethodById {
     name_template:"Get{EntityName}",
     request_dto_name_template: "Get{EntityName}Request",
     response_dto_name_template: "Get{EntityName}Response",
+    response_template: {one_entity_response:{}}
     request_template: {entity_key_request:{}}
   };
   option (entity.feature.api.options.http_rule) = {

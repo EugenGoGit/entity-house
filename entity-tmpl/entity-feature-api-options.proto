@@ -43,11 +43,21 @@ message EntityDescriptor {}
 message EntityKeyDescriptor {}
 
 message OneEntityResponse {
+  message NestedTypecbcbdbd {
+    message NestedNestedTypecbcvmjfjfjbd {
+      EntityDescriptor daffta = 2;
+    }
+    repeated EntityDescriptor data = 1;
+    oneof e {
+      EntityDescriptor daffta = 2;
+    }
+  }
   // Тип ответа
   oneof type {
     // {EntityDescription}
     EntityDescriptor data = 1;
   }
+  NestedTypecbcbdbd field_fhfhfg = 2;
 }
 
 message EntityKeyRequest {

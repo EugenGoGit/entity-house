@@ -14,6 +14,7 @@ import (
 	// "github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/reporter"
 	"google.golang.org/protobuf/reflect/protodesc"
+
 	// "google.golang.org/protobuf/encoding/prototext"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/builder"
@@ -21,6 +22,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	pref "google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
+
 	// "google.golang.org/protobuf/types/dynamicpb"
 	// "github.com/bufbuild/protocompile/protoutil"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -120,28 +122,39 @@ func printEnumEl(el Field) {
 	fmt.Println()
 }
 
-func createMessageDescByTemplate(template *pref.Value, messageName string, replaceFromType string, replaceTo *descriptorpb.DescriptorProto) *descriptorpb.DescriptorProto {
-	var requestMessageProtodesc *descriptorpb.DescriptorProto
-	fmt.Println(template)
-	if template.String() != "<nil>" {
+func createMessageDescByTemplate(templateParent *pref.Value,
+	messageName string,
+	messageFullName string,
+	replaceFromType string,
+	replaceTo *descriptorpb.DescriptorProto) *descriptorpb.DescriptorProto {
+	var messageProtodesc *descriptorpb.DescriptorProto
+	var templateTypeName string
+	fmt.Println(templateParent)
+	if templateParent.String() != "<nil>" {
 		fmt.Println(messageName)
 		// Берем шаблон из поля, поле там одно
-		for _, v := range getFieldMap(template.Message()) {
-			requestMessageProtodesc = protodesc.ToDescriptorProto(v.val.Message().Descriptor())
+		for _, v := range getFieldMap(templateParent.Message()) {
+			messageProtodesc = protodesc.ToDescriptorProto(v.val.Message().Descriptor())
+			templateTypeName = string(v.val.Message().Descriptor().FullName())
 			break
 		}
-		requestMessageProtodesc.Name = &messageName
-		ReplaceFieldDescriptor(requestMessageProtodesc, replaceFromType, replaceTo)
-		fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
+		messageProtodesc.Name = &messageName
+		changeFieldTypeNameNested(messageProtodesc,
+			replaceFromType,
+			*replaceTo.Name,
+			templateTypeName,
+			messageName,
+			messageFullName)
+		fmt.Println("messageProtodesc+", messageProtodesc)
 	} else {
 		// Если template не задан используем пустой message
 
-		requestMessageProtodesc = &descriptorpb.DescriptorProto{
+		messageProtodesc = &descriptorpb.DescriptorProto{
 			Name: &messageName,
 		}
 		fmt.Println("requestTemplateVal empty")
 	}
-	return requestMessageProtodesc
+	return messageProtodesc
 }
 
 func OptionExclude(messageDesc pref.MessageDescriptor, excludeOptFullName string) *descriptorpb.MessageOptions {
@@ -181,13 +194,30 @@ func OptionExclude(messageDesc pref.MessageDescriptor, excludeOptFullName string
 	return &opt
 }
 
-func ReplaceFieldDescriptor(source *descriptorpb.DescriptorProto, replaceFromType string, replaceTo *descriptorpb.DescriptorProto) {
-	for i := range source.Field {
-		fn := source.Field[i].TypeName
-		if string(*fn) == replaceFromType {
-			n := replaceTo.GetName()
-			source.Field[i].TypeName = &n
+func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
+	replaceFromType string,
+	replaceToType string,
+	topLevelNameFromType string,
+	topLevelNameToType string,
+	topLevelFullNameToType string) {
+	for i := range messageDescProto.Field {
+		if *messageDescProto.Field[i].TypeName == replaceFromType {
+			messageDescProto.Field[i].TypeName = &replaceToType
+		} else {
+			s := strings.Replace(*messageDescProto.Field[i].TypeName, "." + topLevelNameFromType+".", topLevelNameToType+".", -1)
+			messageDescProto.Field[i].TypeName = &s
 		}
+
+	}
+	for i := range messageDescProto.NestedType {
+		s := strings.Replace(*messageDescProto.NestedType[i].Name, topLevelNameFromType, topLevelFullNameToType, -1)
+		messageDescProto.NestedType[i].Name = &s
+		changeFieldTypeNameNested(messageDescProto.NestedType[i],
+			replaceFromType,
+			replaceToType,
+			topLevelNameFromType,
+			topLevelNameToType,
+			topLevelFullNameToType)
 	}
 }
 
@@ -379,7 +409,7 @@ func main() {
 					// methodFullName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
 					// шаблон имени запроса в request_dto_name_template
 					requestName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
-					// requestFullName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
+					requestFullName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
 					// шаблон имени ответа в response_dto_name_template
 					responseName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
 					// responseFullName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
@@ -389,18 +419,22 @@ func main() {
 					requestMessageProtodesc := createMessageDescByTemplate(
 						&tmpl.val,
 						requestName,
-						".entity.feature.api.options.EntityKeyDescriptor",
+						requestFullName,
+						".entity.feature.api.options.EntityDescriptor",
 						entityMessageProtodesc,
 					)
+					fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
 					genFileComments[requestName] = "Запрос метода " + methodName
 
 					tmpl = methodTemplatesMap["response_template"]
 					responseMessageProtodesc := createMessageDescByTemplate(
 						&tmpl.val,
 						responseName,
-						".entity.feature.api.options.EntityKeyDescriptor",
+						requestFullName,
+						".entity.feature.api.options.EntityDescriptor",
 						entityMessageProtodesc,
 					)
+					fmt.Println("responseMessageProtodesc", responseMessageProtodesc)
 					genFileComments[responseName] = "Ответ на запрос метода " + methodName
 
 					genFileProto.MessageType = append(genFileProto.MessageType, requestMessageProtodesc)
