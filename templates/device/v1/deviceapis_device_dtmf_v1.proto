@@ -57,7 +57,7 @@ message SetSettings {
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       example: "true"
     },
-    (entity.feature.unique_field_group) = UG2
+    (entity.feature.unique_field_group) = PK
   ];
   // Флаг приема SET сигнала в варианте inbound
   bool is_second_on = 2 [(google.api.field_behavior) = REQUIRED,

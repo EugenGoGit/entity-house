@@ -45,11 +45,11 @@ message EntityKeyDescriptor {}
 message OneEntityResponse {
   message NestedTypecbcbdbd {
     message NestedNestedTypecbcvmjfjfjbd {
-      EntityDescriptor daffta = 2;
+      EntityDescriptor daffta = 2 [(google.api.field_behavior) = REQUIRED];
     }
     repeated EntityDescriptor data = 1;
     oneof e {
-      EntityDescriptor daffta = 2;
+      EntityDescriptor daffta = 2 [(google.api.field_behavior) = REQUIRED];
     }
   }
   // Тип ответа
@@ -61,10 +61,11 @@ message OneEntityResponse {
 }
 
 message EntityKeyRequest {
+  EntityDescriptor data = 1;
   // {EntityKeyDescription}
-  EntityKeyDescriptor entity_key = 1;
-  //  string error = 2;
-  //  int32 code = 3;
+  EntityKeyDescriptor entity_key = 2;
+  string error = 3;
+  int32 code = 4;
 }
 
 

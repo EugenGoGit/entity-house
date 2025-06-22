@@ -22,10 +22,10 @@ import (
 	"google.golang.org/protobuf/proto"
 	pref "google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
-
+	"google.golang.org/protobuf/types/dynamicpb"
 	// "google.golang.org/protobuf/types/dynamicpb"
 	// "github.com/bufbuild/protocompile/protoutil"
-	"google.golang.org/protobuf/encoding/protojson"
+	// "google.golang.org/protobuf/encoding/protojson"
 )
 
 //         jhump файл дескриптор
@@ -64,7 +64,7 @@ import (
 //             нельзя поставить комменты, нельзя читать коммменты
 //             опции читаются, значения читаются
 //         protoreflect message дескриптор
-//             нельзя собрать
+//             нельзя собрать ??? options.shallowCopy
 //             нельзя менять поля
 //             можно создать с descproto message
 //             можно сменять в descproto message
@@ -125,8 +125,9 @@ func printEnumEl(el Field) {
 func createMessageDescByTemplate(templateParent *pref.Value,
 	messageName string,
 	messageFullName string,
-	replaceFromType string,
-	replaceTo *descriptorpb.DescriptorProto) *descriptorpb.DescriptorProto {
+	replaceTo *descriptorpb.DescriptorProto,
+	replaceKeysToFields []*descriptorpb.FieldDescriptorProto,
+) *descriptorpb.DescriptorProto {
 	var messageProtodesc *descriptorpb.DescriptorProto
 	var templateTypeName string
 	fmt.Println(templateParent)
@@ -140,15 +141,16 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 		}
 		messageProtodesc.Name = &messageName
 		changeFieldTypeNameNested(messageProtodesc,
-			replaceFromType,
+			".entity.feature.api.options.EntityDescriptor",
+			".entity.feature.api.options.EntityKeyDescriptor",
 			*replaceTo.Name,
+			replaceKeysToFields,
 			templateTypeName,
 			messageName,
 			messageFullName)
 		fmt.Println("messageProtodesc+", messageProtodesc)
 	} else {
 		// Если template не задан используем пустой message
-
 		messageProtodesc = &descriptorpb.DescriptorProto{
 			Name: &messageName,
 		}
@@ -157,56 +159,32 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 	return messageProtodesc
 }
 
-func OptionExclude(messageDesc pref.MessageDescriptor, excludeOptFullName string) *descriptorpb.MessageOptions {
-	var opt descriptorpb.MessageOptions = descriptorpb.MessageOptions{}
-	entityOpts := getFieldMap(messageDesc.Options().ProtoReflect())
-	for _, optField := range entityOpts {
-		if optField.fullName != "entity.feature.api_service" {
-			var valOptS string
-			if optField.desc.Kind() == pref.MessageKind {
-				valOpt, _ := protojson.MarshalOptions{
-					Multiline:     true,
-					UseProtoNames: true,
-				}.Marshal(optField.val.Message().Interface())
-				valOptS = string(valOpt)
-			} else {
-				valOptS = optField.val.String()
-			}
-			n := string(optField.desc.Name())
-			e := strings.Index(string(optField.desc.FullName()), "google.protobuf.MessageOptions") == -1
-			if e {
-				n = string(optField.desc.FullName())
-			}
-			opt.UninterpretedOption = append(opt.UninterpretedOption,
-				&descriptorpb.UninterpretedOption{
-					Name: []*descriptorpb.UninterpretedOption_NamePart{
-						{
-							NamePart:    &n,
-							IsExtension: &e,
-						},
-					},
-					IdentifierValue: &valOptS,
-				},
-			)
-
-		}
-	}
-	return &opt
-}
-
 func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 	replaceFromType string,
+	replaceKeysFromType string,
 	replaceToType string,
+	replaceKeysToFields []*descriptorpb.FieldDescriptorProto,
 	topLevelNameFromType string,
 	topLevelNameToType string,
 	topLevelFullNameToType string) {
+	fmt.Println("replaceKeysToFields", replaceKeysToFields, replaceKeysToFields[0].Type)
 	for i := range messageDescProto.Field {
-		if *messageDescProto.Field[i].TypeName == replaceFromType {
-			messageDescProto.Field[i].TypeName = &replaceToType
-		} else {
-			s := strings.Replace(*messageDescProto.Field[i].TypeName, "." + topLevelNameFromType+".", topLevelNameToType+".", -1)
-			messageDescProto.Field[i].TypeName = &s
+		if *messageDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
+			if *messageDescProto.Field[i].TypeName == replaceFromType {
+				messageDescProto.Field[i].TypeName = &replaceToType
+			} else {
+				s := strings.Replace(*messageDescProto.Field[i].TypeName, "."+topLevelNameFromType+".", topLevelNameToType+".", -1)
+				messageDescProto.Field[i].TypeName = &s
+			}
+			if *messageDescProto.Field[i].TypeName == replaceKeysFromType {
+				for j := range replaceKeysToFields {
+					n := messageDescProto.Field[i].Number
+					messageDescProto.Field[i] = replaceKeysToFields[j]
+					messageDescProto.Field[i].Number = n
+				}
+			}
 		}
+		fmt.Println("replaceKeysFromType", messageDescProto.Field[i])
 
 	}
 	for i := range messageDescProto.NestedType {
@@ -214,21 +192,23 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 		messageDescProto.NestedType[i].Name = &s
 		changeFieldTypeNameNested(messageDescProto.NestedType[i],
 			replaceFromType,
+			replaceKeysFromType,
 			replaceToType,
+			replaceKeysToFields,
 			topLevelNameFromType,
 			topLevelNameToType,
 			topLevelFullNameToType)
 	}
 }
 
-func getUniqueFieldGroup(entityDesc pref.MessageDescriptor, uniqueFieldGroupEl pref.EnumNumber) []string {
-	var res []string
-	var m map[pref.EnumNumber][]string = make(map[pref.EnumNumber][]string)
+func getUniqueFieldGroup(entityDesc pref.MessageDescriptor, uniqueFieldGroupEl pref.EnumNumber) []*descriptorpb.FieldDescriptorProto {
+	var res []*descriptorpb.FieldDescriptorProto
+	var m map[pref.EnumNumber][]*descriptorpb.FieldDescriptorProto = make(map[pref.EnumNumber][]*descriptorpb.FieldDescriptorProto)
 	var min pref.EnumNumber = 10000
 	for i := range entityDesc.Fields().Len() {
 		optMap := getFieldMap(entityDesc.Fields().Get(i).Options().ProtoReflect())
 		if val, ok := optMap["unique_field_group"]; ok {
-			m[val.val.Enum()] = append(m[val.val.Enum()], string(entityDesc.Fields().Get(i).Name()))
+			m[val.val.Enum()] = append(m[val.val.Enum()], protodesc.ToFieldDescriptorProto(entityDesc.Fields().Get(i)))
 			if val.val.Enum() < min {
 				min = val.val.Enum()
 			}
@@ -242,8 +222,8 @@ func getUniqueFieldGroup(entityDesc pref.MessageDescriptor, uniqueFieldGroupEl p
 	return res
 }
 
-func getKeyFields(keyFieldsDefinition *pref.Value, entityDesc pref.MessageDescriptor) []string {
-	var res []string
+func getKeyFields(keyFieldsDefinition *pref.Value, entityDesc pref.MessageDescriptor) []*descriptorpb.FieldDescriptorProto {
+	var res []*descriptorpb.FieldDescriptorProto
 	if keyFieldsDefinition.String() == "<nil>" {
 		res = getUniqueFieldGroup(entityDesc, 0)
 	} else {
@@ -252,7 +232,7 @@ func getKeyFields(keyFieldsDefinition *pref.Value, entityDesc pref.MessageDescri
 			keyFieldsFieldMap := getFieldMap(val.val.Message())
 			if val1, ok := keyFieldsFieldMap["key_fields"]; ok {
 				for i := range val1.val.List().Len() {
-					res = append(res, val1.val.List().Get(i).String())
+					res = append(res, protodesc.ToFieldDescriptorProto(entityDesc.Fields().ByName(pref.Name(val1.val.List().Get(i).String()))))
 				}
 			} else {
 				res = getUniqueFieldGroup(entityDesc, 0)
@@ -312,15 +292,39 @@ func main() {
 	}
 	fmt.Println("entityFiles", entityFiles)
 
+	googleApiAnnotationsFiles, err := compiler.Compile(context.Background(), "google/api/annotations.proto")
+	if err != nil {
+		panic(err)
+	}
+
 	for _, entityFileDesc := range entityFiles {
-		entitiesToGenerateApiFeature := make(map[pref.MessageDescriptor]pref.Message)
+
+		// создаем файл для генерации
+		sourcefileDescriptorProto := protodesc.ToFileDescriptorProto(entityFileDesc)
+		fmt.Println("sourcefileDescriptorProto", sourcefileDescriptorProto.MessageType[0].Options.ProtoReflect())
+
+		sourcefileDescriptorProto.Dependency = nil
+
+		sourcefileDescFd, err := desc.CreateFileDescriptor(sourcefileDescriptorProto)
+		if err != nil {
+			panic(err)
+		}
+
+		genFileProto := &descriptorpb.FileDescriptorProto{
+			Syntax:  proto.String("proto3"),
+			Name:    proto.String(string(entityFileDesc.Package()) + "_gen.proto"),
+			Package: proto.String(string(entityFileDesc.Package())),
+		}
+
+		var genFileComments map[string]string = make(map[string]string)
+
 		for i := range entityFileDesc.Messages().Len() {
 			msgDesc := entityFileDesc.Messages().Get(i)
 			// смотрим какие именно заявлены фичи сущности
 			// ищем опции entity.feature
 			msgOptsMap := getFieldMap(msgDesc.Options().ProtoReflect())
 			// если есть entity.feature.api_service, считаем, что в поле api_service описание сервиса
-			// считаем, что опция Kind message
+			// считаем, что опция Kind = message
 			// считаем, что данный Message описывает сущность для которой нужен сервис
 			if val, ok := msgOptsMap["api_service"]; ok && val.fullName == "entity.feature.api_service" {
 				// берем поле фичи, в котором описан сервис
@@ -330,41 +334,14 @@ func main() {
 					serviceOptVal = value.val.Message()
 					break
 				}
-				entitiesToGenerateApiFeature[msgDesc] = serviceOptVal
-			}
-		}
-
-		if len(entitiesToGenerateApiFeature) > 0 {
-			// Если есть сущности с фичами entity.feature, то создаем файл для генерации
-			sourcefileDescriptorProto := protodesc.ToFileDescriptorProto(entityFileDesc)
-			fmt.Println("sourcefileDescriptorProto", sourcefileDescriptorProto.MessageType[0].Options.ProtoReflect())
-
-			sourcefileDescriptorProto.Dependency = nil
-
-			sourcefileDescFd, err := desc.CreateFileDescriptor(sourcefileDescriptorProto)
-			if err != nil {
-				panic(err)
-			}
-
-			genFileProto := &descriptorpb.FileDescriptorProto{
-				Syntax:  proto.String("proto3"),
-				Name:    proto.String(string(entityFileDesc.Package()) + "_gen.proto"),
-				Package: proto.String(string(entityFileDesc.Package())),
-			}
-
-			var genFileComments map[string]string = make(map[string]string)
-
-			// Создаем сервисы для каждой сущности
-			for entityDesc, serviceDef := range entitiesToGenerateApiFeature {
-
-				fmt.Println(entityDesc.FullName(), serviceDef.Descriptor().FullName())
+				fmt.Println(msgDesc.FullName(), serviceOptVal.Descriptor().FullName())
 				// Создаем сервис
 				// в опциях шаблон имени
-				serviceOptsMap := getFieldMap(serviceDef.Descriptor().Options().ProtoReflect())
-				serviceName := strings.Replace(serviceOptsMap["name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
+				serviceOptsMap := getFieldMap(serviceOptVal.Descriptor().Options().ProtoReflect())
+				serviceName := strings.Replace(serviceOptsMap["name_template"].val.String(), "{EntityName}", string(msgDesc.Name()), -1)
 
 				// в полях сервиса требуемые методы в method_set
-				serviceFieldsMap := getFieldMap(serviceDef)
+				serviceFieldsMap := getFieldMap(serviceOptVal)
 				methodsDefMap := getFieldMap(serviceFieldsMap["method_set"].val.Message())
 				// Корневой httpPath в http_root, он же - признак добавления опций http
 				httpRoot := serviceFieldsMap["http_root"].val.String()
@@ -374,22 +351,23 @@ func main() {
 				genServiceProto := &descriptorpb.ServiceDescriptorProto{
 					Name: proto.String(serviceName),
 				}
-				genFileComments[serviceName] = "Сервис управления сущностью " + string(entityDesc.Name())
+				genFileComments[serviceName] = "Сервис управления сущностью " + string(msgDesc.Name())
 
 				// Найдем комменты Entity
 				var num int
 				for i := range sourcefileDescFd.GetMessageTypes() {
-					if sourcefileDescFd.GetMessageTypes()[i].GetName() == string(entityDesc.Name()) {
+					if sourcefileDescFd.GetMessageTypes()[i].GetName() == string(msgDesc.Name()) {
 						num = i
 					}
 				}
 				entityMessageDesc := sourcefileDescFd.GetMessageTypes()[num]
-				genFileComments[string(entityDesc.Name())] = *entityMessageDesc.GetSourceInfo().LeadingComments
+				genFileComments[string(msgDesc.Name())] = *entityMessageDesc.GetSourceInfo().LeadingComments
 
 				// Добавим сам Entity
 				// Сохраним все опции, кроме entity.feature.api_service, которую используем в данной генерации
-				entityMessageProtodesc := protodesc.ToDescriptorProto(entityDesc)
-				entityMessageProtodesc.Options = OptionExclude(entityDesc, "entity.feature.api_service")
+				// Уберем опцию, она обработана и не нужна в кодогенерации
+				msgDesc.Options().ProtoReflect().Clear(msgOptsMap["api_service"].desc)
+				entityMessageProtodesc := protodesc.ToDescriptorProto(msgDesc)
 
 				for _, methodDef := range methodsDefMap {
 					// в полях заданы параметры метода
@@ -405,14 +383,16 @@ func main() {
 					// в полях entity.api.method_component_template_set шаблоны компонент метода
 					methodTemplatesMap := getFieldMap(methodOptsMap["method_component_template_set"].val.Message())
 					// шаблон имени в name_template
-					methodName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
-					// methodFullName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
+					methodName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityName}", string(msgDesc.Name()), -1)
+					// methodFullName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityName}", string(msgDesc.FullName()), -1)
 					// шаблон имени запроса в request_dto_name_template
-					requestName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
-					requestFullName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
+					requestName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(msgDesc.Name()), -1)
+					requestFullName := strings.Replace(methodTemplatesMap["request_dto_name_template"].val.String(), "{EntityName}", string(msgDesc.FullName()), -1)
 					// шаблон имени ответа в response_dto_name_template
-					responseName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.Name()), -1)
-					// responseFullName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(entityDesc.FullName()), -1)
+					responseName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(msgDesc.Name()), -1)
+					// определяем список ключевых полей для метода
+					keyFieldList := getKeyFields(&keyFieldsDefinition, msgDesc)
+					// responseFullName := strings.Replace(methodTemplatesMap["response_dto_name_template"].val.String(), "{EntityName}", string(msgDesc.FullName()), -1)
 					// шаблон запроса в request_template
 					// там только одно поле
 					tmpl := methodTemplatesMap["request_template"]
@@ -420,8 +400,8 @@ func main() {
 						&tmpl.val,
 						requestName,
 						requestFullName,
-						".entity.feature.api.options.EntityDescriptor",
 						entityMessageProtodesc,
+						keyFieldList,
 					)
 					fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
 					genFileComments[requestName] = "Запрос метода " + methodName
@@ -431,8 +411,8 @@ func main() {
 						&tmpl.val,
 						responseName,
 						requestFullName,
-						".entity.feature.api.options.EntityDescriptor",
 						entityMessageProtodesc,
+						keyFieldList,
 					)
 					fmt.Println("responseMessageProtodesc", responseMessageProtodesc)
 					genFileComments[responseName] = "Ответ на запрос метода " + methodName
@@ -446,42 +426,41 @@ func main() {
 						OutputType:      proto.String(responseName),
 						ServerStreaming: proto.Bool(true),
 						ClientStreaming: proto.Bool(true),
+						Options:         &descriptorpb.MethodOptions{},
 					}
 
+					// genMethodOpts := &descriptorpb.MethodOptions{
+
+					// }
+
 					// в полях entity.api.http_rule http опции google.api.HttpRule
+					// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
+					// с заменой по шаблону
 					if val, ok := methodOptsMap["http_rule"]; ok {
 						if httpRoot != "" && httpRoot != "<nil>" {
-							keyFieldList := getKeyFields(&keyFieldsDefinition, entityDesc)
 							var keyFieldPath string
 							for i := range keyFieldList {
-								keyFieldPath = keyFieldPath + keyFieldList[i] + "/{" + keyFieldList[i] + "}"
+								keyFieldPath = keyFieldPath + *keyFieldList[i].Name + "/{" + *keyFieldList[i].Name + "}"
 								if i != len(keyFieldList)-1 {
 									keyFieldPath = keyFieldPath + "/"
 								}
 							}
 							methodHttpRuleMap := getFieldMap(val.val.Message())
-							n := "google.api.http"
-							e := true
+							// n := "google.api.http"
+							// e := true
 							var valOpt string = "{ "
+
+							fdHttp := googleApiAnnotationsFiles[0].Extensions().ByName("http")
+							fdHttpV := dynamicpb.NewMessage(fdHttp.Message())
 							for k, v := range methodHttpRuleMap {
+								fd := fdHttp.Message().Fields().ByName(pref.Name(k))
+								fdHttpV.Set(fd, pref.ValueOf(strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1)))
 								valOpt = valOpt + k + ": \"" +
 									strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
 									"\", "
 							}
-							valOpt = valOpt + "}"
-							var opt descriptorpb.MethodOptions = descriptorpb.MethodOptions{
-								UninterpretedOption: []*descriptorpb.UninterpretedOption{
-									{Name: []*descriptorpb.UninterpretedOption_NamePart{
-										{
-											NamePart:    &n,
-											IsExtension: &e,
-										},
-									},
-										IdentifierValue: &valOpt,
-									},
-								},
-							}
-							genMethodProto.Options = &opt
+							genMethodProto.Options.ProtoReflect().Set(fdHttp, pref.ValueOf(fdHttpV))
+							
 						}
 					}
 					// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
