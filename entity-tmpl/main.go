@@ -6,18 +6,21 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	// "path/filepath"
 	"strings"
 
 	//     "google.golang.org/protobuf/types/descriptorpb"
 
 	"github.com/bufbuild/protocompile"
 	// "github.com/bufbuild/protocompile/linker"
+	"github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/reporter"
 	"google.golang.org/protobuf/reflect/protodesc"
 
 	// "google.golang.org/protobuf/encoding/prototext"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/desc/builder"
+	// "github.com/jhump/protoreflect/desc/builder"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"google.golang.org/protobuf/proto"
 	pref "google.golang.org/protobuf/reflect/protoreflect"
@@ -106,17 +109,6 @@ func getFieldMap(message pref.Message) map[string]Field {
 	return m
 }
 
-func printFieldMap(n string, m map[string]Field) {
-	for key, val := range m {
-		if val.desc.Kind() == pref.MessageKind {
-			fmt.Println(n, key, "  ", val.desc.FullName(), "  ", val.val.Message().Descriptor().FullName(), "  ", val.val.String())
-		} else {
-			fmt.Println(n, key, "  ", val.desc.FullName(), "  ", val.val.String())
-		}
-		fmt.Println()
-	}
-}
-
 func printEnumEl(el Field) {
 	fmt.Println(el.desc.FullName(), " ", el.desc.Enum().FullName(), " ", el.val, " ", el.desc.Enum().Values().Get(int(el.val.Enum())).Name())
 	fmt.Println()
@@ -130,9 +122,7 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 ) *descriptorpb.DescriptorProto {
 	var messageProtodesc *descriptorpb.DescriptorProto
 	var templateTypeName string
-	fmt.Println(templateParent)
 	if templateParent.String() != "<nil>" {
-		fmt.Println(messageName)
 		// Берем шаблон из поля, поле там одно
 		for _, v := range getFieldMap(templateParent.Message()) {
 			messageProtodesc = protodesc.ToDescriptorProto(v.val.Message().Descriptor())
@@ -148,13 +138,11 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 			templateTypeName,
 			messageName,
 			messageFullName)
-		fmt.Println("messageProtodesc+", messageProtodesc)
 	} else {
 		// Если template не задан используем пустой message
 		messageProtodesc = &descriptorpb.DescriptorProto{
 			Name: &messageName,
 		}
-		fmt.Println("requestTemplateVal empty")
 	}
 	return messageProtodesc
 }
@@ -167,7 +155,6 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 	topLevelNameFromType string,
 	topLevelNameToType string,
 	topLevelFullNameToType string) {
-	fmt.Println("replaceKeysToFields", replaceKeysToFields, replaceKeysToFields[0].Type)
 	for i := range messageDescProto.Field {
 		if *messageDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
 			if *messageDescProto.Field[i].TypeName == replaceFromType {
@@ -177,14 +164,25 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 				messageDescProto.Field[i].TypeName = &s
 			}
 			if *messageDescProto.Field[i].TypeName == replaceKeysFromType {
-				for j := range replaceKeysToFields {
-					n := messageDescProto.Field[i].Number
-					messageDescProto.Field[i] = replaceKeysToFields[j]
-					messageDescProto.Field[i].Number = n
+				n := messageDescProto.Field[i].Number
+				messageDescProto.Field[i] = replaceKeysToFields[0]
+				messageDescProto.Field[i].Number = n
+				for j := 1; j < len(replaceKeysToFields); j++ {
+					if len(messageDescProto.Field) == i+1 {
+						messageDescProto.Field = append(messageDescProto.Field, replaceKeysToFields[j])
+					} else {
+						messageDescProto.Field = append(messageDescProto.Field[:i+1], messageDescProto.Field[i:]...) // index < len(a)
+						messageDescProto.Field[i+1] = replaceKeysToFields[j]
+					}
+				}
+				for j := range messageDescProto.Field {
+					n := int32(j + 1)
+					if n > *messageDescProto.Field[j].Number {
+						messageDescProto.Field[j].Number = &n
+					}
 				}
 			}
 		}
-		fmt.Println("replaceKeysFromType", messageDescProto.Field[i])
 
 	}
 	for i := range messageDescProto.NestedType {
@@ -248,20 +246,57 @@ func getKeyFields(keyFieldsDefinition *pref.Value, entityDesc pref.MessageDescri
 	return res
 }
 
-func main() {
-	ex, err := os.Executable()
+func getProtoJ(c protocompile.Compiler, fd *descriptorpb.FileDescriptorProto, appendTo map[string]*desc.FileDescriptor) *desc.FileDescriptor {
+	var dpjAr []*desc.FileDescriptor
+	for i := range fd.Dependency {
+		if val, ok := appendTo[fd.Dependency[i]]; ok {
+			dpjAr = append(dpjAr, val)
+			appendTo[fd.Dependency[i]] = val
+		} else {
+			fdr, err := c.Compile(context.Background(), fd.Dependency[i])
+			if err != nil {
+				panic(err)
+			}
+			dp := protodesc.ToFileDescriptorProto(fdr[0])
+			dpj := getProtoJ(c, dp, appendTo)
+
+			dpjAr = append(dpjAr, dpj)
+			appendTo[fd.Dependency[i]] = dpj
+		}
+	}
+	res, err := desc.CreateFileDescriptor(fd, dpjAr...)
 	if err != nil {
 		panic(err)
 	}
-	exPath := filepath.Dir(ex)
-	fmt.Println("filepath.Dir(ex)")
-	fmt.Println(exPath)
+	return res
+}
+
+func main() {
+
 	path, err := os.Getwd()
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println("os.Getwd()")
-	fmt.Println(path)
+	fmt.Println("os.Getwd()", path)
+
+	entityFileDirName := "./templates"
+	var entityProtoFileNames []string
+	err1 := filepath.Walk(entityFileDirName,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			split := strings.Split(path, ".")
+			if !info.IsDir() && split[len(split)-1] == "proto" {
+				entityProtoFileNames = append(entityProtoFileNames, strings.Replace(path, "\\", "/", -1))
+			}
+			return nil
+		})
+	if err1 != nil {
+		log.Println(err1)
+	}
+
+	fmt.Println("entityProtoFileNames", entityProtoFileNames)
 
 	var warningErrorsWithPos []reporter.ErrorWithPos
 	rep := reporter.NewReporter(
@@ -278,43 +313,48 @@ func main() {
 	compiler := protocompile.Compiler{
 		Resolver: protocompile.WithStandardImports(&protocompile.SourceResolver{
 			ImportPaths: []string{
-				".", "proto_deps", // "entity-tmpl",
+				".", "proto_deps",
 			},
 		}),
 		Reporter:       rep,
-		SourceInfoMode: protocompile.SourceInfoMode(2),
+		SourceInfoMode: protocompile.SourceInfoMode(1),
 		RetainASTs:     true,
 	}
 
-	entityFiles, err := compiler.Compile(context.Background(), "templates/device/v1/deviceapis_device_dtmf_v1.proto")
-	if err != nil {
-		panic(err)
+	var entityFilesPRF map[string]linker.File = make(map[string]linker.File)
+	var entityFilesJ map[string]*desc.FileDescriptor = make(map[string]*desc.FileDescriptor)
+	for i := range entityProtoFileNames {
+		entityFiles, err := compiler.Compile(context.Background(), entityProtoFileNames[i])
+		if err != nil {
+			panic(err)
+		}
+		entityFilesPRF[entityProtoFileNames[i]] = entityFiles[0]
+		fd := protodesc.ToFileDescriptorProto(entityFiles[0])
+		entityFilesJ[entityProtoFileNames[i]] = getProtoJ(compiler, fd, entityFilesJ)
 	}
-	fmt.Println("entityFiles", entityFiles)
 
 	googleApiAnnotationsFiles, err := compiler.Compile(context.Background(), "google/api/annotations.proto")
 	if err != nil {
 		panic(err)
 	}
 
-	for _, entityFileDesc := range entityFiles {
-
+	for fileName, entityFileDesc := range entityFilesPRF {
+		fmt.Println("entityFileDesc", entityFileDesc.FullName())
 		// создаем файл для генерации
 		sourcefileDescriptorProto := protodesc.ToFileDescriptorProto(entityFileDesc)
-		fmt.Println("sourcefileDescriptorProto", sourcefileDescriptorProto.MessageType[0].Options.ProtoReflect())
+		fmt.Println("sourcefileDescriptorProto", sourcefileDescriptorProto.Dependency)
 
-		sourcefileDescriptorProto.Dependency = nil
+		sourcefileDescFd := entityFilesJ[fileName]
+		fmt.Println("sourcefileDescFd", fileName)
 
-		sourcefileDescFd, err := desc.CreateFileDescriptor(sourcefileDescriptorProto)
-		if err != nil {
-			panic(err)
-		}
-
+		// создаем файл для генерации
 		genFileProto := &descriptorpb.FileDescriptorProto{
-			Syntax:  proto.String("proto3"),
-			Name:    proto.String(string(entityFileDesc.Package()) + "_gen.proto"),
-			Package: proto.String(string(entityFileDesc.Package())),
+			Syntax:     proto.String("proto3"),
+			Name:       proto.String(string(entityFileDesc.Package()) + "_gen.proto"),
+			Package:    proto.String(string(entityFileDesc.Package())),
+			Dependency: sourcefileDescriptorProto.Dependency,
 		}
+		fmt.Println("genFileProto.Dependency1", genFileProto.Dependency)
 
 		var genFileComments map[string]string = make(map[string]string)
 
@@ -334,7 +374,6 @@ func main() {
 					serviceOptVal = value.val.Message()
 					break
 				}
-				fmt.Println(msgDesc.FullName(), serviceOptVal.Descriptor().FullName())
 				// Создаем сервис
 				// в опциях шаблон имени
 				serviceOptsMap := getFieldMap(serviceOptVal.Descriptor().Options().ProtoReflect())
@@ -377,7 +416,6 @@ func main() {
 					if val, ok := methodFieldMap["key_fields_definition"]; ok {
 						keyFieldsDefinition = val.val
 					}
-					fmt.Println("method_unique_key", keyFieldsDefinition)
 					// в опциях параметры генерации метода
 					methodOptsMap := getFieldMap(methodDef.val.Message().Descriptor().Options().ProtoReflect())
 					// в полях entity.api.method_component_template_set шаблоны компонент метода
@@ -403,7 +441,6 @@ func main() {
 						entityMessageProtodesc,
 						keyFieldList,
 					)
-					fmt.Println("requestMessageProtodesc", requestMessageProtodesc)
 					genFileComments[requestName] = "Запрос метода " + methodName
 
 					tmpl = methodTemplatesMap["response_template"]
@@ -414,7 +451,6 @@ func main() {
 						entityMessageProtodesc,
 						keyFieldList,
 					)
-					fmt.Println("responseMessageProtodesc", responseMessageProtodesc)
 					genFileComments[responseName] = "Ответ на запрос метода " + methodName
 
 					genFileProto.MessageType = append(genFileProto.MessageType, requestMessageProtodesc)
@@ -429,10 +465,6 @@ func main() {
 						Options:         &descriptorpb.MethodOptions{},
 					}
 
-					// genMethodOpts := &descriptorpb.MethodOptions{
-
-					// }
-
 					// в полях entity.api.http_rule http опции google.api.HttpRule
 					// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
 					// с заменой по шаблону
@@ -446,8 +478,6 @@ func main() {
 								}
 							}
 							methodHttpRuleMap := getFieldMap(val.val.Message())
-							// n := "google.api.http"
-							// e := true
 							var valOpt string = "{ "
 
 							fdHttp := googleApiAnnotationsFiles[0].Extensions().ByName("http")
@@ -460,12 +490,11 @@ func main() {
 									"\", "
 							}
 							genMethodProto.Options.ProtoReflect().Set(fdHttp, pref.ValueOf(fdHttpV))
-							
+
 						}
 					}
 					// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
 					printEnumEl(methodOptsMap["key_field_behavior"])
-					// genMethodProto.Options
 					genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
 					genFileComments[methodName] = "Метод " + methodName
 				}
@@ -475,58 +504,60 @@ func main() {
 				genFileProto.MessageType = append(genFileProto.MessageType, entityMessageProtodesc)
 			}
 
-			genFileDescFd, err := desc.CreateFileDescriptor(genFileProto)
+			var dpj []*desc.FileDescriptor
+			for k, v := range entityFilesJ {
+				dpj = append(dpj, v)
+				fmt.Println("genFileProto.Dependency", k)
+			}
+			fmt.Println("genFileProto.Dependency", genFileProto.Dependency)
+
+			genFileDescFd, err := desc.CreateFileDescriptor(genFileProto, dpj...)
 			if err != nil {
 				panic(err)
 			}
 
-			genFileBuilder, err := builder.FromFile(genFileDescFd)
-			if err != nil {
-				panic(err)
-			}
-
-			for i := range genFileDescFd.GetServices() {
-				if val, ok := genFileComments[genFileDescFd.GetServices()[i].GetName()]; ok {
-					genFileBuilder.GetService(genFileDescFd.GetServices()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
-				}
-				for j := range genFileDescFd.GetServices()[i].GetMethods() {
-					if val, ok := genFileComments[genFileDescFd.GetServices()[i].GetMethods()[j].GetName()]; ok {
-						genFileBuilder.GetService(genFileDescFd.GetServices()[i].GetName()).GetMethod(genFileDescFd.GetServices()[i].GetMethods()[j].GetName()).SetComments(builder.Comments{LeadingComment: val})
-					}
-				}
-			}
-
-			for i := range genFileDescFd.GetMessageTypes() {
-				if val, ok := genFileComments[genFileDescFd.GetMessageTypes()[i].GetName()]; ok {
-					genFileBuilder.GetMessage(genFileDescFd.GetMessageTypes()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
-				}
-			}
-
-			genFileDesc, err := genFileBuilder.Build()
-			if err != nil {
-				panic(err)
-			}
-
-			p := new(protoprint.Printer)
-			p.SortElements = true
-			p.Indent = "    "
-			protoStr, err := p.PrintProtoToString(genFileDesc)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("print Proto", protoStr)
-			// protoStr2, err := p.PrintProtoToString(sourcefileDescFd)
+			// genFileBuilder, err := builder.FromFile(genFileDescFd)
 			// if err != nil {
 			// 	panic(err)
 			// }
 
-			// fmt.Println("protoStr2", protoStr2)
-			// fmt.Println("genFileDesc", genFileDesc)
+			// fmt.Println("genFileBuilder", genFileBuilder)
+
+			// for i := range genFileDescFd.GetServices() {
+			// 	if val, ok := genFileComments[genFileDescFd.GetServices()[i].GetName()]; ok {
+			// 		genFileBuilder.GetService(genFileDescFd.GetServices()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
+			// 	}
+			// 	for j := range genFileDescFd.GetServices()[i].GetMethods() {
+			// 		if val, ok := genFileComments[genFileDescFd.GetServices()[i].GetMethods()[j].GetName()]; ok {
+			// 			genFileBuilder.GetService(genFileDescFd.GetServices()[i].GetName()).GetMethod(genFileDescFd.GetServices()[i].GetMethods()[j].GetName()).SetComments(builder.Comments{LeadingComment: val})
+			// 		}
+			// 	}
+			// }
+
+			// for i := range genFileDescFd.GetMessageTypes() {
+			// 	if val, ok := genFileComments[genFileDescFd.GetMessageTypes()[i].GetName()]; ok {
+			// 		genFileBuilder.GetMessage(genFileDescFd.GetMessageTypes()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
+			// 	}
+			// }
+
+			// genFileDesc, err := genFileBuilder.Build()
+			// if err != nil {
+			// 	panic(err)
+			// }
+
+			// fmt.Println("genFileBuilder", genFileDesc.GetDependencies())
+
+			p := new(protoprint.Printer)
+			p.SortElements = true
+			p.Indent = "    "
+			protoStr, err := p.PrintProtoToString(genFileDescFd)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("print Proto", protoStr)
 
 		}
 
 	}
-	// m := temlpateDesc.Messages().ByName("MethodCollection")
-	// fmt.Println(m)
-	fmt.Println("END")
+	fmt.Println("Generation end")
 }

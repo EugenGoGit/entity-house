@@ -1,0 +1,81 @@
+/*
+  Сервис управления настройками SET
+*/
+// fhfhfhfhfhfhfhfh
+syntax = "proto3";
+//
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "entity-tmpl/entity-feature.proto";
+import "google/api/field_behavior.proto";
+import "templates/device/v1/deviceapis_device_dtmf_v1.proto";
+//import "google/protobuf/descriptor.proto";
+
+package testapis.test.v1;
+
+option cc_enable_arenas = true;
+option optimize_for = LITE_RUNTIME;
+option java_package = "ru.keyapis.access_control.v1";
+
+/*
+  Сервис управления настройками SET
+*/
+// Сервис управления настройками SET
+service SetSettingsService {
+}
+
+// 111111
+service SetSettingsService1 {
+}
+
+//Настройки SET
+message Pet {
+  option (entity.feature.api_service) = {
+    serverside_entity_crud: {
+      http_root: "device/api/v1/settings"
+      method_set:{
+        get_method: {key_fields_definition: {unique_field_group: UG5}}
+        save_method_create_replace:{}
+        delete_method: {}
+      }
+    }
+  };
+  option (entity.feature.aml_specification) = {};
+  option deprecated = true;
+  option no_standard_descriptor_accessor = true;
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {discriminator: "jfjfjf"};
+
+  // пет как пет
+  message Pet {
+    // кол-во
+    repeated int32 ifif = 1;
+    // имя
+    string fhffg = 2;
+  }
+
+  // Флаг приема SET сигнала в варианте RFC
+  bool is_first_on = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "true"
+    },
+    (entity.feature.unique_field_group) = PK
+  ];
+  // Флаг приема SET сигнала в варианте inbound
+  bool is_second_on = 2 [(google.api.field_behavior) = REQUIRED,
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "true"
+    }
+  ];
+  // Флаг приема SET сигнала в варианте sipinfo
+  // jfhfjgiog0pew[w[qw]]
+  bool is_flag_on = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "true"
+    },
+    (entity.feature.unique_field_group) = PK
+  ];
+  // Еще поле
+  Pet pet = 4;
+  // Еще поле
+  deviceapis.device.v1.SetSettings device_settings = 50;
+} //прпрппралала
+

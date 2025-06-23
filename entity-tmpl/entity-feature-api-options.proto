@@ -65,7 +65,7 @@ message EntityKeyRequest {
   // {EntityKeyDescription}
   EntityKeyDescriptor entity_key = 2;
   string error = 3;
-  int32 code = 4;
+  int32 code = 40;
 }
 
 
