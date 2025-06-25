@@ -29,7 +29,7 @@ service SetSettingsService1 {
 
 //Настройки SET
 message Pet {
-  option (entity.feature.api_service) = {
+  option (entity.feature.api_specification) = {
     serverside_entity_crud: {
       http_root: "device/api/v1/settings"
       method_set:{

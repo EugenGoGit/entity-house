@@ -8,7 +8,7 @@ import "entity-tmpl/entity-feature-options.proto";
 package entity.feature;
 
 // Protobuf service generation
-message ApiService {
+message ApiSpecification {
   oneof service {
     entity.feature.api.service.ServersideEntityCRUD serverside_entity_crud = 1;
     entity.feature.api.service.ServersideSingletonCRUD serverside_singleton_crud = 2;
@@ -22,7 +22,7 @@ message AMLSpecification {
 
 extend google.protobuf.MessageOptions {
   // .
-  ApiService api_service = 2002;
+  ApiSpecification api_specification = 2002;
   // .
   AMLSpecification aml_specification = 2003;
 }

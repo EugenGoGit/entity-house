@@ -14,8 +14,6 @@ extend google.protobuf.MessageOptions {
   MethodComponentTemplateSet method_component_template_set = 3002;
   google.api.HttpRule http_rule = 3003;
   google.api.FieldBehavior key_field_behavior = 3004;
-  bool server_streaming = 3005;
-  bool client_streaming = 3006;
 }
 
 message MethodComponentTemplateSet {
@@ -35,8 +33,6 @@ message RequestTemplate {
 message ResponseTemplate {
   oneof template {
     OneEntityResponse one_entity_response = 1;
-    ListEntityResponse list_entity_response = 2;
-    CountEntityResponse count_entity_response = 3;
   }
 }
 
@@ -47,47 +43,29 @@ message EntityDescriptor {}
 message EntityKeyDescriptor {}
 
 message OneEntityResponse {
+  message NestedTypecbcbdbd {
+    message NestedNestedTypecbcvmjfjfjbd {
+      EntityDescriptor daffta = 2 [(google.api.field_behavior) = REQUIRED];
+    }
+    repeated EntityDescriptor data = 1;
+    oneof e {
+      EntityDescriptor daffta = 2 [(google.api.field_behavior) = REQUIRED];
+    }
+  }
   // Тип ответа
   oneof type {
     // {EntityDescription}
     EntityDescriptor data = 1;
   }
-}
-
-message ListEntityResponse {
-  repeated EntityDescriptor data = 1;
+  NestedTypecbcbdbd field_fhfhfg = 2;
 }
 
 message EntityKeyRequest {
+  EntityDescriptor data = 1;
   // {EntityKeyDescription}
-  EntityKeyDescriptor entity_key = 1;
-}
-
-// Ответ на запрос получения количества
-message CountEntityResponse {
-  // Ошибка запроса получения количества
-  message Error {
-    // Ошибки валидации.
-    // Эти проверки выполняются до обращения в базу данных
-    message ValidationError {
-      // Путь к полю в формате наименования прото
-      string path = 1 [(google.api.field_behavior) = REQUIRED];
-      // Валидационное сообщение
-      string message = 2 [(google.api.field_behavior) = REQUIRED];
-    }
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
-    }
-  }
-  // Тип результата
-  oneof type {
-    // Всего
-    int32 data = 1;
-    // Ошибка
-    Error error = 2;
-  }
+  EntityKeyDescriptor entity_key = 2;
+  string error = 3;
+  int32 code = 40;
 }
 
 

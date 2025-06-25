@@ -162,9 +162,7 @@ message GetMethod {
   option (entity.feature.api.options.method_component_template_set) = {
     name_template:"Get{EntityName}",
     request_dto_name_template: "Get{EntityName}Request",
-    response_dto_name_template: "Get{EntityName}Response",
-//    request_template: {entity_key_request: {}}
-//    response_template: {one_entity_response:{}}
+    response_dto_name_template: "Get{EntityName}Response"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}"
@@ -177,10 +175,12 @@ message GetListMethod {
     name_template:"Get{EntityName}List",
     request_dto_name_template: "Get{EntityName}ListRequest",
     response_dto_name_template: "Get{EntityName}ListResponse"
+    response_template: {one_entity_response:{}}
   };
   option (entity.feature.api.options.http_rule) = {
-    get: "/{HttpRoot}"
+    get: "/{HttpRoot}/list"
   };
+  option (entity.feature.api.options.server_streaming) = true;
   option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
 }
 
@@ -189,6 +189,7 @@ message GetCountMethod {
     name_template:"Get{EntityName}Count",
     request_dto_name_template: "Get{EntityName}CountRequest",
     response_dto_name_template: "Get{EntityName}CountResponse"
+    response_template: {count_entity_response:{}}
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/count"
