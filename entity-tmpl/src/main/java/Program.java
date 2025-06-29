@@ -27,7 +27,7 @@ public final class Program {
         final Importer importer = injector.getInstance(Importer.class);
         final ProtoContext protoContext = importer.importFile(
                 fileReader,
-                "deviceapis_device_dtmf_v1.proto"
+                "deviceapis_device_dtmf_v1.proto1"
         );
 
         final Proto proto = protoContext.getProto();

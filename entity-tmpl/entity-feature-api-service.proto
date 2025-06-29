@@ -46,6 +46,10 @@ message ServersideEntityCRUD {
     entity.feature.api.method.EditListMethod edit_list_method = 11;
     entity.feature.api.method.DeleteMethodById delete_method = 12;
     entity.feature.api.method.DeleteListMethod delete_list_method = 13;
+    repeated entity.feature.api.method.AttachMethod attach_methods = 14;
+    repeated entity.feature.api.method.DetachMethod detach_methods = 15;
+    repeated entity.feature.api.method.GetLinkListMethod get_link_list_methods = 16;
+    repeated entity.feature.api.method.GetLinkCountMethod get_link_count_methods = 17;
   }
   string http_root = 1;
   MethodSet method_set = 2;

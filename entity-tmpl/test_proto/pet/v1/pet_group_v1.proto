@@ -1,0 +1,90 @@
+/*
+  Сервис управления группами животных
+*/
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "entity-tmpl/entity-feature.proto";
+
+package pet.v1;
+
+option java_package = "ru.{PackageName}";
+option java_outer_classname = "{PackageNameCamelCase}Proto";
+option java_multiple_files = false;
+option java_string_check_utf8 = true;
+option go_package = "/{PackageNameSnakeCase}";
+option cc_enable_arenas = true;
+option csharp_namespace = "{PackageNameDotCamelCase}";
+option objc_class_prefix = "{PackageNameUpperCase}";
+option php_namespace = "{PackageNameDoubleSlashCamelCase}";
+option ruby_package = "{PackageNameDoubleColonCamelCase}";
+option optimize_for = LITE_RUNTIME;
+
+// Группа животных
+message PetGroup {
+  option (entity.feature.api_specification) = {
+    serverside_entity_crud: {
+      http_root: "pet/api/v1/pet_group"
+      method_set: {
+        get_method: {
+//          custom_comments:{
+//            request_leading_comment: "Запрос получения группы животных"
+//            response_leading_comment: "Ответ на запрос получения группы животных"
+//          }
+        }
+        get_list_method: {
+          custom_comments:{
+            request_leading_comment: "Запрос получения списка групп животных"
+            response_leading_comment: "Ответ на запрос получения списка групп животных"
+          }
+        }
+        get_count_method: {
+          custom_comments:{
+            request_leading_comment: "Запрос получения количества групп животных"
+            response_leading_comment: "Ответ на запрос получения количества групп животных"
+          }
+        }
+        save_method_create_replace:{}
+        delete_method: {
+          custom_comments: {
+            leading_comment: "Метод удаления группы животных"
+            additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
+            request_leading_comment: "Запрос удаления группы животных"
+            response_leading_comment: "Ответ на запрос удаления группы животных"
+          }
+        }
+      }
+    }
+  };
+  // Идентификатор группы животных.
+  // # Тип: Guid
+  string id = 1 [(entity.feature.unique_field_group) = PK];
+  // Наименование.
+  // # Диапазон: 3..256
+  string title = 2 [(google.api.field_behavior) = REQUIRED];
+  // Описание.
+  // # Диапазон: 3..256
+  string description = 3;
+  // Дата удаления группы животных из использования
+  google.protobuf.Timestamp deleted_at = 4;
+  // Дата изменения группы животных.
+  // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
+  google.protobuf.Timestamp changed_at = 5 [(google.api.field_behavior) = REQUIRED];
+  // Теги группы.
+  // # Диапазон: 0..10
+  repeated string tags = 6;
+  // Ошибка сохранения
+  message SavingError {
+    // Конфликт версий.
+    // Причины:
+    // - В базе хранится другая версия строки, значения changed_at оличаются
+    message Conflict {}
+    // Причина ошибки
+    oneof reason {
+      // Конфликт версий
+      Conflict conflict = 1;
+    }
+  }
+}
