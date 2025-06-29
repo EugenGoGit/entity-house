@@ -1,0 +1,120 @@
+// АПИ управления сущностью Pet
+
+syntax = "proto3";
+
+package testapis.test.v1;
+
+import "google/api/annotations.proto";
+
+import "google/api/field_behavior.proto";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+import "test_proto/device/v1/deviceapis_device_dtmf_v1.proto";
+
+option cc_enable_arenas = true;
+
+option java_package = "ru.keyapis.access_control.v1";
+
+option optimize_for = LITE_RUNTIME;
+
+// Запрос метода DeletePet
+message DeletePetRequest {
+}
+
+// Ответ на запрос метода DeletePet
+message DeletePetResponse {
+}
+
+// Запрос метода GetPet
+message GetPetRequest {
+    // testapis.test.v1.GetPetRequest.is_first_on
+    bool is_first_on = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = { example: "true" }
+    ];
+
+    // testapis.test.v1.GetPetRequest.is_flag_on
+    bool is_flag_on = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = { example: "true" }
+    ];
+}
+
+// Ответ на запрос метода GetPet
+message GetPetResponse {
+    // коммент testapis.test.v1.GetPetResponse.type
+    oneof type {
+        // testapis.test.v1.GetPetResponse.data
+        Pet data = 1;
+    }
+}
+
+// Настройки SET
+message Pet {
+    option deprecated = true;
+
+    option no_standard_descriptor_accessor = true;
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = { discriminator: "jfjfjf" };
+
+    // Флаг приема SET сигнала в варианте RFC
+    bool is_first_on = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = { example: "true" }
+    ];
+
+    // Флаг приема SET сигнала в варианте inbound
+    bool is_second_on = 2 [
+        (google.api.field_behavior) = REQUIRED,
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = { example: "true" }
+    ];
+
+    // Флаг приема SET сигнала в варианте sipinfo
+    // jfhfjgiog0pew[w[qw]]
+    bool is_flag_on = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = { example: "true" }
+    ];
+
+    // Еще поле
+    Pet pet = 4;
+
+    // Еще поле
+    deviceapis.device.v1.SetSettings device_settings = 50;
+
+    // пет как пет
+    message Pet {
+        // кол-во
+        repeated int32 ifif = 1;
+
+        // имя
+        string fhffg = 2;
+    }
+}
+
+// Запрос метода SavePet
+message SavePetRequest {
+}
+
+// Ответ на запрос метода SavePet
+message SavePetResponse {
+}
+
+// Сервис управления сущностью Pet
+service PetService {
+    // Метод удаления единичной сущности Pet
+    rpc DeletePet ( DeletePetRequest ) returns ( DeletePetResponse ) {
+        option (google.api.http) = {
+            delete: "/device/api/v1/settings/is_first_on/{is_first_on}/is_flag_on/{is_flag_on}"
+        };
+    }
+
+    // Метод GetPet
+    rpc GetPet ( GetPetRequest ) returns ( GetPetResponse ) {
+        option (google.api.http) = {
+            get: "/device/api/v1/settings/is_first_on/{is_first_on}/is_flag_on/{is_flag_on}"
+        };
+    }
+
+    // Метод SavePet
+    rpc SavePet ( SavePetRequest ) returns ( SavePetResponse ) {
+        option (google.api.http) = { post: "/device/api/v1/settings/list", body: "*" };
+    }
+}

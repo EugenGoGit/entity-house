@@ -1,0 +1,279 @@
+// АПИ управления сущностью PetGroup
+
+syntax = "proto3";
+
+package pet.v1;
+
+import "google/api/annotations.proto";
+
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/timestamp.proto";
+
+option cc_enable_arenas = true;
+
+option csharp_namespace = "Pet.V1";
+
+option go_package = "/pet_v1";
+
+option java_multiple_files = false;
+
+option java_outer_classname = "PetV1Proto";
+
+option java_package = "ru.pet.v1";
+
+option java_string_check_utf8 = true;
+
+option objc_class_prefix = "PETV1";
+
+option optimize_for = LITE_RUNTIME;
+
+option php_namespace = "Pet\\V1";
+
+option ruby_package = "Pet::V1";
+
+// Запрос удаления группы животных
+message DeletePetGroupRequest {
+  // Идентификатор группы животных.
+  // # Тип: Guid
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Ответ на запрос удаления группы животных
+message DeletePetGroupResponse {
+  // Тип ответа
+  oneof type {
+    // Ошибка
+    Error error = 1;
+  }
+
+  // Ошибка запроса
+  message Error {
+    // Причина ошибки
+    oneof reason {
+      // Ошибка валидации
+      ValidationError validation = 1;
+    }
+  }
+}
+
+// Запрос получения количества групп животных
+message GetPetGroupCountRequest {
+  // Фильтр
+  PetGroupFilter filter = 1;
+}
+
+// Ответ на запрос получения количества групп животных
+message GetPetGroupCountResponse {
+    // Тип ответа
+  oneof type {
+        // Всего количество
+    int32 data = 1;
+
+    // Ошибка
+    Error error = 2;
+  }
+
+  // Ошибка запроса
+  message Error {
+    // Причина ошибки
+    oneof reason {
+      // Ошибка валидации
+      ValidationError validation = 1;
+    }
+  
+  }
+}
+
+// Запрос получения списка групп животных
+message GetPetGroupListRequest {
+  // Фильтр
+  PetGroupFilter filter = 1;
+  // Вариант разбиения на страницы
+  oneof pagination {
+    // Постраничный вывод
+    PetGroupPaging paging = 2;
+  }
+}
+
+// Ответ на запрос получения списка групп животных
+message GetPetGroupListResponse {
+  // Ошибка запроса получения списка групп животных
+  message Error {
+    // Причина ошибки
+    oneof reason {
+      // Ошибка валидации
+      ValidationError validation = 1;
+    }
+  }
+  // Тип результата
+  oneof type {
+    // Группа животных
+    PetGroup data = 1;
+    // Ошибка
+    Error error = 2;
+  }
+}
+
+// Запрос получения группы животных
+message GetPetGroupRequest {
+  // Идентификатор группы животных.
+  // # Тип: Guid
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Ответ на запрос получения группы животных
+message GetPetGroupResponse {
+  // Ошибка запроса получения группы
+  message Error {
+    // Причина ошибки
+    oneof reason {
+      // Ошибка валидации
+      ValidationError validation = 1;
+    }
+  }
+  // Тип результата
+  oneof type {
+    // Группа животных
+    PetGroup data = 1;
+    // Ошибка
+    Error error = 2;
+  }
+}
+
+// Группа животных
+message PetGroup {
+  // Идентификатор группы животных.
+  // # Тип: Guid
+  string id = 1;
+
+  // Наименование.
+  // # Диапазон: 3..256
+  string title = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Описание.
+  // # Диапазон: 3..256
+  string description = 3;
+
+  // Дата удаления группы животных из использования
+  google.protobuf.Timestamp deleted_at = 4;
+
+  // Дата изменения группы животных.
+  // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
+  google.protobuf.Timestamp changed_at = 5 [(google.api.field_behavior) = REQUIRED];
+  
+  // Теги группы.
+  // # Диапазон: 0..10
+  repeated string tags = 6;
+  
+  // Ошибка сохранения
+  message SavingError {
+    // Причина ошибки
+    oneof reason {
+      // Конфликт версий
+      Conflict conflict = 1;
+    }
+
+    // Конфликт версий.
+    // Причины:
+    // - В базе хранится другая версия строки, значения changed_at оличаются
+    message Conflict {
+    }
+  }
+}
+
+// Запрос на создание группы животных
+message SavePetGroupRequest {
+  // Группа животных
+  PetGroup data = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Ответ на запрос на создание группы животных
+message SavePetGroupResponse {
+  // Ошибка запроса создания
+  message Error {
+    // Причина ошибки
+    oneof reason {
+      // Ошибка валидации
+      ValidationError validation = 1;
+      // Ошибка сохранения
+      PetGroup.SavingError saving = 2;
+    }
+  }
+  // Группа животных
+  PetGroup data = 1;
+  // Ошибка
+  Error errors = 2;
+}
+
+// Ошибки валидации.
+// Эти проверки выполняются до обращения в базу данных
+message ValidationError {
+  // Путь к полю в формате наименования прото
+  string path = 1 [(google.api.field_behavior) = REQUIRED];
+  // Валидационное сообщение
+  string message = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+
+
+// Сервис управления группами животных
+service PetGroupService {
+    // Метод удаления группы животных.
+  // Метод доступен для: admin, service, bti, seller, owner, employee
+  rpc DeletePetGroup ( DeletePetGroupRequest ) returns ( DeletePetGroupResponse ) {
+    option (google.api.http) = { delete: "/pet/api/v1/pet_group/{id}" };
+  }
+
+  // Метод получения группы животных.
+  // Для owner, employee возвращаются только группы животных c COMPANY_ID из токена
+  // Метод доступен для: admin, service, bti, seller, owner, employee
+  rpc GetPetGroup ( GetPetGroupRequest ) returns ( GetPetGroupResponse ) {
+    option (google.api.http) = { get: "/pet/api/v1/pet_group/{id}" };
+  }
+  
+  // Метод получения количества групп животных.
+  // Метод доступен для: admin, service, bti, seller, owner, employee
+  rpc GetPetGroupCount ( GetPetGroupCountRequest ) returns ( GetPetGroupCountResponse ) {
+    option (google.api.http) = { get: "/pet/api/v1/pet_group/count" };
+  }
+
+  // Метод получения списка групп животных.
+  // Метод доступен для: admin, service, bti, seller, owner, employee
+  rpc GetPetGroupList ( GetPetGroupListRequest ) returns ( stream GetPetGroupListResponse ) {
+    option (google.api.http) = { get: "/pet/api/v1/pet_group/list" };
+  }
+
+  // Метод создания и изменения группы животных.
+  // Метод доступен для: admin, service, bti, seller, owner, employee
+  rpc SavePetGroup ( SavePetGroupRequest ) returns ( SavePetGroupResponse ) {
+    option (google.api.http) = { post: "/pet/api/v1/pet_group" body: "*" };
+  }
+}
+
+// Фильтр групп животных
+message PetGroupFilter {
+  // По тексту.
+  // Если значение не передано то поиск по нему не производится.
+  // # Диапазон: 3..64.
+  // # Поиск производится по полям:
+  // # - Наименование
+  string text = 1;
+  // По тегам.
+  // # Диапазон: 0..10
+  repeated string tags = 2;
+}
+
+// Постраничный вывод
+message PetGroupPaging {
+  // Количество записей на страницу.
+  // Если значение 0 (не передано), то будет взято значение по умолчанию.
+  // Если значение превышает предел конкретного устройства, возвращается ошибка.
+  // Диапазон: 0..10000.
+  // По умолчанию: 20
+  int32 limit = 1;
+  // Сдвиг.
+  // Диапазон: 0..2147483647.
+  // По умолчанию: 0
+  int32 offset = 2;
+}
