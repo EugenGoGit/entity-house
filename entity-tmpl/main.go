@@ -115,15 +115,17 @@ func printEnumEl(el Field) {
 	fmt.Println()
 }
 
-func createMessageDescByTemplate(templateParent *pref.Value,
+func createMessageDescByTemplate(
+	templateParent *pref.Value,
 	messageName string,
 	messageFullName string,
 	replaceTo *descriptorpb.DescriptorProto,
+	replaceToPrefDesc pref.MessageDescriptor,
 	replaceKeysToFields []FieldFullName,
 	fileCommentsMap map[string]string,
 	// TODO: fileJhumpDesc не используется
 	fileJhumpDesc map[string]*desc.FileDescriptor,
-	addMessageToProtoRoot map[string]pref.MessageDescriptor,
+	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
 ) *descriptorpb.DescriptorProto {
 	var messagePrefDesc pref.MessageDescriptor
 	var messageProtodesc *descriptorpb.DescriptorProto
@@ -137,7 +139,8 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 		}
 		messageProtodesc = protodesc.ToDescriptorProto(messagePrefDesc)
 		messageProtodesc.Name = &messageName
-		changeFieldTypeNameNested(messageProtodesc,
+		changeFieldTypeNameNested(
+			messageProtodesc,
 			messagePrefDesc,
 			".entity.feature.api.options.EntityDescriptor",
 			".entity.feature.api.options.EntityKeyDescriptor",
@@ -145,6 +148,7 @@ func createMessageDescByTemplate(templateParent *pref.Value,
 			replaceKeysToFields,
 			templateTypeName,
 			messageName,
+			string(replaceToPrefDesc.ParentFile().Package()),
 			messageFullName,
 			fileCommentsMap,
 			addMessageToProtoRoot,
@@ -166,17 +170,20 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 	replaceKeysToFields []FieldFullName,
 	parentNameFromType string,
 	parentNameToType string,
+	packageNameToType string,
 	parentFullNameToType string,
 	fileCommentsMap map[string]string,
-	addMessageToProtoRoot map[string]pref.MessageDescriptor,
+	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
 ) {
 	var i int32 = 0
 	for len(messageDescProto.Field) > int(i) {
 		if *messageDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
 			if *messageDescProto.Field[i].TypeName == replaceFromType {
+				fmt.Println("replaceToType", replaceToType)
+				fmt.Println("parentFullNameToType++messageDescProto.Field[i].GetName()", parentFullNameToType+"."+messageDescProto.Field[i].GetName())
 				// Меняем тип поля на тип сущности и добавляем коммент от сущности
 				messageDescProto.Field[i].TypeName = &replaceToType
-				if val, ok := fileCommentsMap[replaceToType]; ok {
+				if val, ok := fileCommentsMap[packageNameToType+"."+replaceToType]; ok {
 					fileCommentsMap[parentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val
 				}
 			} else {
@@ -219,63 +226,71 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 
 				} else {
 					// Поле не заменяем, заменяем тип на тип поля в результате применения шаблона
+					s := strings.Replace(*messageDescProto.Field[i].TypeName, "."+parentNameFromType+".", parentNameToType+".", -1)
+					resParentFullNameToType := parentFullNameToType
+					fmt.Println("*messageDescProto.Name", *messageDescProto.Name)
+					fmt.Println("*messageDescProto.Field[i].TypeName", *messageDescProto.Field[i].TypeName)
+					fmt.Println("	*messageDescProto.Field[i].Name", *messageDescProto.Field[i].Name)
+					fmt.Println("	messagePrefDesc.Fields().Get(int(i)).Message().FullName()", messagePrefDesc.Fields().Get(int(i)).Message().FullName())
+					fmt.Println("	parentNameFromType", parentNameFromType)
+					fmt.Println("	parentNameToType", parentNameToType)
+					fmt.Println(" parentFullNameToType", parentFullNameToType)
+					fmt.Println("packageNameToType", packageNameToType)
+					fmt.Println("	string(messagePrefDesc.Fields().Get(int(i)).Message().FullName())", string(messagePrefDesc.Fields().Get(int(i)).Message().FullName())) //parentNameFromType,
+					fmt.Println("	string(messagePrefDesc.Fields().Get(int(i)).Message().Name())", string(messagePrefDesc.Fields().Get(int(i)).Message().Name()))         //parentNameToType,
+
+					// Если замены не произошло, значит тип не в Nested типах шаблона и нужно добавить его в генерацию отдельно от результата шаблона
+					if s == *messageDescProto.Field[i].TypeName {
+						// resParentFullNameToType = packageNameToType
+						msgDescProto := protodesc.ToDescriptorProto(messagePrefDesc.Fields().Get(int(i)).Message())
+						changeFieldTypeNameNested(msgDescProto,
+							messagePrefDesc.Fields().Get(int(i)).Message(),
+							replaceFromType,
+							replaceKeysFromType,
+							replaceToType,
+							replaceKeysToFields,
+							string(messagePrefDesc.Fields().Get(int(i)).Message().FullName()), //parentNameFromType,
+							string(messagePrefDesc.Fields().Get(int(i)).Message().Name()),     //parentNameToType,
+							packageNameToType,
+							string(messagePrefDesc.ParentFile().Package())+"."+msgDescProto.GetName(), //parentFullNameToType+"."+msgDescProto.GetName(),
+							fileCommentsMap,
+							addMessageToProtoRoot,
+						)
+						// Добавим этот тип в генерацию и коммент для него
+						if val, ok := getFieldMap(msgDescProto.GetOptions().ProtoReflect())["message_comments"]; ok {
+							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = val.val.String()
+							msgDescProto.GetOptions().ProtoReflect().Clear(val.desc)
+						}
+						addMessageToProtoRoot[string(messagePrefDesc.Fields().Get(int(i)).Message().Name())] = msgDescProto
+						s = string(messagePrefDesc.Fields().Get(int(i)).Message().Name())
+					}
 					// ставим комменты из опции field_comments поля в шаблоне, убираем опцию
 					if val, ok := getFieldMap(messageDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
-						fileCommentsMap[parentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val.val.String()
+						fileCommentsMap[resParentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val.val.String()
 						messageDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
-					}
-					s := strings.Replace(*messageDescProto.Field[i].TypeName, "."+parentNameFromType+".", parentNameToType+".", -1)
-
-					fmt.Println("messageDescProto.Field[i].TypeName",
-						*messageDescProto.Field[i].TypeName,
-						s,
-						messagePrefDesc.Fields().Get(int(i)).Message().FullName(),
-						parentNameFromType,
-						parentNameToType,
-						parentFullNameToType)
-					// Если замены не произошло, значит тип не в Nested типах и нужно добавить его в генерацию отдельно от результата шаблона
-					if s == *messageDescProto.Field[i].TypeName {
-						
-														changeFieldTypeNameNested(messageDescProto.NestedType[i],
-			messagePrefDesc.Messages().ByName(pref.Name(*messageDescProto.NestedType[i].Name)),
-			replaceFromType,
-			replaceKeysFromType,
-			replaceToType,
-			replaceKeysToFields,
-			parentNameFromType,
-			parentNameToType,
-			parentFullNameToType+"."+messageDescProto.NestedType[i].GetName(),
-			fileCommentsMap,
-			addMessageToProtoRoot,
-		)
-						addMessageToProtoRoot[string(messagePrefDesc.Fields().Get(int(i)).Message().Name())] = messagePrefDesc.Fields().Get(int(i)).Message()
-						s = string(messagePrefDesc.Fields().Get(int(i)).Message().Name())
-								changeFieldTypeNameNested(messageDescProto.NestedType[i],
-			messagePrefDesc.Messages().ByName(pref.Name(*messageDescProto.NestedType[i].Name)),
-			replaceFromType,
-			replaceKeysFromType,
-			replaceToType,
-			replaceKeysToFields,
-			parentNameFromType,
-			parentNameToType,
-			parentFullNameToType+"."+messageDescProto.NestedType[i].GetName(),
-			fileCommentsMap,
-			addMessageToProtoRoot,
-		)
 					}
 					messageDescProto.Field[i].TypeName = &s
 				}
 			}
 		} else {
+			fmt.Println("*messageDescProto.Name", *messageDescProto.Name)
+			fmt.Println("	*messageDescProto.Field[i].Name", *messageDescProto.Field[i].Name)
+			fmt.Println("	parentNameFromType", parentNameFromType)
+			fmt.Println("	parentNameToType", parentNameToType)
+			fmt.Println(" parentFullNameToType", parentFullNameToType)
+			fmt.Println("packageNameToType", packageNameToType)
+
 			// Поле не заменяем, скалярный тип оставляем, ставим комменты из опции field_comments поля в шаблоне, убираем опцию
 			if val, ok := getFieldMap(messageDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
-				fileCommentsMap[parentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val.val.String()
+				fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*messageDescProto.Field[i].Name] = val.val.String()
 				messageDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
 			}
-			if val, ok := fileCommentsMap[parentNameFromType+"."+messageDescProto.Field[i].GetName()]; ok {
-				fileCommentsMap[parentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val
-			}
+			// if val, ok := fileCommentsMap[parentNameFromType+"."+messageDescProto.Field[i].GetName()]; ok {
+			// 	fileCommentsMap[parentFullNameToType+"."+messageDescProto.Field[i].GetName()] = val
+			// }
 		}
+		// fmt.Println("messageDescProto.Field[i].TypeName3", *messageDescProto.Field[i].TypeName, parentFullNameToType)
+
 		i = i + 1
 	}
 
@@ -298,6 +313,7 @@ func changeFieldTypeNameNested(messageDescProto *descriptorpb.DescriptorProto,
 			replaceKeysToFields,
 			parentNameFromType,
 			parentNameToType,
+			packageNameToType,
 			parentFullNameToType+"."+messageDescProto.NestedType[i].GetName(),
 			fileCommentsMap,
 			addMessageToProtoRoot,
@@ -398,20 +414,23 @@ func getProtoJ(c protocompile.Compiler, fd *descriptorpb.FileDescriptorProto, ap
 
 // TODO: убрать prefixName
 func getMessageComments(messJhumpDesc *desc.MessageDescriptor, prefixName string, commentsMap map[string]string) {
-	//commentsMap[prefixName+"."+string(messJhumpDesc.GetName())] = *messJhumpDesc.GetSourceInfo().LeadingComments
 	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()))
 	commentsMap[messJhumpDesc.GetFullyQualifiedName()] = *messJhumpDesc.GetSourceInfo().LeadingComments
 	for i := range messJhumpDesc.GetNestedMessageTypes() {
 		getMessageComments(messJhumpDesc.GetNestedMessageTypes()[i],
-			//prefixName+"."+string(messJhumpDesc.GetName()),
 			messJhumpDesc.GetFullyQualifiedName(),
 			commentsMap,
 		)
 	}
 	for i := range messJhumpDesc.GetFields() {
 		if messJhumpDesc.GetFields()[i].GetSourceInfo().LeadingComments != nil {
-			//commentsMap[prefixName+"."+string(messJhumpDesc.GetName())+"."+messJhumpDesc.GetFields()[i].GetName()] = *messJhumpDesc.GetFields()[i].GetSourceInfo().LeadingComments
 			commentsMap[messJhumpDesc.GetFullyQualifiedName()+"."+messJhumpDesc.GetFields()[i].GetName()] = *messJhumpDesc.GetFields()[i].GetSourceInfo().LeadingComments
+
+		}
+	}
+	for i := range messJhumpDesc.GetOneOfs() {
+		if messJhumpDesc.GetOneOfs()[i].GetSourceInfo().LeadingComments != nil {
+			commentsMap[messJhumpDesc.GetFullyQualifiedName()+"."+messJhumpDesc.GetOneOfs()[i].GetName()] = *messJhumpDesc.GetOneOfs()[i].GetSourceInfo().LeadingComments
 
 		}
 	}
@@ -447,7 +466,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 	googleApiAnnotationsPrefDesc pref.FileDescriptor,
 	genFileComments map[string]string,
 	filesJhumpDesc map[string]*desc.FileDescriptor,
-	addProtoRoot map[string]pref.MessageDescriptor,
+	addProtoRoot map[string]*descriptorpb.DescriptorProto,
 ) {
 
 	// берем поле фичи, в котором описан сервис
@@ -473,7 +492,22 @@ func genEntityApiSpec(apiSpecOpt Field,
 	genServiceProto := &descriptorpb.ServiceDescriptorProto{
 		Name: proto.String(serviceName),
 	}
-	genFileComments[*genFileProto.Package+"."+serviceName] = "Сервис управления сущностью " + string(entityPrefDesc.Name())
+	// Добавим комменты к сервису
+	serviceComment := "Сервис " + serviceName
+	fmt.Println("serviceOptsMap", serviceOptsMap)
+	if val, ok := serviceOptsMap["service_leading_comment"]; ok {
+		serviceComment = strings.Replace(val.val.String(), "{EntityName}", string(entityPrefDesc.Name()), -1)
+	}
+	if val, ok := serviceFieldsMap["custom_comments"]; ok {
+		customCommentMap := getFieldMap(val.val.Message())
+		if val, ok := customCommentMap["leading_comment"]; ok {
+			serviceComment = val.val.String()
+		}
+		if val, ok := customCommentMap["additional_leading_comment"]; ok {
+			serviceComment = serviceComment + ".\n" + val.val.String()
+		}
+	}
+	genFileComments[*genFileProto.Package+"."+serviceName] = serviceComment //"Сервис управления сущностью " + string(entityPrefDesc.Name())
 
 	// Найдем комменты Entity
 	var num int
@@ -523,6 +557,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 			requestName,
 			requestFullName,
 			entityMessageProtodesc,
+			entityPrefDesc,
 			keyFieldList,
 			genFileComments,
 			filesJhumpDesc,
@@ -535,6 +570,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 			responseName,
 			responseFullName,
 			entityMessageProtodesc,
+			entityPrefDesc,
 			keyFieldList,
 			genFileComments,
 			filesJhumpDesc,
@@ -584,10 +620,14 @@ func genEntityApiSpec(apiSpecOpt Field,
 		if val, ok := methodOptsMap["http_rule"]; ok {
 			if httpRoot != "" && httpRoot != "<nil>" {
 				var keyFieldPath string
-				for i := range keyFieldList {
-					keyFieldPath = keyFieldPath + *keyFieldList[i].fieldDescProto.Name + "/{" + *keyFieldList[i].fieldDescProto.Name + "}"
-					if i != len(keyFieldList)-1 {
-						keyFieldPath = keyFieldPath + "/"
+				if len(keyFieldList) == 1 {
+					keyFieldPath = keyFieldPath + "{" + *keyFieldList[0].fieldDescProto.Name + "}"
+				} else {
+					for i := range keyFieldList {
+						keyFieldPath = keyFieldPath + *keyFieldList[i].fieldDescProto.Name + "/{" + *keyFieldList[i].fieldDescProto.Name + "}"
+						if i != len(keyFieldList)-1 {
+							keyFieldPath = keyFieldPath + "/"
+						}
 					}
 				}
 				methodHttpRuleMap := getFieldMap(val.val.Message())
@@ -679,11 +719,11 @@ func getOrCreateFileJhumpDesc(fileName string, compiler protocompile.Compiler, f
 	return filesJhumpDesc[fileName]
 }
 
-func getOrCreateAddProtoRoot(fileName string, filesAddProtoRoot map[string]map[string]pref.MessageDescriptor) map[string]pref.MessageDescriptor {
+func getOrCreateAddProtoRoot(fileName string, filesAddProtoRoot map[string]map[string]*descriptorpb.DescriptorProto) map[string]*descriptorpb.DescriptorProto {
 	if val, ok := filesAddProtoRoot[fileName]; ok {
 		return val
 	}
-	filesAddProtoRoot[fileName] = make(map[string]pref.MessageDescriptor)
+	filesAddProtoRoot[fileName] = make(map[string]*descriptorpb.DescriptorProto)
 	return filesAddProtoRoot[fileName]
 }
 
@@ -744,7 +784,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 	var filesJhumpDesc map[string]*desc.FileDescriptor = make(map[string]*desc.FileDescriptor)
 	var sourceFilesDescProto map[string]*descriptorpb.FileDescriptorProto = make(map[string]*descriptorpb.FileDescriptorProto)
 	var genFilesDescProto map[string]*descriptorpb.FileDescriptorProto = make(map[string]*descriptorpb.FileDescriptorProto)
-	var filesAddProtoRoot map[string]map[string]pref.MessageDescriptor = make(map[string]map[string]pref.MessageDescriptor)
+	var filesAddProtoRoot map[string]map[string]*descriptorpb.DescriptorProto = make(map[string]map[string]*descriptorpb.DescriptorProto)
 	var genFileComments map[string]string = make(map[string]string)
 	for i := range protoFileNames {
 		filePrefDesc, err := compiler.Compile(context.Background(), protoFileNames[i])
@@ -800,7 +840,14 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 							}
 						}
 						// Обработаем опцию  entity.feature.api_specification
-						genEntityApiSpec(val, msgDesc, sourceFileJhumpDesc, genFileProto, googleApiAnnotationsFiles[0], genFileComments, filesJhumpDesc, addProtoRoot)
+						genEntityApiSpec(val,
+							msgDesc,
+							sourceFileJhumpDesc,
+							genFileProto,
+							googleApiAnnotationsFiles[0],
+							genFileComments,
+							filesJhumpDesc,
+							addProtoRoot)
 						// уберем опции entity.feature с полей, они не нужны в генерации
 						for i := range genFileProto.MessageType {
 							for j := range genFileProto.MessageType[i].Field {
@@ -825,7 +872,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 		if genFileProto, ok := genFilesDescProto[sourceFileName]; ok {
 			// Добавим типы, которые пришли с шаблонами, но не внутри шаблона
 			for _, v := range filesAddProtoRoot[sourceFileName] {
-				genFileProto.MessageType = append(genFileProto.MessageType, protodesc.ToDescriptorProto(v))
+				genFileProto.MessageType = append(genFileProto.MessageType, v)
 			}
 
 			// уберем опции entity.feature с entity, они не нужны в генерации

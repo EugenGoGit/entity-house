@@ -12,15 +12,19 @@ package entity.feature.api.method;
 
 message SaveMethodCreateReplace {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Save{EntityName}",
-    request_name: "Save{EntityName}Request",
+    name_template:"Save{EntityName}"
+    request_name: "Save{EntityName}Request"
     response_name: "Save{EntityName}Response"
+    response_template: {one_entity_response:{}}
+    request_template: {entity_request:{}}
+    leading_comment: "Метод создания/редактирования сущности {EntityName}"
   };
   option (entity.feature.api.options.http_rule) = {
-    post: "/{HttpRoot}/list",
+    post: "/{HttpRoot}",
     body: "*"
   };
   option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
 }
 
 message SaveListMethodCreateReplace {
@@ -121,7 +125,7 @@ message DeleteMethodById {
     name_template:"Delete{EntityName}",
     request_name: "Delete{EntityName}Request",
     response_name: "Delete{EntityName}Response",
-    leading_comment: "Метод удаления единичной сущности {EntityName}"
+    leading_comment: "Метод удаления единичной сущности {EntityName} по ключу"
     response_template: {empty_w_error_response:{}}
     request_template: {entity_key_request:{}}
   };
@@ -165,6 +169,7 @@ message GetMethodById {
     response_name: "Get{EntityName}Response",
     response_template: {one_entity_response:{}}
     request_template: {entity_key_request:{}}
+    leading_comment: "Метод получения единичной сущности {EntityName} по ключу"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/{KeyFields}"
@@ -194,6 +199,7 @@ message GetListMethod {
     request_name: "Get{EntityName}ListRequest",
     response_name: "Get{EntityName}ListResponse"
     response_template: {one_entity_response:{}}
+    leading_comment: "Метод получения списка сущностей {EntityName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/list"
@@ -209,6 +215,7 @@ message GetCountMethod {
     request_name: "Get{EntityName}CountRequest",
     response_name: "Get{EntityName}CountResponse"
     response_template: {count_entity_response:{}}
+    leading_comment: "Метод получения количества сущностей {EntityName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/count"

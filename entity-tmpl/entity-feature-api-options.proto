@@ -18,6 +18,7 @@ extend google.protobuf.MessageOptions {
   bool server_streaming = 3005;
   bool client_streaming = 3006;
   string message_comments = 3007;
+  string service_leading_comment = 3008;
 }
 
 // TODO: попробовать опции для указания ключа и сущности в шаблоне
@@ -41,6 +42,7 @@ message MethodComponentTemplateSet {
 message RequestTemplate {
   oneof template {
     EntityKeyRequest entity_key_request = 1;
+    EntityRequest entity_request = 2;
   }
 }
 
@@ -62,10 +64,17 @@ message EntityDescriptor {}
 message EntityKeyDescriptor {}
 
 message OneEntityResponse {
-  // Тип ответа
+  message Error {
+    option (message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(field_comments) = "Ошибка валидации"];
+    }
+  }
   oneof type {
-    // {EntityDescription}
-    EntityDescriptor data = 1;
+    option (oneof_comments) = "Тип ответа";
+    EntityDescriptor data = 1 [(field_comments) = "{EntityComment}"];
+    Error error = 2 [(field_comments) = "Ошибка"];
   }
 }
 
@@ -77,15 +86,14 @@ message EntityKeyRequest {
   EntityKeyDescriptor entity_key = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
+message EntityRequest {
+  EntityDescriptor data = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
 // Ответ на запрос получения количества
 message CountEntityResponse {
   message Error {
     option (message_comments) = "Ошибка запроса";
-    message ValidationError {
-      option (message_comments) = "Ошибки валидации.\n Эти проверки выполняются до обращения в базу данных";
-      string path = 1 [(google.api.field_behavior) = REQUIRED, (field_comments) = "Путь к полю в формате наименования прото"];
-      string message = 2 [(google.api.field_behavior) = REQUIRED, (field_comments) = "Валидационное сообщение"];
-    }
     oneof reason {
       option (oneof_comments) = "Причина ошибки";
       ValidationError validation = 1 [(field_comments) = "Ошибка валидации"];

@@ -12,6 +12,7 @@ package entity.feature.api.service;
 
 message ServersideSingletonCRUD {
   option (entity.feature.api.options.name_template) = "{EntityName}Service";
+  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityName}";
   message MethodSet {
     entity.feature.api.method.GetMethod get_method = 1;
     entity.feature.api.method.SaveMethodCreateReplace save_method_create_replace = 2;
@@ -20,10 +21,12 @@ message ServersideSingletonCRUD {
   }
   string http_root = 1;
   MethodSet method_set = 2;
+  CustomComments custom_comments = 3;
 }
 
 message ServersideEntityCRUD {
   option (entity.feature.api.options.name_template) = "{EntityName}Service";
+  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityName}";
   message MethodSet {
     entity.feature.api.method.GetMethodById get_method = 1;
     entity.feature.api.method.GetListMethod get_list_method = 2;
@@ -56,5 +59,12 @@ message ServersideEntityCRUD {
   // Определение ключевых полей сущности для использования в сервисе
   // Может быть переопределен в методах
   entity.feature.options.KeyFieldsDefinition key_fields_definition = 3;
+  CustomComments custom_comments = 4;
 }
 
+message CustomComments {
+  // Переопределяет entity.feature.api.options.service_leading_comment
+  string leading_comment = 1;
+  // Дополнительный комментарий к методу
+  string additional_leading_comment = 2;
+}

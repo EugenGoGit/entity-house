@@ -27,26 +27,43 @@ message PetGroup {
   option (entity.feature.api_specification) = {
     serverside_entity_crud: {
       http_root: "pet/api/v1/pet_group"
+      custom_comments: {
+        leading_comment: "Сервис управления группами животных"
+        additional_leading_comment: "Сервис реализуется в проекте Dummy"
+      }
       method_set: {
         get_method: {
-//          custom_comments:{
-//            request_leading_comment: "Запрос получения группы животных"
-//            response_leading_comment: "Ответ на запрос получения группы животных"
-//          }
+          custom_comments:{
+            leading_comment: "Метод получения группы животных"
+            additional_leading_comment: "Для owner, employee возвращаются только группы животных c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, seller, owner, employee"
+            request_leading_comment: "Запрос получения группы животных"
+            response_leading_comment: "Ответ на запрос получения группы животных"
+          }
         }
         get_list_method: {
           custom_comments:{
+            leading_comment: "Метод получения списка групп животных"
+            additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
             request_leading_comment: "Запрос получения списка групп животных"
             response_leading_comment: "Ответ на запрос получения списка групп животных"
           }
         }
         get_count_method: {
           custom_comments:{
+            leading_comment: "Метод получения количества групп животных"
+            additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
             request_leading_comment: "Запрос получения количества групп животных"
             response_leading_comment: "Ответ на запрос получения количества групп животных"
           }
         }
-        save_method_create_replace:{}
+        save_method_create_replace:{
+          custom_comments:{
+            leading_comment: "Метод создания и изменения группы животных"
+            additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
+            request_leading_comment: "Запрос на создание/редактирование группы животных"
+            response_leading_comment: "Ответ на запрос создания/редактирования группы животных"
+          }
+        }
         delete_method: {
           custom_comments: {
             leading_comment: "Метод удаления группы животных"
