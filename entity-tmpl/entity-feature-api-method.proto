@@ -10,14 +10,16 @@ import "google/api/http.proto";
 package entity.feature.api.method;
 
 
+// TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";
+// TODO: вынести неиспользуемые в prerelease
 message SaveMethodCreateReplace {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Save{EntityName}"
-    request_name: "Save{EntityName}Request"
-    response_name: "Save{EntityName}Response"
-    response_template: {one_entity_response:{}}
+    name_template:"Save{EntityTypeName}"
+    request_name: "Save{EntityTypeName}Request"
+    response_name: "Save{EntityTypeName}Response"
+    response_template: {one_entity_saving_response:{}}
     request_template: {entity_request:{}}
-    leading_comment: "Метод создания/редактирования сущности {EntityName}"
+    leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
   };
   option (entity.feature.api.options.http_rule) = {
     post: "/{HttpRoot}",
@@ -29,9 +31,9 @@ message SaveMethodCreateReplace {
 
 message SaveListMethodCreateReplace {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Save{EntityName}List",
-    request_name: "Save{EntityName}ListRequest",
-    response_name: "Save{EntityName}ListResponse"
+    name_template:"Save{EntityTypeName}List",
+    request_name: "Save{EntityTypeName}ListRequest",
+    response_name: "Save{EntityTypeName}ListResponse"
   };
   option (entity.feature.api.options.http_rule) = {
     post: "/{HttpRoot}/list",
@@ -42,9 +44,9 @@ message SaveListMethodCreateReplace {
 
 message SaveMethodCreateOnly {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Save{EntityName}",
-    request_name: "Save{EntityName}Request",
-    response_name: "Save{EntityName}Response"
+    name_template:"Save{EntityTypeName}",
+    request_name: "Save{EntityTypeName}Request",
+    response_name: "Save{EntityTypeName}Response"
   };
   option (entity.feature.api.options.http_rule) = {
     post: "/{HttpRoot}",
@@ -55,9 +57,9 @@ message SaveMethodCreateOnly {
 
 message SaveListMethodCreateOnly {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Save{EntityName}List",
-    request_name: "Save{EntityName}ListRequest",
-    response_name: "Save{EntityName}ListResponse"
+    name_template:"Save{EntityTypeName}List",
+    request_name: "Save{EntityTypeName}ListRequest",
+    response_name: "Save{EntityTypeName}ListResponse"
   };
   option (entity.feature.api.options.http_rule) = {
     post: "/{HttpRoot}/list",
@@ -68,9 +70,9 @@ message SaveListMethodCreateOnly {
 
 message EditMethodById {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Edit{EntityName}",
-    request_name: "Edit{EntityName}Request",
-    response_name: "Edit{EntityName}Response"
+    name_template:"Edit{EntityTypeName}",
+    request_name: "Edit{EntityTypeName}Request",
+    response_name: "Edit{EntityTypeName}Response"
   };
   option (entity.feature.api.options.http_rule) = {
     patch: "/{HttpRoot}/{KeyFields}",
@@ -83,9 +85,9 @@ message EditMethodById {
 
 message EditMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Edit{EntityName}",
-    request_name: "Edit{EntityName}Request",
-    response_name: "Edit{EntityName}Response"
+    name_template:"Edit{EntityTypeName}",
+    request_name: "Edit{EntityTypeName}Request",
+    response_name: "Edit{EntityTypeName}Response"
   };
   option (entity.feature.api.options.http_rule) = {
     patch: "/{HttpRoot}",
@@ -96,9 +98,9 @@ message EditMethod {
 
 message EditListMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Edit{EntityName}List",
-    request_name: "Edit{EntityName}ListRequest",
-    response_name: "Edit{EntityName}ListResponse"
+    name_template:"Edit{EntityTypeName}List",
+    request_name: "Edit{EntityTypeName}ListRequest",
+    response_name: "Edit{EntityTypeName}ListResponse"
   };
   option (entity.feature.api.options.http_rule) = {
     patch: "/{HttpRoot}/list",
@@ -122,10 +124,10 @@ message CustomComments {
 
 message DeleteMethodById {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Delete{EntityName}",
-    request_name: "Delete{EntityName}Request",
-    response_name: "Delete{EntityName}Response",
-    leading_comment: "Метод удаления единичной сущности {EntityName} по ключу"
+    name_template:"Delete{EntityTypeName}",
+    request_name: "Delete{EntityTypeName}Request",
+    response_name: "Delete{EntityTypeName}Response",
+    leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
     response_template: {empty_w_error_response:{}}
     request_template: {entity_key_request:{}}
   };
@@ -140,9 +142,9 @@ message DeleteMethodById {
 
 message DeleteMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Delete{EntityName}",
-    request_name: "Delete{EntityName}Request",
-    response_name: "Delete{EntityName}Response",
+    name_template:"Delete{EntityTypeName}",
+    request_name: "Delete{EntityTypeName}Request",
+    response_name: "Delete{EntityTypeName}Response",
   };
   option (entity.feature.api.options.http_rule) = {
     delete: "/{HttpRoot}"
@@ -152,9 +154,9 @@ message DeleteMethod {
 
 message DeleteListMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Delete{EntityName}List",
-    request_name: "Delete{EntityName}ListRequest",
-    response_name: "Delete{EntityName}ListResponse"
+    name_template:"Delete{EntityTypeName}List",
+    request_name: "Delete{EntityTypeName}ListRequest",
+    response_name: "Delete{EntityTypeName}ListResponse"
   };
   option (entity.feature.api.options.http_rule) = {
     delete: "/{HttpRoot}"
@@ -164,12 +166,12 @@ message DeleteListMethod {
 
 message GetMethodById {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Get{EntityName}",
-    request_name: "Get{EntityName}Request",
-    response_name: "Get{EntityName}Response",
+    name_template:"Get{EntityTypeName}",
+    request_name: "Get{EntityTypeName}Request",
+    response_name: "Get{EntityTypeName}Response",
     response_template: {one_entity_response:{}}
     request_template: {entity_key_request:{}}
-    leading_comment: "Метод получения единичной сущности {EntityName} по ключу"
+    leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/{KeyFields}"
@@ -183,9 +185,9 @@ message GetMethodById {
 
 message GetMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Get{EntityName}",
-    request_name: "Get{EntityName}Request",
-    response_name: "Get{EntityName}Response"
+    name_template:"Get{EntityTypeName}",
+    request_name: "Get{EntityTypeName}Request",
+    response_name: "Get{EntityTypeName}Response"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}"
@@ -195,11 +197,12 @@ message GetMethod {
 
 message GetListMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Get{EntityName}List",
-    request_name: "Get{EntityName}ListRequest",
-    response_name: "Get{EntityName}ListResponse"
+    name_template:"Get{EntityTypeName}List",
+    request_name: "Get{EntityTypeName}ListRequest",
+    response_name: "Get{EntityTypeName}ListResponse"
+    request_template: {filter_paging_request:{}}
     response_template: {one_entity_response:{}}
-    leading_comment: "Метод получения списка сущностей {EntityName} по фильтру"
+    leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/list"
@@ -207,15 +210,22 @@ message GetListMethod {
   option (entity.feature.api.options.server_streaming) = true;
   option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   CustomComments custom_comments = 1;
+  repeated EnumValue order_by_set = 2;
+}
+
+message EnumValue {
+  string name = 1;
+  string title =2;
 }
 
 message GetCountMethod {
   option (entity.feature.api.options.method_component_template_set) = {
-    name_template:"Get{EntityName}Count",
-    request_name: "Get{EntityName}CountRequest",
-    response_name: "Get{EntityName}CountResponse"
+    name_template:"Get{EntityTypeName}Count",
+    request_name: "Get{EntityTypeName}CountRequest",
+    response_name: "Get{EntityTypeName}CountResponse"
+    request_template: {filter_request:{}}
     response_template: {count_entity_response:{}}
-    leading_comment: "Метод получения количества сущностей {EntityName} по фильтру"
+    leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/count"

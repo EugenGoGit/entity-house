@@ -10,9 +10,11 @@ import "google/protobuf/descriptor.proto";
 
 package entity.feature.api.service;
 
+
+// TODO: вынести неиспользуемые в prerelease
 message ServersideSingletonCRUD {
-  option (entity.feature.api.options.name_template) = "{EntityName}Service";
-  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityName}";
+  option (entity.feature.api.options.name_template) = "{EntityTypeName}Service";
+  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     entity.feature.api.method.GetMethod get_method = 1;
     entity.feature.api.method.SaveMethodCreateReplace save_method_create_replace = 2;
@@ -25,8 +27,8 @@ message ServersideSingletonCRUD {
 }
 
 message ServersideEntityCRUD {
-  option (entity.feature.api.options.name_template) = "{EntityName}Service";
-  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityName}";
+  option (entity.feature.api.options.name_template) = "{EntityTypeName}Service";
+  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     entity.feature.api.method.GetMethodById get_method = 1;
     entity.feature.api.method.GetListMethod get_list_method = 2;

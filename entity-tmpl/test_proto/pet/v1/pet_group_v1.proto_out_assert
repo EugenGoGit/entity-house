@@ -88,6 +88,7 @@ message GetPetGroupCountResponse {
 message GetPetGroupListRequest {
   // Фильтр
   PetGroupFilter filter = 1;
+
   // Вариант разбиения на страницы
   oneof pagination {
     // Постраничный вывод
@@ -179,9 +180,73 @@ message PetGroup {
 
     // Конфликт версий.
     // Причины:
-    // - В базе хранится другая версия строки, значения changed_at оличаются
+    // - В базе хранится другая версия строки, значения changed_at отличаются
     message Conflict {
     }
+  }
+}
+
+// Фильтр групп животных
+message PetGroupFilter {
+  // По тексту.
+  // Если значение не передано то поиск по нему не производится.
+  // # Диапазон: 3..64.
+  // # Поиск производится по полям:
+  // # - Наименование
+  string text = 1;
+
+  // По тегам.
+  // # Диапазон: 0..10
+  repeated string tags = 2;
+}
+
+// Постраничный вывод
+message PetGroupPaging {
+  // Тип значения сортировки.
+  // Если значение не передано, то будет взято значение по умолчанию
+  OrderByType order_by_type = 1;
+
+  // Тип направления сортировки.
+  // # По умолчанию: DESC
+  DirectionType direction_type = 2;
+
+  // Количество записей на страницу.
+  // Если значение 0 (не передано), то будет взято значение по умолчанию.
+  // # Диапазон: 0..100.
+  // # По умолчанию: 20
+  int32 limit = 3;
+
+  // Сдвиг.
+  // # Диапазон: 0..2147483647
+  int32 offset = 4;
+
+  // Справочник типов направлений сортировки.
+  // # Тип: byte
+  enum DirectionType {
+    // Значение не указано
+    DIRECTION_TYPE_UNKNOWN = 0;
+
+    // От большего к меньшему
+    DESC = 1;
+
+    // От меньшего к большему
+    ASC = 2;
+  }
+
+  // Справочник типов значений сортировки.
+  // # Тип: byte
+  enum OrderByType {
+    // Значение не указано
+    ORDER_BY_TYPE_UNKNOWN = 0;
+
+    // По идентификатору
+    ID = 1;
+
+    // По времени создания
+    CREATED_AT = 2;
+    
+    // По улице, номеру дома, корпусу
+    STREET_THEN_NUMBER_THEN_PART = 3;
   }
 }
 
@@ -193,21 +258,22 @@ message SavePetGroupRequest {
 
 // Ответ на запрос создания/редактирования группы животных
 message SavePetGroupResponse {
-    // Тип ответа
-    oneof type {
-          // Группа животных  
+  // Тип ответа
+  oneof type {
+  // Группа животных  
   PetGroup data = 1;
   
   // Ошибка
-        Error error = 2;
-    }
+  Error error = 2;
+  }
 
-    // Ошибка запроса
+  // Ошибка запроса
   message Error {
     // Причина ошибки
     oneof reason {
       // Ошибка валидации
       ValidationError validation = 1;
+      
       // Ошибка сохранения
       PetGroup.SavingError saving = 2;
     }
@@ -227,7 +293,7 @@ message ValidationError {
 // Сервис управления группами животных.
 // Сервис реализуется в проекте Dummy
 service PetGroupService {
-    // Метод удаления группы животных.
+  // Метод удаления группы животных.
   // Метод доступен для: admin, service, bti, seller, owner, employee
   rpc DeletePetGroup ( DeletePetGroupRequest ) returns ( DeletePetGroupResponse ) {
     option (google.api.http) = { delete: "/pet/api/v1/pet_group/{id}" };
@@ -257,31 +323,4 @@ service PetGroupService {
   rpc SavePetGroup ( SavePetGroupRequest ) returns ( SavePetGroupResponse ) {
     option (google.api.http) = { post: "/pet/api/v1/pet_group", body: "*" };
   }
-}
-
-// Фильтр групп животных
-message PetGroupFilter {
-  // По тексту.
-  // Если значение не передано то поиск по нему не производится.
-  // # Диапазон: 3..64.
-  // # Поиск производится по полям:
-  // # - Наименование
-  string text = 1;
-  // По тегам.
-  // # Диапазон: 0..10
-  repeated string tags = 2;
-}
-
-// Постраничный вывод
-message PetGroupPaging {
-  // Количество записей на страницу.
-  // Если значение 0 (не передано), то будет взято значение по умолчанию.
-  // Если значение превышает предел конкретного устройства, возвращается ошибка.
-  // Диапазон: 0..10000.
-  // По умолчанию: 20
-  int32 limit = 1;
-  // Сдвиг.
-  // Диапазон: 0..2147483647.
-  // По умолчанию: 0
-  int32 offset = 2;
 }

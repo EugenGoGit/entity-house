@@ -9,6 +9,7 @@ import "entity-tmpl/entity-feature-options.proto";
 
 package entity.feature.api.options;
 
+// TODO: вынести неиспользуемые в prerelease
 // TODO: Проверить , что поля и опции нельзя выставить там где не надо. разнести по пакетам
 extend google.protobuf.MessageOptions {
   string name_template = 3001;
@@ -19,11 +20,28 @@ extend google.protobuf.MessageOptions {
   bool client_streaming = 3006;
   string message_comments = 3007;
   string service_leading_comment = 3008;
+  // Тип в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле
+  string replace_message_type_name_to = 3009;
 }
 
 // TODO: попробовать опции для указания ключа и сущности в шаблоне
 extend google.protobuf.FieldOptions {
   string field_comments = 3001;
+  // Тип поля в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
+  // Если значение опции EntityKeyFields, то поле заменяется на массив ключевых полей
+  string replace_field_type_to = 3002;
+}
+
+extend google.protobuf.EnumOptions {
+  // В перечисление будут добавлены элементы из указанного поля опций метода. Поле ДОЛЖНО иметь тип массив entity.feature.api.method.EnumValue
+  string enum_by_method_attribute = 3001;
+  string enum_comments = 3002;
+}
+
+extend google.protobuf.EnumValueOptions {
+  string enum_value_comments = 3001;
 }
 
 extend google.protobuf.OneofOptions {
@@ -43,6 +61,8 @@ message RequestTemplate {
   oneof template {
     EntityKeyRequest entity_key_request = 1;
     EntityRequest entity_request = 2;
+    FilterPagingRequest filter_paging_request = 3;
+    FilterRequest filter_request = 4;
   }
 }
 
@@ -52,16 +72,14 @@ message ResponseTemplate {
     ListEntityResponse list_entity_response = 2;
     CountEntityResponse count_entity_response = 3;
     EmptyWErrorResponse empty_w_error_response = 4;
+    OneEntitySavingResponse one_entity_saving_response = 5;
   }
 }
 
-// Поле этого типа в шаблоне будет заменено при генерации на поле с типом сущности
-// Комментарии к полю будут взяты от комментария сущности
-message EntityDescriptor {}
-
-// Поле этого типа в шаблоне будет заменено при генерации на поля ключа сущности
-// Комментарии к полю будут взяты от полей ключа сущности
-message EntityKeyDescriptor {}
+// Тип для поля, заменяемого в шаблоне на тип, указанный в опции поля replace_field_type_to
+// Поля этого типа ДОЛЖНЫ иметь опцию replace_field_type_to
+// Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
+message ReplaceTypeDummy {}
 
 message OneEntityResponse {
   message Error {
@@ -73,22 +91,71 @@ message OneEntityResponse {
   }
   oneof type {
     option (oneof_comments) = "Тип ответа";
-    EntityDescriptor data = 1 [(field_comments) = "{EntityComment}"];
+    ReplaceTypeDummy data = 1 [(field_comments) = "{EntityTypeComment}", (replace_field_type_to) = "{EntityTypeName}"];
+    Error error = 2 [(field_comments) = "Ошибка"];
+  }
+}
+
+message OneEntitySavingResponse {
+  message Error {
+    option (message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(field_comments) = "Ошибка валидации"];
+      ReplaceTypeDummy saving = 2 [(field_comments) = "Ошибка сохранения", (replace_field_type_to) = "{EntityTypeName}.SavingError"];
+    }
+  }
+  oneof type {
+    option (oneof_comments) = "Тип ответа";
+    ReplaceTypeDummy data = 1 [(field_comments) = "{EntityTypeComment}", (replace_field_type_to) = "{EntityTypeName}"];
     Error error = 2 [(field_comments) = "Ошибка"];
   }
 }
 
 message ListEntityResponse {
-  repeated EntityDescriptor data = 1;
+  repeated ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}"];
 }
 
 message EntityKeyRequest {
-  EntityKeyDescriptor entity_key = 1 [(google.api.field_behavior) = REQUIRED];
+  ReplaceTypeDummy entity_key = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "EntityKeyFields"];
 }
 
 message EntityRequest {
-  EntityDescriptor data = 1 [(google.api.field_behavior) = REQUIRED];
+  ReplaceTypeDummy data = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "{EntityTypeName}",(field_comments) = "{EntityTypeComment}"];
 }
+
+message FilterPagingRequest {
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter",(field_comments) = "Фильтр"];
+  oneof pagination {
+    option (oneof_comments) = "Вариант разбиения на страницы";
+    EntityPaging paging = 2 [(replace_field_type_to) = "{EntityTypeName}Paging",(field_comments) = "Постраничный вывод"];
+  }
+}
+
+message FilterRequest {
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter",(field_comments) = "Фильтр"];
+}
+
+message EntityPaging {
+  option (replace_message_type_name_to) = "{EntityTypeName}Paging";
+  option (message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (enum_by_method_attribute) = "order_by_set";
+    option (enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(field_comments) = "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(field_comments) = "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(field_comments) = "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
 
 // Ответ на запрос получения количества
 message CountEntityResponse {
