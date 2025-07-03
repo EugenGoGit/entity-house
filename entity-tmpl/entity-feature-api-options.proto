@@ -31,6 +31,7 @@ extend google.protobuf.MessageOptions {
 extend google.protobuf.FieldOptions {
   // TODO: возможность взять коммент с подставленного измененного типа
   string field_comments = 3001;
+  // TODO: Добавить возможность менять имя поля
   // Тип поля в шаблоне заменяется на тип, указанный в опции
   // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
   // Если значение опции EntityKeyFields, то поле заменяется на массив ключевых полей
@@ -65,8 +66,10 @@ message RequestTemplate {
     EntityKeyRequest entity_key_request = 1;
     EntityRequest entity_request = 2;
     FilterPagingRequest filter_paging_request = 3;
-    FilterRequest filter_request = 4;
-    LinkRequest link_request =5;
+    LinkFilterPagingRequest link_filter_paging_request = 4;
+    FilterRequest filter_request = 5;
+    LinkFilterRequest link_filter_request = 6;
+    LinkRequest link_request = 7;
   }
 }
 
@@ -125,28 +128,63 @@ message EntityKeyRequest {
 }
 
 message EntityRequest {
-  ReplaceTypeDummy data = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "{EntityTypeName}",(field_comments) = "{EntityTypeComment}"];
+  ReplaceTypeDummy data = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "{EntityTypeName}", (field_comments) = "{EntityTypeComment}"];
 }
 
 message FilterPagingRequest {
-  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter",(field_comments) = "Фильтр"];
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter", (field_comments) = "Фильтр"];
   oneof pagination {
     option (oneof_comments) = "Вариант разбиения на страницы";
-    EntityPaging paging = 2 [(replace_field_type_to) = "{EntityTypeName}Paging",(field_comments) = "Постраничный вывод"];
+    Paging paging = 2 [(replace_field_type_to) = "{EntityTypeName}Paging", (field_comments) = "Постраничный вывод"];
+  }
+}
+
+// TODO: Отказаться от отдельного типа для связок
+message LinkFilterPagingRequest {
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}Filter", (field_comments) = "Фильтр"];
+  oneof pagination {
+    option (oneof_comments) = "Вариант разбиения на страницы";
+    LinkPaging paging = 2 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}Paging", (field_comments) = "Постраничный вывод"];
   }
 }
 
 message FilterRequest {
-  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter",(field_comments) = "Фильтр"];
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter", (field_comments) = "Фильтр"];
 }
 
+message LinkFilterRequest {
+  ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}Filter", (field_comments) = "Фильтр"];
+}
+
+// TODO: Отказаться от отдельного типа для связок
 message LinkRequest {
   option (message_comments) = "Запрос на добавление/удаление связи {EntityTypeName} и {LinkedType}";
-  ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}",(field_comments) = "Связь {EntityTypeName} и {LinkedType}",(google.api.field_behavior) = REQUIRED];
+  ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}", (field_comments) = "Связь {EntityTypeName} и {LinkedType}", (google.api.field_behavior) = REQUIRED];
 }
 
-message EntityPaging {
+message Paging {
   option (replace_message_type_name_to) = "{EntityTypeName}Paging";
+  option (message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (enum_by_method_attribute) = "order_by_set";
+    option (enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(field_comments) = "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(field_comments) = "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(field_comments) = "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+// TODO: Отказаться от отдельного типа для связок
+message LinkPaging {
+  option (replace_message_type_name_to) = "{EntityTypeName}{LinkedType}Paging";
   option (message_comments) = "Постраничный вывод";
   enum OrderByType {
     option (enum_by_method_attribute) = "order_by_set";

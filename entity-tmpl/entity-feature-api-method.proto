@@ -141,6 +141,24 @@ message DeleteMethodById {
   CustomComments custom_comments = 2;
 }
 
+message RestoreMethodById {
+  option (entity.feature.api.options.method_component_template_set) = {
+    name_template:"Post{EntityTypeName}Restore",
+    request_name: "Post{EntityTypeName}RestoreRequest",
+    response_name: "Post{EntityTypeName}RestoreResponse",
+    leading_comment: "Метод восстановлении удаленной сущности {EntityTypeName} по ключу"
+    response_template: {empty_w_error_response:{}}
+    request_template: {entity_key_request:{}}
+  };
+  option (entity.feature.api.options.http_rule) = {
+    post: "/{HttpRoot}/restore/{KeyFields}"
+  };
+  option (entity.feature.api.options.key_field_behavior) = REQUIRED;
+  // Переопределяет key_fields сервиса
+  repeated string key_fields = 1;
+  CustomComments custom_comments = 2;
+}
+
 message DeleteMethod {
   option (entity.feature.api.options.method_component_template_set) = {
     name_template:"Delete{EntityTypeName}",
@@ -279,9 +297,40 @@ message DetachMethod {
 }
 
 message GetLinkListMethod {
+  option (entity.feature.api.options.method_component_template_set) = {
+    name_template:"Get{EntityTypeName}{LinkedType}List",
+    request_name: "Get{EntityTypeName}{LinkedType}ListRequest",
+    response_name: "Get{EntityTypeName}{LinkedType}ListResponse"
+    request_template: {link_filter_paging_request:{}}
+    response_template: {one_entity_response:{}}
+    leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+  };
+  option (entity.feature.api.options.http_rule) = {
+    get: "/{HttpRoot}/{LinkedType}/list"
+  };
+  option (entity.feature.api.options.server_streaming) = true;
+  option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  // TODO: Переименовать order_by_values
+  repeated EnumValue order_by_set = 2;
+  string linked_type = 3;
 }
 
 message GetLinkCountMethod {
+  option (entity.feature.api.options.method_component_template_set) = {
+    name_template:"Get{EntityTypeName}{LinkedType}Count",
+    request_name: "Get{EntityTypeName}{LinkedType}CountRequest",
+    response_name: "Get{EntityTypeName}{LinkedType}CountResponse"
+    request_template: {link_filter_request:{}}
+    response_template: {count_entity_response:{}}
+    leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+  };
+  option (entity.feature.api.options.http_rule) = {
+    get: "/{HttpRoot}/{LinkedType}/count"
+  };
+  option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type = 2;
 }
 
 

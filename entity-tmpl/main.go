@@ -755,6 +755,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 					httpPath := strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1)
 					httpPath = strings.Replace(httpPath, "{KeyFields}", keyFieldPath, -1)
 					httpPath = strings.Replace(httpPath, "{LinkedKeyPath}", methodFieldMap["linked_key_path"].val.String(), -1)
+					httpPath = strings.Replace(httpPath, "{LinkedType}", strings.ToLower(methodFieldMap["linked_type"].val.String()), -1)
 					fdHttpV.Set(fd, pref.ValueOf(httpPath))
 					valOpt = valOpt + k + ": \"" +
 						// strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
