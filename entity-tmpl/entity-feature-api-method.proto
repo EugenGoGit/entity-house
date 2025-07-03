@@ -12,6 +12,7 @@ package entity.feature.api.method;
 
 // TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";
 // TODO: вынести неиспользуемые в prerelease
+// TODO: Подстановки сделать не {EntityTypeName}{LinkedType}, а из полей {entity:type_name}{method:linked_type},
 message SaveMethodCreateReplace {
   option (entity.feature.api.options.method_component_template_set) = {
     name_template:"Save{EntityTypeName}"
@@ -210,12 +211,13 @@ message GetListMethod {
   option (entity.feature.api.options.server_streaming) = true;
   option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   CustomComments custom_comments = 1;
+  // TODO: Переименовать order_by_values
   repeated EnumValue order_by_set = 2;
 }
 
 message EnumValue {
   string name = 1;
-  string title =2;
+  string title = 2;
 }
 
 message GetCountMethod {
@@ -239,10 +241,41 @@ message ExistsMethod {
 
 message ExistsKeyMethod {
 }
+
 message AttachMethod {
+  option (entity.feature.api.options.method_component_template_set) = {
+    name_template:"Put{EntityTypeName}{LinkedType}Attach",
+    request_name: "Put{EntityTypeName}{LinkedType}AttachRequest",
+    response_name: "Put{EntityTypeName}{LinkedType}AttachResponse"
+    request_template: {link_request:{}}
+    response_template: {empty_w_error_response:{}}
+    leading_comment: "Метод привязки {EntityTypeName} и {LinkedType}"
+  };
+  option (entity.feature.api.options.http_rule) = {
+    put: "/{HttpRoot}/{LinkedKeyPath}/attach"
+  };
+  option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type = 2;
+  string linked_key_path = 3;
 }
 
 message DetachMethod {
+  option (entity.feature.api.options.method_component_template_set) = {
+    name_template:"Put{EntityTypeName}{LinkedType}Detach",
+    request_name: "Put{EntityTypeName}{LinkedType}DetachRequest",
+    response_name: "Put{EntityTypeName}{LinkedType}DetachResponse"
+    request_template: {link_request:{}}
+    response_template: {empty_w_error_response:{}}
+    leading_comment: "Метод привязки {EntityTypeName} и {LinkedType}"
+  };
+  option (entity.feature.api.options.http_rule) = {
+    put: "/{HttpRoot}/{LinkedKeyPath}/detach"
+  };
+  option (entity.feature.api.options.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type = 2;
+  string linked_key_path = 3;
 }
 
 message GetLinkListMethod {

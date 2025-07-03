@@ -15,6 +15,8 @@ extend google.protobuf.MessageOptions {
   string name_template = 3001;
   MethodComponentTemplateSet method_component_template_set = 3002;
   google.api.HttpRule http_rule = 3003;
+  // TODO: вычислить key_field_behavior для ключевых полей
+  // Строгость (Cardinality) ключевых полей, требуемая для метода
   google.api.FieldBehavior key_field_behavior = 3004;
   bool server_streaming = 3005;
   bool client_streaming = 3006;
@@ -27,6 +29,7 @@ extend google.protobuf.MessageOptions {
 
 // TODO: попробовать опции для указания ключа и сущности в шаблоне
 extend google.protobuf.FieldOptions {
+  // TODO: возможность взять коммент с подставленного измененного типа
   string field_comments = 3001;
   // Тип поля в шаблоне заменяется на тип, указанный в опции
   // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
@@ -63,6 +66,7 @@ message RequestTemplate {
     EntityRequest entity_request = 2;
     FilterPagingRequest filter_paging_request = 3;
     FilterRequest filter_request = 4;
+    LinkRequest link_request =5;
   }
 }
 
@@ -134,6 +138,11 @@ message FilterPagingRequest {
 
 message FilterRequest {
   ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter",(field_comments) = "Фильтр"];
+}
+
+message LinkRequest {
+  option (message_comments) = "Запрос на добавление/удаление связи {EntityTypeName} и {LinkedType}";
+  ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}",(field_comments) = "Связь {EntityTypeName} и {LinkedType}",(google.api.field_behavior) = REQUIRED];
 }
 
 message EntityPaging {
