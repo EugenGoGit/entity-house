@@ -63,23 +63,23 @@ message MethodComponentTemplateSet {
 
 message RequestTemplate {
   oneof template {
-    EntityKeyRequest entity_key_request = 1;
-    EntityRequest entity_request = 2;
-    FilterPagingRequest filter_paging_request = 3;
-    LinkFilterPagingRequest link_filter_paging_request = 4;
-    FilterRequest filter_request = 5;
-    LinkFilterRequest link_filter_request = 6;
-    LinkRequest link_request = 7;
+    EntityKey entity_key = 1;
+    Entity entity = 2;
+    FilterPaging filter_paging = 3;
+    LinkFilterPaging link_filter_paging = 4;
+    Filter filter = 5;
+    LinkFilter link_filter = 6;
+    Link link = 7;
   }
 }
 
 message ResponseTemplate {
   oneof template {
-    OneEntityResponse one_entity_response = 1;
-    ListEntityResponse list_entity_response = 2;
-    CountEntityResponse count_entity_response = 3;
-    EmptyWErrorResponse empty_w_error_response = 4;
-    OneEntitySavingResponse one_entity_saving_response = 5;
+    EntityWError entity_error = 1;
+    EntityList entity_list = 2;
+    CountEntityWError count_entity_error = 3;
+    ValidError valid_error = 4;
+    OneEntityWSavingError one_entity_saving_error = 5;
   }
 }
 
@@ -88,7 +88,7 @@ message ResponseTemplate {
 // Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
 message ReplaceTypeDummy {}
 
-message OneEntityResponse {
+message EntityWError {
   message Error {
     option (message_comments) = "Ошибка запроса";
     oneof reason {
@@ -103,7 +103,7 @@ message OneEntityResponse {
   }
 }
 
-message OneEntitySavingResponse {
+message OneEntityWSavingError {
   message Error {
     option (message_comments) = "Ошибка запроса";
     oneof reason {
@@ -119,19 +119,19 @@ message OneEntitySavingResponse {
   }
 }
 
-message ListEntityResponse {
+message EntityList {
   repeated ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}"];
 }
 
-message EntityKeyRequest {
+message EntityKey {
   ReplaceTypeDummy entity_key = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "EntityKeyFields"];
 }
 
-message EntityRequest {
+message Entity {
   ReplaceTypeDummy data = 1 [(google.api.field_behavior) = REQUIRED, (replace_field_type_to) = "{EntityTypeName}", (field_comments) = "{EntityTypeComment}"];
 }
 
-message FilterPagingRequest {
+message FilterPaging {
   ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter", (field_comments) = "Фильтр"];
   oneof pagination {
     option (oneof_comments) = "Вариант разбиения на страницы";
@@ -140,7 +140,7 @@ message FilterPagingRequest {
 }
 
 // TODO: Отказаться от отдельного типа для связок
-message LinkFilterPagingRequest {
+message LinkFilterPaging {
   ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}Filter", (field_comments) = "Фильтр"];
   oneof pagination {
     option (oneof_comments) = "Вариант разбиения на страницы";
@@ -148,16 +148,16 @@ message LinkFilterPagingRequest {
   }
 }
 
-message FilterRequest {
+message Filter {
   ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}Filter", (field_comments) = "Фильтр"];
 }
 
-message LinkFilterRequest {
+message LinkFilter {
   ReplaceTypeDummy filter = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}Filter", (field_comments) = "Фильтр"];
 }
 
 // TODO: Отказаться от отдельного типа для связок
-message LinkRequest {
+message Link {
   option (message_comments) = "Запрос на добавление/удаление связи {EntityTypeName} и {LinkedType}";
   ReplaceTypeDummy data = 1 [(replace_field_type_to) = "{EntityTypeName}{LinkedType}", (field_comments) = "Связь {EntityTypeName} и {LinkedType}", (google.api.field_behavior) = REQUIRED];
 }
@@ -203,9 +203,7 @@ message LinkPaging {
   int32 offset = 4 [(field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
 }
 
-
-// Ответ на запрос получения количества
-message CountEntityResponse {
+message CountEntityWError {
   message Error {
     option (message_comments) = "Ошибка запроса";
     oneof reason {
@@ -220,8 +218,7 @@ message CountEntityResponse {
   }
 }
 
-// Ответ на запрос только с ошибками
-message EmptyWErrorResponse {
+message ValidError {
   message Error {
     option (message_comments) = "Ошибка запроса";
     oneof reason {

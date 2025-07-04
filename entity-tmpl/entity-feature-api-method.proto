@@ -18,8 +18,8 @@ message SaveMethodCreateReplace {
     name_template:"Save{EntityTypeName}"
     request_name: "Save{EntityTypeName}Request"
     response_name: "Save{EntityTypeName}Response"
-    response_template: {one_entity_saving_response:{}}
-    request_template: {entity_request:{}}
+    response_template: {one_entity_saving_error:{}}
+    request_template: {entity:{}}
     leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
   };
   option (entity.feature.api.options.http_rule) = {
@@ -129,8 +129,8 @@ message DeleteMethodById {
     request_name: "Delete{EntityTypeName}Request",
     response_name: "Delete{EntityTypeName}Response",
     leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
-    response_template: {empty_w_error_response:{}}
-    request_template: {entity_key_request:{}}
+    response_template: {valid_error:{}}
+    request_template: {entity_key:{}}
   };
   option (entity.feature.api.options.http_rule) = {
     delete: "/{HttpRoot}/{KeyFields}"
@@ -147,8 +147,8 @@ message RestoreMethodById {
     request_name: "Post{EntityTypeName}RestoreRequest",
     response_name: "Post{EntityTypeName}RestoreResponse",
     leading_comment: "Метод восстановлении удаленной сущности {EntityTypeName} по ключу"
-    response_template: {empty_w_error_response:{}}
-    request_template: {entity_key_request:{}}
+    response_template: {valid_error:{}}
+    request_template: {entity_key:{}}
   };
   option (entity.feature.api.options.http_rule) = {
     post: "/{HttpRoot}/restore/{KeyFields}"
@@ -188,8 +188,8 @@ message GetMethodById {
     name_template:"Get{EntityTypeName}",
     request_name: "Get{EntityTypeName}Request",
     response_name: "Get{EntityTypeName}Response",
-    response_template: {one_entity_response:{}}
-    request_template: {entity_key_request:{}}
+    response_template: {entity_error:{}}
+    request_template: {entity_key:{}}
     leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
   };
   option (entity.feature.api.options.http_rule) = {
@@ -219,8 +219,8 @@ message GetListMethod {
     name_template:"Get{EntityTypeName}List",
     request_name: "Get{EntityTypeName}ListRequest",
     response_name: "Get{EntityTypeName}ListResponse"
-    request_template: {filter_paging_request:{}}
-    response_template: {one_entity_response:{}}
+    request_template: {filter_paging:{}}
+    response_template: {entity_error:{}}
     leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
@@ -243,8 +243,8 @@ message GetCountMethod {
     name_template:"Get{EntityTypeName}Count",
     request_name: "Get{EntityTypeName}CountRequest",
     response_name: "Get{EntityTypeName}CountResponse"
-    request_template: {filter_request:{}}
-    response_template: {count_entity_response:{}}
+    request_template: {filter:{}}
+    response_template: {count_entity_error:{}}
     leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
@@ -265,8 +265,8 @@ message AttachMethod {
     name_template:"Put{EntityTypeName}{LinkedType}Attach",
     request_name: "Put{EntityTypeName}{LinkedType}AttachRequest",
     response_name: "Put{EntityTypeName}{LinkedType}AttachResponse"
-    request_template: {link_request:{}}
-    response_template: {empty_w_error_response:{}}
+    request_template: {link:{}}
+    response_template: {valid_error:{}}
     leading_comment: "Метод привязки {EntityTypeName} и {LinkedType}"
   };
   option (entity.feature.api.options.http_rule) = {
@@ -283,9 +283,9 @@ message DetachMethod {
     name_template:"Put{EntityTypeName}{LinkedType}Detach",
     request_name: "Put{EntityTypeName}{LinkedType}DetachRequest",
     response_name: "Put{EntityTypeName}{LinkedType}DetachResponse"
-    request_template: {link_request:{}}
-    response_template: {empty_w_error_response:{}}
-    leading_comment: "Метод привязки {EntityTypeName} и {LinkedType}"
+    request_template: {link:{}}
+    response_template: {valid_error:{}}
+    leading_comment: "Метод отвязки {EntityTypeName} и {LinkedType}"
   };
   option (entity.feature.api.options.http_rule) = {
     put: "/{HttpRoot}/{LinkedKeyPath}/detach"
@@ -301,9 +301,9 @@ message GetLinkListMethod {
     name_template:"Get{EntityTypeName}{LinkedType}List",
     request_name: "Get{EntityTypeName}{LinkedType}ListRequest",
     response_name: "Get{EntityTypeName}{LinkedType}ListResponse"
-    request_template: {link_filter_paging_request:{}}
-    response_template: {one_entity_response:{}}
-    leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+    request_template: {link_filter_paging:{}}
+    response_template: {entity_error:{}}
+    leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedType} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/{LinkedType}/list"
@@ -321,9 +321,9 @@ message GetLinkCountMethod {
     name_template:"Get{EntityTypeName}{LinkedType}Count",
     request_name: "Get{EntityTypeName}{LinkedType}CountRequest",
     response_name: "Get{EntityTypeName}{LinkedType}CountResponse"
-    request_template: {link_filter_request:{}}
-    response_template: {count_entity_response:{}}
-    leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+    request_template: {link_filter:{}}
+    response_template: {count_entity_error:{}}
+    leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedType} по фильтру"
   };
   option (entity.feature.api.options.http_rule) = {
     get: "/{HttpRoot}/{LinkedType}/count"

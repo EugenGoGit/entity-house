@@ -17,6 +17,8 @@ message ApiSpecification {
 
 // AML (Azimutt Markup Language)
 // https://azimutt.app/docs/aml
+// https://azimutt.app/converters/postgres/to/amlv1
+// TODO: генерация сущности по AMLv1
 message AMLSpecification {
 }
 
