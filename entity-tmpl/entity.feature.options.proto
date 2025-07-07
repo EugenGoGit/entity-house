@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "entity.feature.aml.proto";
 import "entity.feature.service.proto";
 import "entity.feature.proto";
 
@@ -11,14 +10,13 @@ extend google.protobuf.MessageOptions {
   // .
   ApiSpecification api_specification = 3010;
   // .
-  aml.Specification aml_specification = 3011;
+  AMLSpecification aml_specification = 3011;
 }
 
 extend google.protobuf.FieldOptions {
   // .
   UniqueFieldGroup unique_field_group = 3003;
 }
-
 
 // Protobuf service generation
 message ApiSpecification {
@@ -27,3 +25,11 @@ message ApiSpecification {
     service.ServersideSingletonCRUD serverside_singleton_crud = 2;
   }
 }
+
+// AML (Azimutt Markup Language)
+// https://azimutt.app/docs/aml
+// https://azimutt.app/converters/postgres/to/amlv1
+// TODO: генерация сущности по AMLv1
+message AMLSpecification {
+}
+

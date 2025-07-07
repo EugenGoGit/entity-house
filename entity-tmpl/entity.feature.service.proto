@@ -1,8 +1,9 @@
 syntax = "proto3";
 
-import "entity-tmpl/entity.feature.method.proto";
+import "entity.feature.method.proto";
 import "google/protobuf/descriptor.proto";
 import "entity.feature.proto";
+import "entity.feature.service.options.proto";
 
 package entity.feature.service;
 
@@ -68,16 +69,12 @@ package entity.feature.service;
 
 
 
-extend google.protobuf.MessageOptions {
-  string name = 3006;
-  string leading_comment = 3007;
-}
 
 
 // TODO: вынести неиспользуемые в prerelease
 message ServersideSingletonCRUD {
-  option (service.name) = "{EntityTypeName}Service";
-  option (service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (name) = "{EntityTypeName}Service";
+  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     method.Get get = 1;
     method.SaveCreateReplace save_create_replace = 2;
@@ -95,8 +92,8 @@ message ServersideSingletonCRUD {
 // TODO: Сделать генерируемый объект связки
 // TODO: проверка обязательности полей в LinkType
 message ServersideEntityCRUD {
-  option (service.name) = "{EntityTypeName}Service";
-  option (service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (name) = "{EntityTypeName}Service";
+  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     method.GetById get = 1;
     method.GetList get_list = 2;
@@ -131,13 +128,6 @@ message ServersideEntityCRUD {
   // Может быть переопределен в методах
   KeyFieldsDefinition key_fields_definition = 3;
   CustomComments custom_comments = 4;
-}
-
-message CustomComments {
-  // Переопределяет leading_comment указанный в сервисе
-  string leading_comment = 1;
-  // Дополнительный комментарий к сервису
-  string additional_leading_comment = 2;
 }
 
 
