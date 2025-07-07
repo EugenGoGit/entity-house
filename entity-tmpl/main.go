@@ -904,9 +904,9 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			for entityPrefDesc, apiSpecOpt := range entityMsgApiSpecOpt {
 				// Добавим комментарий всего файла
 				if val, ok := genFileComments[sourceFileJhumpDesc.GetName()]; ok {
-					genFileComments[sourceFileJhumpDesc.GetName()] = val + "\nАПИ управления сущностью " + string(entityPrefDesc.Name())
+					genFileComments[sourceFileJhumpDesc.GetName()] = val + "\n// АПИ управления сущностью " + string(entityPrefDesc.Name())
 				} else {
-					genFileComments[sourceFileJhumpDesc.GetName()] = "АПИ управления сущностью " + string(entityPrefDesc.Name())
+					genFileComments[sourceFileJhumpDesc.GetName()] = "// АПИ управления сущностью " + string(entityPrefDesc.Name())
 				}
 
 				// Обработаем cущность
@@ -1017,7 +1017,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				panic(err)
 			}
 			// TODO: Добавить параметры генерации в коммент файла
-			protoStr = "// " + genFileComments[sourceFileJhumpDesc.GetName()] + "\n\n" + protoStr
+			protoStr = genFileComments[sourceFileJhumpDesc.GetName()] + "\n\n" + protoStr
 			// fmt.Println("print Proto", protoStr)
 			m[sourceFileJhumpDesc.GetFile().GetName()] = protoStr
 		}
