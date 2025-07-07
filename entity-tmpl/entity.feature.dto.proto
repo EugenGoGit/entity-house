@@ -6,6 +6,7 @@ import "entity.feature.dto.options.proto";
 
 package entity.feature.dto;
 
+// TODO: проверить расширяемость
 message RequestTemplate {
   oneof template {
     EntityKey entity_key = 1;

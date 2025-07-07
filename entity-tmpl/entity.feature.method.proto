@@ -14,7 +14,7 @@ extend google.protobuf.MessageOptions {
   dto.RequestTemplate request_template = 2996;
   dto.ResponseTemplate response_template = 2997;
 }
-
+// TODO: проверить расширяемость
 // TODO: общий MethodTemplate с общими полями
 // TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";
 // TODO: вынести неиспользуемые в prerelease

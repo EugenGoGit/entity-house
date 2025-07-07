@@ -72,6 +72,7 @@ package entity.feature.service;
 
 
 // TODO: вынести неиспользуемые в prerelease
+// TODO: проверить расширяемость
 message ServersideSingletonCRUD {
   option (name) = "{EntityTypeName}Service";
   option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
