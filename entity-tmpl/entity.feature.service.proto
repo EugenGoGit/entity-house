@@ -1,14 +1,9 @@
 syntax = "proto3";
 
-import "entity-tmpl/entity-feature-api-options.proto";
-import "entity-tmpl/entity-feature-api-method.proto";
-import "entity-tmpl/entity-feature-options.proto";
-import "google/api/field_behavior.proto";
+import "entity-tmpl/entity.feature.method.proto";
 import "google/protobuf/descriptor.proto";
 
-
-
-package entity.feature.api.service;
+package entity.feature.service;
 
 //
 //
@@ -72,15 +67,21 @@ package entity.feature.api.service;
 
 
 
+extend google.protobuf.MessageOptions {
+  string name = 3006;
+  string leading_comment = 3007;
+}
+
+
 // TODO: вынести неиспользуемые в prerelease
 message ServersideSingletonCRUD {
-  option (entity.feature.api.options.name_template) = "{EntityTypeName}Service";
-  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (service.name) = "{EntityTypeName}Service";
+  option (service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
-    entity.feature.api.method.GetMethod get_method = 1;
-    entity.feature.api.method.SaveMethodCreateReplace save_method_create_replace = 2;
-    entity.feature.api.method.EditMethod edit_method = 3;
-    entity.feature.api.method.DeleteMethod delete_method = 4;
+    method.Get get = 1;
+    method.SaveCreateReplace save_create_replace = 2;
+    method.Edit edit = 3;
+    method.Delete delete = 4;
   }
   string http_root = 1;
   MethodSet method_set = 2;
@@ -93,47 +94,67 @@ message ServersideSingletonCRUD {
 // TODO: Сделать генерируемый объект связки
 // TODO: проверка обязательности полей в LinkType
 message ServersideEntityCRUD {
-  option (entity.feature.api.options.name_template) = "{EntityTypeName}Service";
-  option (entity.feature.api.options.service_leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (service.name) = "{EntityTypeName}Service";
+  option (service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
-    entity.feature.api.method.GetMethodById get_method = 1;
-    entity.feature.api.method.GetListMethod get_list_method = 2;
-    entity.feature.api.method.GetCountMethod get_count_method = 3;
-    entity.feature.api.method.ExistsKeyMethod exists_key_method = 4;
-    entity.feature.api.method.ExistsMethod exists_method = 5;
+    method.GetById get = 1;
+    method.GetList get_list = 2;
+    method.GetCount get_count = 3;
+//    method.ExistsKey exists_key = 4;
+//    method.Exists exists = 5;
     // .
-    oneof save_method {
+    oneof save {
       // .
-      entity.feature.api.method.SaveMethodCreateOnly save_method_create_only = 6;
-      entity.feature.api.method.SaveMethodCreateReplace save_method_create_replace = 7;
+      method.SaveCreateOnly save_create_only = 6;
+      method.SaveCreateReplace save_create_replace = 7;
     }
     // .
-    oneof save_list_method {
+    oneof save_list {
       // .
-      entity.feature.api.method.SaveListMethodCreateOnly save_list_method_create_only = 8;
-      entity.feature.api.method.SaveListMethodCreateReplace save_list_method_create_replace = 9;
+      method.SaveListCreateOnly save_list_create_only = 8;
+      method.SaveListCreateReplace save_list_create_replace = 9;
     }
-    entity.feature.api.method.EditMethodById edit_method = 10;
-    entity.feature.api.method.EditListMethod edit_list_method = 11;
-    entity.feature.api.method.DeleteMethodById delete_method = 12;
-    entity.feature.api.method.RestoreMethodById restore_method = 13;
-    entity.feature.api.method.DeleteListMethod delete_list_method = 14;
-    repeated entity.feature.api.method.AttachMethod attach_methods = 15;
-    repeated entity.feature.api.method.DetachMethod detach_methods = 16;
-    repeated entity.feature.api.method.GetLinkListMethod get_link_list_methods = 17;
-    repeated entity.feature.api.method.GetLinkCountMethod get_link_count_methods = 18;
+    method.EditById edit = 10;
+    method.EditList edit_list = 11;
+    method.DeleteById delete = 12;
+    method.RestoreById restore = 13;
+    method.DeleteList delete_list = 14;
+    repeated method.Attach attach = 15;
+    repeated method.Detach detach = 16;
+    repeated method.GetLinkList get_link_list = 17;
+    repeated method.GetLinkCount get_link_count = 18;
   }
   string http_root = 1;
   MethodSet method_set = 2;
   // Определение ключевых полей сущности для использования в сервисе
   // Может быть переопределен в методах
-  entity.feature.options.KeyFieldsDefinition key_fields_definition = 3;
+  KeyFieldsDefinition key_fields_definition = 3;
   CustomComments custom_comments = 4;
 }
 
 message CustomComments {
-  // Переопределяет entity.feature.api.options.service_leading_comment
+  // Переопределяет leading_comment указанный в сервисе
   string leading_comment = 1;
-  // Дополнительный комментарий к методу
+  // Дополнительный комментарий к сервису
   string additional_leading_comment = 2;
+}
+
+enum UniqueFieldGroup {
+  PK = 0;
+  UG1 = 1;
+  UG2 = 2;
+  UG3 = 3;
+  UG4 = 4;
+  UG5 = 5;
+}
+
+message KeyFieldsList {
+  repeated string key_fields = 1;
+}
+
+message KeyFieldsDefinition {
+  oneof def {
+    KeyFieldsList key_field_list = 1;
+    UniqueFieldGroup unique_field_group = 2;
+  }
 }

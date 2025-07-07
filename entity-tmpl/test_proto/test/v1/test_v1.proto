@@ -5,7 +5,7 @@
 syntax = "proto3";
 //
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "entity-tmpl/entity-feature.proto";
+import "entity-tmpl/entity.feature.api.proto";
 import "google/api/field_behavior.proto";
 import "test_proto/device/v1/deviceapis_device_dtmf_v1.proto";
 //import "google/protobuf/descriptor.proto";

@@ -1,0 +1,385 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "google/api/http.proto";
+import "google/api/field_behavior.proto";
+import "entity.feature.dto.proto";
+
+package entity.feature.method;
+
+
+// TODO: вынести неиспользуемые в prerelease
+// TODO: Проверить , что поля и опции нельзя выставить там где не надо. разнести по пакетам
+extend google.protobuf.MessageOptions {
+  TemplateSet template_set = 3001;
+  // TODO: сделать подстановки в additional_bindings
+  google.api.HttpRule http_rule = 3002;
+  // TODO: вычислить key_field_behavior для ключевых полей
+  // Строгость (Cardinality) ключевых полей, требуемая для метода
+  google.api.FieldBehavior key_field_behavior = 3003;
+  bool server_streaming = 3004;
+  bool client_streaming = 3005;
+}
+
+
+// TODO: убрать вложенность
+message TemplateSet {
+  string name_template = 1;
+  string request_name = 2;
+  string response_name = 3;
+  dto.RequestTemplate request_template = 4;
+  dto.ResponseTemplate response_template = 5;
+  string leading_comment = 6;
+}
+
+
+
+message CustomComments {
+  // Переопределяет options.method_component_template_set.leading_comment
+  string leading_comment = 1;
+  // Дополнительный комментарий к методу
+  string additional_leading_comment = 2;
+  // Комментарий к запросу метода
+  // Переопределяет комментарий по умолчанию
+  string request_leading_comment = 3;
+  // Комментарий к ответу метода
+  // Переопределяет комментарий по умолчанию
+  string response_leading_comment = 4;
+}
+
+
+// TODO: общий MethodTemplate с общими полями
+// TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";
+// TODO: вынести неиспользуемые в prerelease
+// TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей {entity:type_name}{method:linked_type},
+message SaveCreateReplace {
+  option (template_set) = {
+    name_template:"Save{EntityTypeName}"
+    request_name: "Save{EntityTypeName}Request"
+    response_name: "Save{EntityTypeName}Response"
+    response_template: {one_entity_saving_error:{}}
+    request_template: {entity:{}}
+    leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
+  };
+  option (http_rule) = {
+    post: "/{HttpRoot}",
+    body: "*"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+}
+
+message SaveListCreateReplace {
+  option (template_set) = {
+    name_template:"Save{EntityTypeName}List",
+    request_name: "Save{EntityTypeName}ListRequest",
+    response_name: "Save{EntityTypeName}ListResponse"
+  };
+  option (http_rule) = {
+    post: "/{HttpRoot}/list",
+    body: "*"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+}
+
+message SaveCreateOnly {
+  option (template_set) = {
+    name_template:"Save{EntityTypeName}",
+    request_name: "Save{EntityTypeName}Request",
+    response_name: "Save{EntityTypeName}Response"
+  };
+  option (http_rule) = {
+    post: "/{HttpRoot}",
+    body: "*"
+  };
+  option (key_field_behavior) = OUTPUT_ONLY;
+}
+
+message SaveListCreateOnly {
+  option (template_set) = {
+    name_template:"Save{EntityTypeName}List",
+    request_name: "Save{EntityTypeName}ListRequest",
+    response_name: "Save{EntityTypeName}ListResponse"
+  };
+  option (http_rule) = {
+    post: "/{HttpRoot}/list",
+    body: "*"
+  };
+  option (key_field_behavior) = OUTPUT_ONLY;
+}
+
+message EditById {
+  option (template_set) = {
+    name_template:"Edit{EntityTypeName}",
+    request_name: "Edit{EntityTypeName}Request",
+    response_name: "Edit{EntityTypeName}Response"
+  };
+  option (http_rule) = {
+    patch: "/{HttpRoot}/{KeyFields}",
+    body: "data"
+  };
+  option (key_field_behavior) = REQUIRED;
+  // Переопределяет key_fields сервиса
+  repeated string key_fields = 1;
+}
+
+message Edit {
+  option (template_set) = {
+    name_template:"Edit{EntityTypeName}",
+    request_name: "Edit{EntityTypeName}Request",
+    response_name: "Edit{EntityTypeName}Response"
+  };
+  option (http_rule) = {
+    patch: "/{HttpRoot}",
+    body: "data"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+}
+
+message EditList {
+  option (template_set) = {
+    name_template:"Edit{EntityTypeName}List",
+    request_name: "Edit{EntityTypeName}ListRequest",
+    response_name: "Edit{EntityTypeName}ListResponse"
+  };
+  option (http_rule) = {
+    patch: "/{HttpRoot}/list",
+    body: "data"
+  };
+  option (key_field_behavior) = REQUIRED;
+}
+
+
+message DeleteById {
+  option (template_set) = {
+    name_template:"Delete{EntityTypeName}",
+    request_name: "Delete{EntityTypeName}Request",
+    response_name: "Delete{EntityTypeName}Response",
+    leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
+    response_template: {valid_error:{}}
+    request_template: {entity_key:{}}
+  };
+  option (http_rule) = {
+    delete: "/{HttpRoot}/{KeyFields}"
+  };
+  option (key_field_behavior) = REQUIRED;
+  // Переопределяет key_fields сервиса
+  repeated string key_fields = 1;
+  CustomComments custom_comments = 2;
+}
+
+message RestoreById {
+  option (template_set) = {
+    name_template:"Post{EntityTypeName}Restore",
+    request_name: "Post{EntityTypeName}RestoreRequest",
+    response_name: "Post{EntityTypeName}RestoreResponse",
+    leading_comment: "Метод восстановлении удаленной сущности {EntityTypeName} по ключу"
+    response_template: {valid_error:{}}
+    request_template: {entity_key:{}}
+  };
+  option (http_rule) = {
+    post: "/{HttpRoot}/restore/{KeyFields}"
+  };
+  option (key_field_behavior) = REQUIRED;
+  // Переопределяет key_fields сервиса
+  repeated string key_fields = 1;
+  CustomComments custom_comments = 2;
+}
+
+message Delete {
+  option (template_set) = {
+    name_template:"Delete{EntityTypeName}",
+    request_name: "Delete{EntityTypeName}Request",
+    response_name: "Delete{EntityTypeName}Response",
+  };
+  option (http_rule) = {
+    delete: "/{HttpRoot}"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+}
+
+message DeleteList {
+  option (template_set) = {
+    name_template:"Delete{EntityTypeName}List",
+    request_name: "Delete{EntityTypeName}ListRequest",
+    response_name: "Delete{EntityTypeName}ListResponse"
+  };
+  option (http_rule) = {
+    delete: "/{HttpRoot}"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+}
+
+message GetById {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}",
+    request_name: "Get{EntityTypeName}Request",
+    response_name: "Get{EntityTypeName}Response",
+    response_template: {entity_error:{}}
+    request_template: {entity_key:{}}
+    leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}/{KeyFields}"
+  };
+  option (key_field_behavior) = REQUIRED;
+  // Определение ключевых полей сущности для использования в методе
+  // Переопределяет key_fields сервиса
+  KeyFieldsDefinition key_fields_definition = 1;
+  CustomComments custom_comments = 2;
+}
+
+enum UniqueFieldGroup {
+  PK = 0;
+  UG1 = 1;
+  UG2 = 2;
+  UG3 = 3;
+  UG4 = 4;
+  UG5 = 5;
+}
+
+message KeyFieldsList {
+  repeated string key_fields = 1;
+}
+
+message KeyFieldsDefinition {
+  oneof def {
+    KeyFieldsList key_field_list = 1;
+    UniqueFieldGroup unique_field_group = 2;
+  }
+}
+
+message Get {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}",
+    request_name: "Get{EntityTypeName}Request",
+    response_name: "Get{EntityTypeName}Response"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+}
+
+message GetList {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}List",
+    request_name: "Get{EntityTypeName}ListRequest",
+    response_name: "Get{EntityTypeName}ListResponse"
+    request_template: {filter_paging:{}}
+    response_template: {entity_error:{}}
+    leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}/list"
+  };
+  option (server_streaming) = true;
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  // TODO: Переименовать order_by_values
+  repeated EnumValue order_by_set = 2;
+}
+
+message EnumValue {
+  string name = 1;
+  string title = 2;
+}
+
+message GetCount {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}Count",
+    request_name: "Get{EntityTypeName}CountRequest",
+    response_name: "Get{EntityTypeName}CountResponse"
+    request_template: {filter:{}}
+    response_template: {count_entity_error:{}}
+    leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}/count"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+}
+
+// TODO: в extension  Exists
+
+// TODO: в extension ExistsKey
+
+// TODO: в extension AttachList
+// TODO: в extension DetachList
+
+message Attach {
+  option (template_set) = {
+    name_template:"Put{EntityTypeName}{LinkedTypeName}Attach",
+    request_name: "Put{EntityTypeName}{LinkedTypeName}AttachRequest",
+    response_name: "Put{EntityTypeName}{LinkedTypeName}AttachResponse"
+    request_template: {link:{}}
+    response_template: {valid_error:{}}
+    leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
+  };
+  option (http_rule) = {
+    put: "/{HttpRoot}/{LinkedKeyPath}/attach"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type_name = 2;
+  string linked_key_path = 3;
+}
+
+message Detach {
+  option (template_set) = {
+    name_template:"Put{EntityTypeName}{LinkedTypeName}Detach",
+    request_name: "Put{EntityTypeName}{LinkedTypeName}DetachRequest",
+    response_name: "Put{EntityTypeName}{LinkedTypeName}DetachResponse"
+    request_template: {link:{}}
+    response_template: {valid_error:{}}
+    leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
+  };
+  option (http_rule) = {
+    put: "/{HttpRoot}/{LinkedKeyPath}/detach"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type_name = 2;
+  // TODO: подстановка link_key_field_path по аналогии с ключами сущности
+  string linked_key_path = 3;
+}
+
+message GetLinkList {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}{LinkedTypeName}List",
+    request_name: "Get{EntityTypeName}{LinkedTypeName}ListRequest",
+    response_name: "Get{EntityTypeName}{LinkedTypeName}ListResponse"
+    request_template: {link_filter_paging:{}}
+    response_template: {entity_error:{}}
+    leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}/{LinkedTypeName}/list"
+  };
+  option (server_streaming) = true;
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  // TODO: Переименовать order_by_values
+  repeated EnumValue order_by_set = 2;
+  string linked_type_name = 3;
+}
+
+message GetLinkCount {
+  option (template_set) = {
+    name_template:"Get{EntityTypeName}{LinkedTypeName}Count",
+    request_name: "Get{EntityTypeName}{LinkedTypeName}CountRequest",
+    response_name: "Get{EntityTypeName}{LinkedTypeName}CountResponse"
+    request_template: {link_filter:{}}
+    response_template: {count_entity_error:{}}
+    leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+  };
+  option (http_rule) = {
+    get: "/{HttpRoot}/{LinkedTypeName}/count"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  CustomComments custom_comments = 1;
+  string linked_type_name = 2;
+}
+
+

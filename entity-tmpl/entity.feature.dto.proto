@@ -1,0 +1,275 @@
+syntax = "proto3";
+
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/descriptor.proto";
+
+package entity.feature.dto;
+
+
+// TODO: вынести неиспользуемые в prerelease
+// TODO: Проверить , что поля и опции нельзя выставить там где не надо. разнести по пакетам
+extend google.protobuf.MessageOptions {
+  string message_comments = 3008;
+  // Тип в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле
+  string replace_message_type_name_to = 3009;
+}
+
+// TODO: попробовать опции для указания ключа и сущности в шаблоне
+extend google.protobuf.FieldOptions {
+  // TODO: возможность взять коммент с подставленного измененного типа
+  string field_comments = 3001;
+  // TODO: Добавить возможность менять имя поля
+  // Тип поля в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
+  // Если значение опции EntityKeyFields, то поле заменяется на массив ключевых полей
+  string replace_field_type_to = 3002;
+}
+
+extend google.protobuf.EnumOptions {
+  // В перечисление будут добавлены элементы из указанного поля опций метода. Поле ДОЛЖНО иметь тип массив entity.feature.api.method.EnumValue
+  string enum_by_method_attribute = 3001;
+  string enum_comments = 3002;
+}
+
+extend google.protobuf.EnumValueOptions {
+  string enum_value_comments = 3001;
+}
+
+extend google.protobuf.OneofOptions {
+  string oneof_comments = 3001;
+}
+
+
+
+message RequestTemplate {
+  oneof template {
+    EntityKey entity_key = 1;
+    Entity entity = 2;
+    FilterPaging filter_paging = 3;
+    LinkFilterPaging link_filter_paging = 4;
+    Filter filter = 5;
+    LinkFilter link_filter = 6;
+    Link link = 7;
+  }
+}
+
+message ResponseTemplate {
+  oneof template {
+    EntityWError entity_error = 1;
+    EntityList entity_list = 2;
+    CountEntityWError count_entity_error = 3;
+    ValidError valid_error = 4;
+    OneEntityWSavingError one_entity_saving_error = 5;
+  }
+}
+
+// Тип заглушка для замены на тип, указанный в опции поля replace_field_type_to
+// Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
+message ReplaceTypeDummy {}
+
+message EntityWError {
+  message Error {
+    option (dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (dto.oneof_comments) = "Тип ответа";
+    ReplaceTypeDummy data = 1 [
+      (dto.field_comments) = "{EntityTypeComment}",
+      (dto.replace_field_type_to) = "{EntityTypeName}"
+    ];
+    Error error = 2 [(dto.field_comments) = "Ошибка"];
+  }
+}
+
+message OneEntityWSavingError {
+  message Error {
+    option (dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(dto.field_comments) = "Ошибка валидации"];
+      ReplaceTypeDummy saving = 2 [
+        (dto.field_comments) = "Ошибка сохранения",
+        (dto.replace_field_type_to) = "{EntityTypeName}.SavingError"
+      ];
+    }
+  }
+  oneof type {
+    option (dto.oneof_comments) = "Тип ответа";
+    ReplaceTypeDummy data = 1 [
+      (dto.field_comments) = "{EntityTypeComment}",
+      (dto.replace_field_type_to) = "{EntityTypeName}"
+    ];
+    Error error = 2 [(dto.field_comments) = "Ошибка"];
+  }
+}
+
+message EntityList {
+  repeated ReplaceTypeDummy data = 1 [(dto.replace_field_type_to) = "{EntityTypeName}"];
+}
+
+message EntityKey {
+  ReplaceTypeDummy entity_key = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message Entity {
+  ReplaceTypeDummy data = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (dto.replace_field_type_to) = "{EntityTypeName}",
+    (dto.field_comments) = "{EntityTypeComment}"
+  ];
+}
+
+message FilterPaging {
+  ReplaceTypeDummy filter = 1 [
+    (dto.replace_field_type_to) = "{EntityTypeName}Filter",
+    (dto.field_comments) = "Фильтр"
+  ];
+  oneof pagination {
+    option (dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 2 [
+      (dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+// TODO: Отказаться от отдельного типа для связок
+message LinkFilterPaging {
+  ReplaceTypeDummy filter = 1 [
+    (dto.replace_field_type_to) = "{EntityTypeName}{LinkedTypeName}Filter",
+    (dto.field_comments) = "Фильтр"
+  ];
+  oneof pagination {
+    option (dto.oneof_comments) = "Вариант разбиения на страницы";
+    LinkPaging paging = 2 [
+      (dto.replace_field_type_to) = "{EntityTypeName}{LinkedTypeName}Paging",
+      (dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message Filter {
+  ReplaceTypeDummy filter = 1 [(dto.replace_field_type_to) =
+      "{EntityTypeName}Filter", (dto.field_comments) = "Фильтр"];
+}
+
+message LinkFilter {
+  ReplaceTypeDummy filter = 1 [(dto.replace_field_type_to) =
+      "{EntityTypeName}{LinkedTypeName}Filter", (dto.field_comments) = "Фильтр"];
+}
+
+// TODO: Отказаться от отдельного типа для связок
+message Link {
+  option (dto.message_comments) =
+      "Запрос на добавление/удаление связи {EntityTypeName} и {LinkedTypeName}";
+  ReplaceTypeDummy data = 1 [
+    (dto.replace_field_type_to) = "{EntityTypeName}{LinkedTypeName}",
+    (dto.field_comments) = "Связь {EntityTypeName} и {LinkedTypeName}",
+    (google.api.field_behavior) = REQUIRED];
+}
+
+message Paging {
+  option (dto.replace_message_type_name_to) = "{EntityTypeName}Paging";
+  option (dto.message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (dto.enum_by_method_attribute) = "order_by_set";
+    option (dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(dto.enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(dto.field_comments) =
+      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(dto.enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(dto.enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(dto.enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(dto.field_comments) =
+      "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(dto.field_comments) =
+      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+// TODO: Отказаться от отдельного типа для связок
+message LinkPaging {
+  option (dto.replace_message_type_name_to) = "{EntityTypeName}{LinkedTypeName}Paging";
+  option (dto.message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (dto.enum_by_method_attribute) = "order_by_set";
+    option (dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(dto.enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(dto.field_comments) =
+      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(dto.enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(dto.enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(dto.enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(dto.field_comments) =
+      "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(dto.field_comments) =
+      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+message CountEntityWError {
+  message Error {
+    option (dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(dto.field_comments) = "Всего количество"];
+    Error error = 2 [(dto.field_comments) = "Ошибка"];
+  }
+}
+
+message ValidError {
+  message Error {
+    option (dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (dto.oneof_comments) = "Тип ответа";
+    Error error = 1 [(dto.field_comments) = "Ошибка"];
+  }
+}
+
+message ValidationError {
+  option (dto.message_comments) =
+      "Ошибки валидации.\n Эти проверки выполняются до обращения в базу данных";
+  string path = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (dto.field_comments) = "Путь к полю в формате наименования прото"
+  ];
+  string message = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (dto.field_comments) = "Валидационное сообщение"
+  ];
+}
+
+
+
+
+
+
+
+

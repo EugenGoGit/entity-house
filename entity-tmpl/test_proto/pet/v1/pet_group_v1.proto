@@ -6,7 +6,7 @@ syntax = "proto3";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
-import "entity-tmpl/entity-feature.proto";
+import "entity-tmpl/entity.feature.api.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 package pet.v1;
@@ -83,7 +83,7 @@ message PetGroup {
             request_leading_comment: "Запрос на привязку группы животных и комнаты"
             response_leading_comment: "Ответ на запрос на привязку группы животных и комнаты"
           }
-          linked_type: "Room"
+          linked_type_name: "Room"
           linked_key_path: "id/{data.id}/room_id/{data.room_id}"
         }
         detach_methods: {
