@@ -4,6 +4,8 @@ import "google/protobuf/descriptor.proto";
 import "google/api/http.proto";
 import "google/api/field_behavior.proto";
 import "entity.feature.dto.proto";
+import "entity.feature.proto";
+
 
 package entity.feature.method;
 
@@ -229,25 +231,9 @@ message GetById {
   CustomComments custom_comments = 2;
 }
 
-enum UniqueFieldGroup {
-  PK = 0;
-  UG1 = 1;
-  UG2 = 2;
-  UG3 = 3;
-  UG4 = 4;
-  UG5 = 5;
-}
 
-message KeyFieldsList {
-  repeated string key_fields = 1;
-}
 
-message KeyFieldsDefinition {
-  oneof def {
-    KeyFieldsList key_field_list = 1;
-    UniqueFieldGroup unique_field_group = 2;
-  }
-}
+
 
 message Get {
   option (template_set) = {

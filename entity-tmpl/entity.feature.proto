@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+
+package entity.feature;
+
+enum UniqueFieldGroup {
+  PK = 0;
+  UG1 = 1;
+  UG2 = 2;
+  UG3 = 3;
+  UG4 = 4;
+  UG5 = 5;
+}
+
+message KeyFieldsList {
+  repeated string key_fields = 1;
+}
+
+message KeyFieldsDefinition {
+  oneof def {
+    KeyFieldsList key_field_list = 1;
+    UniqueFieldGroup unique_field_group = 2;
+  }
+}
+
