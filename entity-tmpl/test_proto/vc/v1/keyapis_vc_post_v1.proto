@@ -1,0 +1,43 @@
+/*
+  Сервис работы с камерами
+*/
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "entity.feature.options.proto";
+import "entity.feature.proto";
+
+package post.v1;
+
+
+// ю
+message Post {
+  option (entity.feature.api_specification) = {
+    any_service: {
+      http_root: "post/api/v1/post"
+      method_set: {
+        method: {
+          name_template: "Save{EntityTypeName}";
+          request_name: "Save{EntityTypeName}Request";
+          response_name: "Save{EntityTypeName}Response";
+          response_template: {one_entity_saving_error:{}};
+          request_template: {entity:{}};
+          leading_comment: "Метод создания/редактирования сущности {EntityTypeName}";
+          http_rule: {
+              post: "/{HttpRoot}",
+                  body: "*"
+              };
+          key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED;
+        }
+      }
+    }
+  };
+  // Идентификатор
+  string uid = 1 [(entity.feature.unique_field_group) = PK];
+  // Наименование
+  string name = 2;
+}

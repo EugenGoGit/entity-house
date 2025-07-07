@@ -18,6 +18,7 @@ message ApiSpecification {
   oneof service {
     service.ServersideEntityCRUD serverside_entity_crud = 1;
     service.ServersideSingletonCRUD serverside_singleton_crud = 2;
+    service.AnyService any_service = 3;
   }
 }
 

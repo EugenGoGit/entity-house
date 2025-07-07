@@ -4,20 +4,58 @@ import "google/protobuf/descriptor.proto";
 import "entity.feature.dto.proto";
 import "entity.feature.options.proto";
 import "entity.feature.method.options.proto";
+import "google/api/http.proto";
+import "google/api/field_behavior.proto";
 
 
 package entity.feature.method;
-
+// TODO: в опции дефолты и сделать RequestTemplate, RequestTemplate в полях метода
 extend google.protobuf.MessageOptions {
   dto.RequestTemplate request_template = 2996;
   dto.ResponseTemplate response_template = 2997;
 }
 
-// TODO: проверить расширяемость
-// TODO: общий MethodTemplate с общими полями
-// TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";
+// TODO: в опции дефолты, обработать поля метода и переопределить опции
+message Method {
+  option (name_template) = "Method{EntityTypeName}";
+  option (request_name) = "Method{EntityTypeName}Request";
+  option (response_name) = "Method{EntityTypeName}Response";
+  option (response_template) = {entity:{}};
+  option (request_template) = {entity:{}};
+  option (leading_comment) = "Метод для сущности {EntityTypeName}";
+  option (http_rule) = {
+    post: "/{HttpRoot}/method",
+    body: "*"
+  };
+  option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  string name_template = 1;
+  string request_name = 2;
+  string response_name = 3;
+  string leading_comment = 4;
+  // TODO: сделать подстановки в additional_bindings
+  google.api.HttpRule http_rule = 5;
+  // TODO: вычислить key_field_behavior для ключевых полей
+  // Строгость (Cardinality) ключевых полей, требуемая для метода
+  google.api.FieldBehavior key_field_behavior = 6;
+  bool server_streaming = 7;
+  bool client_streaming = 8;
+  // Определение ключевых полей сущности для использования в методе
+  // Переопределяет key_fields сервиса
+  KeyFieldsDefinition key_fields_definition = 9;
+  CustomComments custom_comments = 10;
+  // TODO: Переименовать order_by_values
+  repeated EnumValue order_by_set = 11;
+  string linked_type_name = 12;
+  // TODO: подстановка link_key_field_path по аналогии с ключами сущности
+  string linked_key_path = 13;
+  dto.RequestTemplate request_template = 14;
+  dto.ResponseTemplate response_template = 15;
+}
+
+// TODO: примеры на расширяемость
+// TODO: общий MethodTemplate с общими полями, может даже его включить в сервис
 // TODO: вынести неиспользуемые в prerelease
-// TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей {entity:type_name}{method:linked_type},
+// TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
 message SaveCreateReplace {
   option (name_template) = "Save{EntityTypeName}";
   option (request_name) = "Save{EntityTypeName}Request";
@@ -76,8 +114,9 @@ message EditById {
     body: "data"
   };
   option (key_field_behavior) = REQUIRED;
+  // Определение ключевых полей сущности для использования в методе
   // Переопределяет key_fields сервиса
-  repeated string key_fields = 1;
+  KeyFieldsDefinition key_fields_definition = 1;
 }
 
 message Edit {
@@ -130,8 +169,9 @@ message RestoreById {
     post: "/{HttpRoot}/restore/{KeyFields}"
   };
   option (key_field_behavior) = REQUIRED;
+  // Определение ключевых полей сущности для использования в методе
   // Переопределяет key_fields сервиса
-  repeated string key_fields = 1;
+  KeyFieldsDefinition key_fields_definition = 1;
   CustomComments custom_comments = 2;
 }
 
@@ -275,7 +315,6 @@ message GetLinkList {
 }
 
 message GetLinkCount {
-
   option (name_template) = "Get{EntityTypeName}{LinkedTypeName}Count";
   option (request_name) = "Get{EntityTypeName}{LinkedTypeName}CountRequest";
   option (response_name) = "Get{EntityTypeName}{LinkedTypeName}CountResponse";

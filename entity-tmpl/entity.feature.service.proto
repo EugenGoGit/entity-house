@@ -67,7 +67,20 @@ package entity.feature.service;
 //    Запрос существования по ключу, по параметрам
 
 
-
+message AnyService {
+  option (name) = "{EntityTypeName}Service";
+  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  message MethodSet {
+    // TODO: Сделать массив
+    method.Method method = 1;
+  }
+  string http_root = 1;
+  MethodSet method_set = 2;
+  CustomComments custom_comments = 3;
+  // Определение ключевых полей сущности для использования в сервисе
+  // Может быть переопределен в методах
+  KeyFieldsDefinition key_fields_definition = 4;
+}
 
 
 // TODO: вынести неиспользуемые в prerelease

@@ -437,7 +437,8 @@ func getProtoJ(c protocompile.Compiler, fd *descriptorpb.FileDescriptorProto, ap
 
 // TODO: убрать prefixName
 func getMessageComments(messJhumpDesc *desc.MessageDescriptor, prefixName string, commentsMap map[string]string) {
-	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()))
+	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()),*messJhumpDesc.GetSourceInfo().LeadingComments)
+	// TODO: проверка на существование комментов
 	commentsMap[messJhumpDesc.GetFullyQualifiedName()] = *messJhumpDesc.GetSourceInfo().LeadingComments
 	for i := range messJhumpDesc.GetNestedMessageTypes() {
 		getMessageComments(messJhumpDesc.GetNestedMessageTypes()[i],

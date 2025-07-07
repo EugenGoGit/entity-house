@@ -26,6 +26,7 @@ message ResponseTemplate {
     CountEntityWError count_entity_error = 3;
     ValidError valid_error = 4;
     OneEntityWSavingError one_entity_saving_error = 5;
+    Entity entity = 6;
   }
 }
 
