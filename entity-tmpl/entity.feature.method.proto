@@ -1,10 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "google/api/http.proto";
-import "google/api/field_behavior.proto";
 import "entity.feature.dto.proto";
-import "entity.feature.proto";
+import "entity.feature.options.proto";
 import "entity.feature.method.options.proto";
 
 
@@ -14,6 +12,7 @@ extend google.protobuf.MessageOptions {
   dto.RequestTemplate request_template = 2996;
   dto.ResponseTemplate response_template = 2997;
 }
+
 // TODO: проверить расширяемость
 // TODO: общий MethodTemplate с общими полями
 // TODO: попробовать использовать дескрипторы MethodDescriptor из google/protobuf/descriptor.proto";

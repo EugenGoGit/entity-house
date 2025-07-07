@@ -1,35 +1,31 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "entity.feature.service.proto";
-import "entity.feature.proto";
 
-package entity.feature.options;
-
-extend google.protobuf.MessageOptions {
-  // .
-  ApiSpecification api_specification = 3010;
-  // .
-  AMLSpecification aml_specification = 3011;
-}
+package entity.feature;
 
 extend google.protobuf.FieldOptions {
+  api_specification
   // .
   UniqueFieldGroup unique_field_group = 3003;
 }
 
-// Protobuf service generation
-message ApiSpecification {
-  oneof service {
-    service.ServersideEntityCRUD serverside_entity_crud = 1;
-    service.ServersideSingletonCRUD serverside_singleton_crud = 2;
+enum UniqueFieldGroup {
+  PK = 0;
+  UG1 = 1;
+  UG2 = 2;
+  UG3 = 3;
+  UG4 = 4;
+  UG5 = 5;
+}
+
+message KeyFieldsList {
+  repeated string key_fields = 1;
+}
+
+message KeyFieldsDefinition {
+  oneof def {
+    KeyFieldsList key_field_list = 1;
+    UniqueFieldGroup unique_field_group = 2;
   }
 }
-
-// AML (Azimutt Markup Language)
-// https://azimutt.app/docs/aml
-// https://azimutt.app/converters/postgres/to/amlv1
-// TODO: генерация сущности по AMLv1
-message AMLSpecification {
-}
-

@@ -3,8 +3,6 @@ syntax = "proto3";
 import "google/protobuf/descriptor.proto";
 import "google/api/http.proto";
 import "google/api/field_behavior.proto";
-import "entity.feature.dto.proto";
-import "entity.feature.proto";
 
 
 package entity.feature.method;

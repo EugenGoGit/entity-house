@@ -1,8 +1,7 @@
 syntax = "proto3";
 
 import "entity.feature.method.proto";
-import "google/protobuf/descriptor.proto";
-import "entity.feature.proto";
+import "entity.feature.options.proto";
 import "entity.feature.service.options.proto";
 
 package entity.feature.service;
