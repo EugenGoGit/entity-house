@@ -8,7 +8,7 @@ package entity.feature;
 
 extend google.protobuf.MessageOptions {
   // .
-  ApiSpecification api_specification = 3010 [(entity.feature.api_specification) = {}];
+  ApiSpecification api_specification = 3010;
   // .
   AMLSpecification aml_specification = 3011;
 }

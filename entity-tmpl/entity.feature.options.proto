@@ -5,7 +5,6 @@ import "google/protobuf/descriptor.proto";
 package entity.feature;
 
 extend google.protobuf.FieldOptions {
-  api_specification
   // .
   UniqueFieldGroup unique_field_group = 3003;
 }

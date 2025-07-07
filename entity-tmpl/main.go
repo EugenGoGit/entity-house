@@ -832,11 +832,11 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				// если есть entity.feature.api_specification, считаем, что в поле api_specification описание сервиса
 				// считаем, что опция Kind = message
 				// считаем, что данный Message описывает сущность для которой нужен сервис
-				if msgOpt.fullName == "entity.feature.options.api_specification" {
+				if msgOpt.fullName == "entity.feature.api_specification" {
 					entityMsgApiSpecOpt[msgDesc] = msgOpt
 				}
 				// если есть entity.feature.aml_specification
-				if msgOpt.fullName == "entity.feature.options.aml_specification" {
+				if msgOpt.fullName == "entity.feature.aml_specification" {
 					entityMsgAmlSpecOpt[msgDesc] = msgOpt
 
 				}
