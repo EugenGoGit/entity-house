@@ -587,26 +587,24 @@ func genEntityApiSpec(apiSpecOpt Field,
 		}
 		// в опциях параметры генерации метода
 		methodOptsMap := getFieldMap(methodDefMessage.Descriptor().Options().ProtoReflect())
-		// в полях template_set шаблоны компонент метода
-		methodTemplatesMap := getFieldMap(methodOptsMap["template_set"].val.Message())
 		// шаблон имени в name_template
-		methodName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		methodName := strings.Replace(methodOptsMap["name_template"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 		methodName = strings.Replace(methodName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
 
 		// methodFullName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityTypeName}", string(msgDesc.FullName()), -1)
 		// шаблон имени запроса в request_name
-		requestName := strings.Replace(methodTemplatesMap["request_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		requestName := strings.Replace(methodOptsMap["request_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 		requestName = strings.Replace(requestName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
 		requestFullName := *genFileProto.Package + "." + requestName
 		// шаблон имени ответа в response_name
-		responseName := strings.Replace(methodTemplatesMap["response_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		responseName := strings.Replace(methodOptsMap["response_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 		responseName = strings.Replace(responseName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
 		responseFullName := *genFileProto.Package + "." + responseName
 		// определяем список ключевых полей для метода
 		keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
 		// шаблон запроса в request_template
 		// там только одно поле
-		tmpl := methodTemplatesMap["request_template"]
+		tmpl := methodOptsMap["request_template"]
 
 		requestMessageProtodesc, err := createTypeDescByTemplateParent(
 			&tmpl.val,
@@ -623,7 +621,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 			return err
 		}
 
-		tmpl = methodTemplatesMap["response_template"]
+		tmpl = methodOptsMap["response_template"]
 		responseMessageProtodesc, err := createTypeDescByTemplateParent(
 			&tmpl.val,
 			responseName,
@@ -721,7 +719,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 		// Добавляем комментарии к запросу и ответу метода
 		genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
 		methodComment := "Метод " + methodName
-		if val, ok := methodTemplatesMap["leading_comment"]; ok {
+		if val, ok := methodOptsMap["leading_comment"]; ok {
 			methodComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 			methodComment = strings.Replace(methodComment, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
 		}
