@@ -50,9 +50,9 @@ message PetGroup {
             request_leading_comment: "Запрос получения списка групп животных"
             response_leading_comment: "Ответ на запрос получения списка групп животных"
           }
-          order_by_set: {name:"ID", title: "По идентификатору"}
-          order_by_set: {name:"CREATED_AT", title: "По времени создания"}
-          order_by_set: {name:"STREET_THEN_NUMBER_THEN_PART", title: "По улице, номеру дома, корпусу"}
+          order_by_values: {name:"ID", title: "По идентификатору"}
+          order_by_values: {name:"CREATED_AT", title: "По времени создания"}
+          order_by_values: {name:"STREET_THEN_NUMBER_THEN_PART", title: "По улице, номеру дома, корпусу"}
         }
         get_count: {
           custom_comments:{
@@ -86,7 +86,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос на привязку группы животных и комнаты"
           }
           linked_type_name: "Room"
-          linked_key_path: "id/{data.id}/room_id/{data.room_id}"
+          link_key_field_path: "id/{data.id}/room_id/{data.room_id}"
         }
         detach: {
           custom_comments: {
@@ -96,7 +96,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос на отвязку группы животных и комнаты"
           }
           linked_type_name: "Room"
-          linked_key_path: "id/{data.id}/room_id/{data.room_id}"
+          link_key_field_path: "id/{data.id}/room_id/{data.room_id}"
         }
       }
     }

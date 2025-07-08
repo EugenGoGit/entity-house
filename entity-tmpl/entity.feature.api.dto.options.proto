@@ -4,8 +4,6 @@ import "google/protobuf/descriptor.proto";
 
 package entity.feature.api.dto;
 
-// TODO: вынести неиспользуемые в prerelease
-// TODO: Проверить , что поля и опции нельзя выставить там где не надо. разнести по пакетам
 extend google.protobuf.MessageOptions {
   string message_comments = 3008;
   // Тип в шаблоне заменяется на тип, указанный в опции
@@ -13,7 +11,7 @@ extend google.protobuf.MessageOptions {
   string replace_message_type_name_to = 3009;
 }
 
-// TODO: попробовать опции для указания ключа и сущности в шаблоне
+// TODO: попробовать не типы, а опции для указания ключа и сущности в шаблоне
 extend google.protobuf.FieldOptions {
   // TODO: возможность взять коммент с подставленного измененного типа
   string field_comments = 3001;

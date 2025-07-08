@@ -194,7 +194,7 @@ message GetList {
   option (entity.feature.api.method.server_streaming) = true;
   option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   entity.feature.api.method.CustomComments custom_comments = 1;
-  repeated entity.feature.api.method.EnumValue order_by_set = 2;
+  repeated entity.feature.api.method.EnumValue order_by_values = 2;
 }
 
 message GetCount {
@@ -227,12 +227,12 @@ message Attach {
   option (response_template) = {valid_error:{}};
   option (entity.feature.api.method.leading_comment) = "Метод привязки {EntityTypeName} и {LinkedTypeName}";
   option (entity.feature.api.method.http_rule) = {
-    put: "/{HttpRoot}/{LinkedKeyPath}/attach"
+    put: "/{HttpRoot}/{LinkKeyFieldPath}/attach"
   };
   option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   entity.feature.api.method.CustomComments custom_comments = 1;
   string linked_type_name = 2;
-  string linked_key_path = 3;
+  string link_key_field_path = 3;
 }
 
 message Detach {
@@ -243,12 +243,12 @@ message Detach {
   option (response_template) = {valid_error:{}};
   option (entity.feature.api.method.leading_comment) = "Метод отвязки {EntityTypeName} и {LinkedTypeName}";
   option (entity.feature.api.method.http_rule) = {
-    put: "/{HttpRoot}/{LinkedKeyPath}/detach"
+    put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
   };
   option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   entity.feature.api.method.CustomComments custom_comments = 1;
   string linked_type_name = 2;
-  string linked_key_path = 3;
+  string link_key_field_path = 3;
 }
 
 message GetLinkList {
@@ -264,7 +264,7 @@ message GetLinkList {
   option (entity.feature.api.method.server_streaming) = true;
   option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   entity.feature.api.method.CustomComments custom_comments = 1;
-  repeated entity.feature.api.method.EnumValue order_by_set = 2;
+  repeated entity.feature.api.method.EnumValue order_by_values = 2;
   string linked_type_name = 3;
 }
 

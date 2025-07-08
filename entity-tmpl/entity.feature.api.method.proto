@@ -9,21 +9,17 @@ import "google/api/http.proto";
 
 
 package entity.feature.api.method;
-// TODO: в опции дефолты и сделать RequestTemplate, RequestTemplate в полях метода
+
 extend google.protobuf.MessageOptions {
   dto.RequestTemplate request_template = 2996;
   dto.ResponseTemplate response_template = 2997;
 }
 
-// TODO: в опции дефолты, обработать поля метода и переопределить опции
 // TODO: примеры на расширяемость
-// TODO: общий MethodTemplate с общими полями, может даже его включить в сервис
-// TODO: вынести неиспользуемые в prerelease
 // TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
 // Абстрактный шаблон метода
 // На основе этого могут создаваться частные имплементации шаблонов методов
 message Method {
-  // TODO: Сделать name
   // Имя метода по умолчанию
   // Может быть переопределено полем name
   option (name) = "Method{EntityTypeName}";
@@ -67,11 +63,9 @@ message Method {
   // Переопределяет key_fields сервиса
   KeyFieldsDefinition key_fields_definition = 9;
   CustomComments custom_comments = 10;
-  // TODO: Переименовать order_by_values
-  repeated EnumValue order_by_set = 11;
+  repeated EnumValue order_by_values = 11;
   string linked_type_name = 12;
-  // TODO: подстановка link_key_field_path по аналогии с ключами сущности
-  string linked_key_path = 13;
+  string link_key_field_path = 13;
   dto.RequestTemplate request_template = 14;
   dto.ResponseTemplate response_template = 15;
 }

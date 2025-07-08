@@ -376,7 +376,6 @@ func getUniqueFieldGroup(entityDesc pref.MessageDescriptor, uniqueFieldGroupEl p
 	return res
 }
 
-// TODO: remove fullName
 type FieldFullName struct {
 	fullName       string
 	fieldDescProto *descriptorpb.FieldDescriptorProto
@@ -438,14 +437,13 @@ func getProtoJ(c protocompile.Compiler, fd *descriptorpb.FileDescriptorProto, ap
 	return res
 }
 
-// TODO: убрать prefixName
-func getMessageComments(messJhumpDesc *desc.MessageDescriptor, prefixName string, commentsMap map[string]string) {
-	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()), *messJhumpDesc.GetSourceInfo().LeadingComments)
-	// TODO: проверка на существование комментов
-	commentsMap[messJhumpDesc.GetFullyQualifiedName()] = *messJhumpDesc.GetSourceInfo().LeadingComments
+func getMessageComments(messJhumpDesc *desc.MessageDescriptor, commentsMap map[string]string) {
+	if messJhumpDesc.GetSourceInfo().LeadingComments != nil {
+		commentsMap[messJhumpDesc.GetFullyQualifiedName()] = *messJhumpDesc.GetSourceInfo().LeadingComments
+	}
+
 	for i := range messJhumpDesc.GetNestedMessageTypes() {
 		getMessageComments(messJhumpDesc.GetNestedMessageTypes()[i],
-			messJhumpDesc.GetFullyQualifiedName(),
 			commentsMap,
 		)
 	}
@@ -615,7 +613,7 @@ func genMethod(
 	if fieldServerStreaming, ok := methodFieldMap["server_streaming"]; ok {
 		serverStreaming = fieldServerStreaming.val.Bool()
 	} else {
-		if optServerStreaming, ok := methodFieldMap["server_streaming"]; ok {
+		if optServerStreaming, ok := methodOptsMap["server_streaming"]; ok {
 			serverStreaming = optServerStreaming.val.Bool()
 		} else {
 			serverStreaming = false
@@ -628,7 +626,7 @@ func genMethod(
 	if fieldClientStreaming, ok := methodFieldMap["client_streaming"]; ok {
 		clientStreaming = fieldClientStreaming.val.Bool()
 	} else {
-		if optClientStreaming, ok := methodFieldMap["client_streaming"]; ok {
+		if optClientStreaming, ok := methodOptsMap["client_streaming"]; ok {
 			clientStreaming = optClientStreaming.val.Bool()
 		} else {
 			clientStreaming = false
@@ -673,7 +671,7 @@ func genMethod(
 				fd := fdHttp.Message().Fields().ByName(pref.Name(k))
 				httpPath := strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1)
 				httpPath = strings.Replace(httpPath, "{KeyFields}", keyFieldPath, -1)
-				httpPath = strings.Replace(httpPath, "{LinkedKeyPath}", methodFieldMap["linked_key_path"].val.String(), -1)
+				httpPath = strings.Replace(httpPath, "{LinkKeyFieldPath}", methodFieldMap["link_key_field_path"].val.String(), -1)
 				httpPath = strings.Replace(httpPath, "{LinkedTypeName}", strings.ToLower(methodFieldMap["linked_type_name"].val.String()), -1)
 				fdHttpV.Set(fd, pref.ValueOf(httpPath))
 				valOpt = valOpt + k + ": \"" +
@@ -745,10 +743,17 @@ func genEntityApiSpec(apiSpecOpt Field,
 	// Создаем сервис
 	// в опциях шаблон имени
 	serviceOptsMap := getFieldMap(serviceOptVal.Descriptor().Options().ProtoReflect())
-	serviceName := strings.Replace(serviceOptsMap["name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+	serviceFieldsMap := getFieldMap(serviceOptVal)
+	var serviceName string
+	if val, ok := serviceFieldsMap["custom_comments"]; ok {
+		serviceName = val.val.String()
+	} else {
+		serviceName = serviceOptsMap["name"].val.String()
+	}
+	// TODO: Универсальная процедура подстановок
+	serviceName = strings.Replace(serviceName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 
 	// в полях сервиса требуемые методы в method_set
-	serviceFieldsMap := getFieldMap(serviceOptVal)
 	methodsDefMap := getFieldMap(serviceFieldsMap["method_set"].val.Message())
 	// Корневой httpPath в http_root, он же - признак добавления опций http
 	httpRoot := serviceFieldsMap["http_root"].val.String()
@@ -774,12 +779,14 @@ func genEntityApiSpec(apiSpecOpt Field,
 
 	// Заполним комменты по всем сущностям файла
 	for i := range sourceFileJhumpDesc.GetMessageTypes() {
-		getMessageComments(sourceFileJhumpDesc.GetMessageTypes()[i], *genFileProto.Package, genFileComments)
+		getMessageComments(sourceFileJhumpDesc.GetMessageTypes()[i], genFileComments)
 	}
 
 	// Заполним комменты по всем сервисам файла
 	for i := range sourceFileJhumpDesc.GetServices() {
-		genFileComments[sourceFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()] = *sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments
+		if sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments != nil {
+			genFileComments[sourceFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()] = *sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments
+		}
 	}
 
 	// Добавим сам Entity
@@ -982,18 +989,24 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			// Добавим комменты
 			for i := range sourceFilePrefDesc[k].Services().Len() {
 				genFileProto.Service = append(genFileProto.Service, protodesc.ToServiceDescriptorProto(sourceFilePrefDesc[k].Services().Get(i)))
-				genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).FullName())] = *sourceFileJhumpDesc.FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).GetSourceInfo().LeadingComments
+				leadingComments := sourceFileJhumpDesc.FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).GetSourceInfo().LeadingComments
+				if leadingComments != nil {
+					genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).FullName())] = *leadingComments
+				}
 
 				for j := range sourceFilePrefDesc[k].Services().Get(i).Methods().Len() {
 					fmt.Println("FindMethodByName", sourceFileJhumpDesc.
 						FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
 						FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())))
 					fmt.Println("(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName()))", (string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())))
-					genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())] =
-						*sourceFileJhumpDesc.
-							FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
-							FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())).
-							GetSourceInfo().LeadingComments
+					leadingComments := sourceFileJhumpDesc.
+						FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
+						FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())).
+						GetSourceInfo().LeadingComments
+					if leadingComments != nil {
+						genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())] =
+							*leadingComments
+					}
 				}
 			}
 
@@ -1030,7 +1043,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 					panic(err)
 				}
 			}
-			// TODO: Добавлять сущность в генерацию уже без опций
+
 			// уберем опции entity.feature с полей, они не нужны в генерации
 			for i := range genFileProto.MessageType {
 				for j := range genFileProto.MessageType[i].Field {
@@ -1110,7 +1123,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			}
 
 			p := new(protoprint.Printer)
-			// TODO: своя сортировка p.CustomSortFunction
 			p.CustomSortFunction = printerSort
 			p.SortElements = true
 			p.Compact = true

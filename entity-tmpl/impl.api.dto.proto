@@ -141,7 +141,7 @@ message Paging {
   option (entity.feature.api.dto.replace_message_type_name_to) = "{EntityTypeName}Paging";
   option (entity.feature.api.dto.message_comments) = "Постраничный вывод";
   enum OrderByType {
-    option (entity.feature.api.dto.enum_by_method_attribute) = "order_by_set";
+    option (entity.feature.api.dto.enum_by_method_attribute) = "order_by_values";
     option (entity.feature.api.dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
     ORDER_BY_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
   }
@@ -165,7 +165,7 @@ message LinkPaging {
   option (entity.feature.api.dto.replace_message_type_name_to) = "{EntityTypeName}{LinkedTypeName}Paging";
   option (entity.feature.api.dto.message_comments) = "Постраничный вывод";
   enum OrderByType {
-    option (entity.feature.api.dto.enum_by_method_attribute) = "order_by_set";
+    option (entity.feature.api.dto.enum_by_method_attribute) = "order_by_values";
     option (entity.feature.api.dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
     ORDER_BY_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
   }

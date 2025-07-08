@@ -8,8 +8,6 @@ import "google/api/field_behavior.proto";
 package entity.feature.api.method;
 
 
-// TODO: вынести неиспользуемые в prerelease
-// TODO: Проверить, что поля и опции нельзя выставить там где не надо. разнести по пакетам
 extend google.protobuf.MessageOptions {
   string name = 2998;
   string request_name = 2999;
