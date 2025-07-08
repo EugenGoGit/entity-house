@@ -609,37 +609,49 @@ func genMethod(
 		ClientStreaming: proto.Bool(true),
 		Options:         &descriptorpb.MethodOptions{},
 	}
-	// TODO: подстановки из полей или опций
+
 	// в поле server_streaming признак ответа в потоке
-	if val, ok := methodOptsMap["server_streaming"]; ok {
-		if val.val.Bool() {
-			b := true
-			genMethodProto.ServerStreaming = &b
-		} else {
-			b := false
-			genMethodProto.ServerStreaming = &b
-		}
+	var serverStreaming bool
+	if fieldServerStreaming, ok := methodFieldMap["server_streaming"]; ok {
+		serverStreaming = fieldServerStreaming.val.Bool()
 	} else {
-		b := false
-		genMethodProto.ServerStreaming = &b
+		if optServerStreaming, ok := methodFieldMap["server_streaming"]; ok {
+			serverStreaming = optServerStreaming.val.Bool()
+		} else {
+			serverStreaming = false
+		}
 	}
+	genMethodProto.ServerStreaming = &serverStreaming
+
 	// в поле client_streaming признак ответа в потоке
-	if val, ok := methodOptsMap["client_streaming"]; ok {
-		if val.val.Bool() {
-			b := true
-			genMethodProto.ClientStreaming = &b
-		} else {
-			b := false
-			genMethodProto.ClientStreaming = &b
-		}
+	var clientStreaming bool
+	if fieldClientStreaming, ok := methodFieldMap["client_streaming"]; ok {
+		clientStreaming = fieldClientStreaming.val.Bool()
 	} else {
-		b := false
-		genMethodProto.ClientStreaming = &b
+		if optClientStreaming, ok := methodFieldMap["client_streaming"]; ok {
+			clientStreaming = optClientStreaming.val.Bool()
+		} else {
+			clientStreaming = false
+		}
 	}
+	genMethodProto.ClientStreaming = &clientStreaming
+
 	// в полях entity.api.http_rule http опции google.api.HttpRule
 	// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
 	// с заменой по шаблону
-	if val, ok := methodOptsMap["http_rule"]; ok {
+
+	var httpRule Field
+	isHttpRule := false
+	if fieldHttpRule, ok := methodFieldMap["http_rule"]; ok {
+		httpRule = fieldHttpRule
+		isHttpRule = true
+	} else {
+		if optHttpRule, ok := methodOptsMap["http_rule"]; ok {
+			httpRule = optHttpRule
+			isHttpRule = true
+		}
+	}
+	if isHttpRule {
 		if httpRoot != "" && httpRoot != "<nil>" {
 			var keyFieldPath string
 			if len(keyFieldList) == 1 {
@@ -652,7 +664,7 @@ func genMethod(
 					}
 				}
 			}
-			methodHttpRuleMap := getFieldMap(val.val.Message())
+			methodHttpRuleMap := getFieldMap(httpRule.val.Message())
 			var valOpt string = "{ "
 
 			fdHttp := googleApiAnnotationsPrefDesc.Extensions().ByName("http")
@@ -674,8 +686,13 @@ func genMethod(
 
 	}
 
+	// TODO: вычислить требуемый для сущности
 	// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
-	printEnumEl(methodOptsMap["key_field_behavior"])
+	if val, ok := methodFieldMap["key_field_behavior"]; ok {
+		printEnumEl(val)
+	} else {
+		printEnumEl(methodOptsMap["key_field_behavior"])
+	}
 
 	// Добавляем метод с комментарием
 	// Добавляем комментарии к запросу и ответу метода
