@@ -10,6 +10,7 @@ package entity.feature.api.dto;
 message RequestTemplate {
   oneof template {
     EntityKey entity_key = 1;
+    Entity entity = 2;
   }
 }
 

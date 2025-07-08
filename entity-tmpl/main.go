@@ -193,7 +193,7 @@ func getTypeDescByTemplate(
 						}
 
 						addMessageToProtoRoot[string(fieldTypePrefDesc.Name())] = msgDescProto
-						
+
 					}
 					// Добавим коммент для него
 					if val, ok := fieldTypeOpts["message_comments"]; ok {
@@ -497,8 +497,216 @@ func fillMessageComments(messJhumpDesc *desc.MessageDescriptor, messBuilder *bui
 
 }
 
-func genMethod() {
-	
+func genMethod(
+	methodDefMessage pref.Message,
+	serviceKeyFieldsDefinition pref.Value,
+	genFileProto *descriptorpb.FileDescriptorProto,
+	entityPrefDesc pref.MessageDescriptor,
+	entityMessageProtodesc *descriptorpb.DescriptorProto,
+	genFileComments map[string]string,
+	addProtoRoot map[string]*descriptorpb.DescriptorProto,
+	httpRoot string,
+	googleApiAnnotationsPrefDesc pref.FileDescriptor,
+	genServiceProto *descriptorpb.ServiceDescriptorProto,
+	serviceName string,
+
+) error {
+	// в полях заданы параметры метода
+	methodFieldMap := getFieldMap(methodDefMessage)
+	// переопределяем Определение уникальных полей сервиса
+	keyFieldsDefinition := serviceKeyFieldsDefinition
+	if val, ok := methodFieldMap["key_fields_definition"]; ok {
+		keyFieldsDefinition = val.val
+	}
+	// в опциях параметры генерации метода
+	methodOptsMap := getFieldMap(methodDefMessage.Descriptor().Options().ProtoReflect())
+	// шаблон имени в name
+	var methodName string
+	if val, ok := methodFieldMap["name"]; ok {
+		methodName = val.val.String()
+	} else {
+		methodName = methodOptsMap["name"].val.String()
+	}
+	methodName = strings.Replace(methodName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+	methodName = strings.Replace(methodName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+
+	// шаблон имени запроса в request_name
+	var requestName string
+	if val, ok := methodFieldMap["request_name"]; ok {
+		requestName = val.val.String()
+	} else {
+		requestName = methodOptsMap["request_name"].val.String()
+	}
+	requestName = strings.Replace(requestName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+	requestName = strings.Replace(requestName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	requestFullName := *genFileProto.Package + "." + requestName
+	// шаблон имени ответа в response_name
+	var responseName string
+	if val, ok := methodFieldMap["response_name"]; ok {
+		responseName = val.val.String()
+	} else {
+		responseName = methodOptsMap["response_name"].val.String()
+	}
+	responseName = strings.Replace(responseName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+	responseName = strings.Replace(responseName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	responseFullName := *genFileProto.Package + "." + responseName
+	// определяем список ключевых полей для метода
+	keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
+	// шаблон запроса в request_template
+	// там только одно поле
+	var requestTmpl Field
+	if val, ok := methodFieldMap["request_template"]; ok {
+		requestTmpl = val
+	} else {
+		requestTmpl = methodOptsMap["request_template"]
+	}
+
+	requestMessageProtodesc, err := createTypeDescByTemplateParent(
+		&requestTmpl.val,
+		requestName,
+		requestFullName,
+		*entityMessageProtodesc.Name,
+		entityPrefDesc,
+		keyFieldList,
+		methodFieldMap,
+		genFileComments,
+		addProtoRoot,
+	)
+	if err != nil {
+		return err
+	}
+
+	var responseTmpl Field
+	if val, ok := methodFieldMap["response_template"]; ok {
+		responseTmpl = val
+	} else {
+		responseTmpl = methodOptsMap["response_template"]
+	}
+
+	responseMessageProtodesc, err := createTypeDescByTemplateParent(
+		&responseTmpl.val,
+		responseName,
+		responseFullName,
+		*entityMessageProtodesc.Name,
+		entityPrefDesc,
+		keyFieldList,
+		methodFieldMap,
+		genFileComments,
+		addProtoRoot,
+	)
+	if err != nil {
+		return err
+	}
+
+	genFileProto.MessageType = append(genFileProto.MessageType, requestMessageProtodesc)
+	genFileProto.MessageType = append(genFileProto.MessageType, responseMessageProtodesc)
+
+	genMethodProto := &descriptorpb.MethodDescriptorProto{
+		Name:            proto.String(methodName),
+		InputType:       proto.String(requestName),
+		OutputType:      proto.String(responseName),
+		ServerStreaming: proto.Bool(true),
+		ClientStreaming: proto.Bool(true),
+		Options:         &descriptorpb.MethodOptions{},
+	}
+	// TODO: подстановки из полей или опций
+	// в поле server_streaming признак ответа в потоке
+	if val, ok := methodOptsMap["server_streaming"]; ok {
+		if val.val.Bool() {
+			b := true
+			genMethodProto.ServerStreaming = &b
+		} else {
+			b := false
+			genMethodProto.ServerStreaming = &b
+		}
+	} else {
+		b := false
+		genMethodProto.ServerStreaming = &b
+	}
+	// в поле client_streaming признак ответа в потоке
+	if val, ok := methodOptsMap["client_streaming"]; ok {
+		if val.val.Bool() {
+			b := true
+			genMethodProto.ClientStreaming = &b
+		} else {
+			b := false
+			genMethodProto.ClientStreaming = &b
+		}
+	} else {
+		b := false
+		genMethodProto.ClientStreaming = &b
+	}
+	// в полях entity.api.http_rule http опции google.api.HttpRule
+	// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
+	// с заменой по шаблону
+	if val, ok := methodOptsMap["http_rule"]; ok {
+		if httpRoot != "" && httpRoot != "<nil>" {
+			var keyFieldPath string
+			if len(keyFieldList) == 1 {
+				keyFieldPath = keyFieldPath + "{" + *keyFieldList[0].fieldDescProto.Name + "}"
+			} else {
+				for i := range keyFieldList {
+					keyFieldPath = keyFieldPath + *keyFieldList[i].fieldDescProto.Name + "/{" + *keyFieldList[i].fieldDescProto.Name + "}"
+					if i != len(keyFieldList)-1 {
+						keyFieldPath = keyFieldPath + "/"
+					}
+				}
+			}
+			methodHttpRuleMap := getFieldMap(val.val.Message())
+			var valOpt string = "{ "
+
+			fdHttp := googleApiAnnotationsPrefDesc.Extensions().ByName("http")
+			fdHttpV := dynamicpb.NewMessage(fdHttp.Message())
+			for k, v := range methodHttpRuleMap {
+				fd := fdHttp.Message().Fields().ByName(pref.Name(k))
+				httpPath := strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1)
+				httpPath = strings.Replace(httpPath, "{KeyFields}", keyFieldPath, -1)
+				httpPath = strings.Replace(httpPath, "{LinkedKeyPath}", methodFieldMap["linked_key_path"].val.String(), -1)
+				httpPath = strings.Replace(httpPath, "{LinkedTypeName}", strings.ToLower(methodFieldMap["linked_type_name"].val.String()), -1)
+				fdHttpV.Set(fd, pref.ValueOf(httpPath))
+				valOpt = valOpt + k + ": \"" +
+					// strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
+					httpPath + "\", "
+			}
+			genMethodProto.Options.ProtoReflect().Set(fdHttp, pref.ValueOf(fdHttpV))
+
+		}
+
+	}
+
+	// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
+	printEnumEl(methodOptsMap["key_field_behavior"])
+
+	// Добавляем метод с комментарием
+	// Добавляем комментарии к запросу и ответу метода
+	genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
+	methodComment := "Метод " + methodName
+	if val, ok := methodOptsMap["leading_comment"]; ok {
+		methodComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		methodComment = strings.Replace(methodComment, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	}
+	requestComment := "Запрос метода " + methodName
+	responseComment := "Ответ на запрос метода " + methodName
+
+	if val, ok := methodFieldMap["custom_comments"]; ok {
+		customCommentMap := getFieldMap(val.val.Message())
+		if val, ok := customCommentMap["leading_comment"]; ok {
+			methodComment = val.val.String()
+		}
+		if val, ok := customCommentMap["additional_leading_comment"]; ok {
+			methodComment = methodComment + ".\n" + val.val.String()
+		}
+		if val, ok := customCommentMap["request_leading_comment"]; ok {
+			requestComment = val.val.String()
+		}
+		if val, ok := customCommentMap["response_leading_comment"]; ok {
+			responseComment = val.val.String()
+		}
+	}
+	genFileComments[*genFileProto.Package+"."+serviceName+"."+methodName] = methodComment
+	genFileComments[*genFileProto.Package+"."+requestName] = requestComment
+	genFileComments[*genFileProto.Package+"."+responseName] = responseComment
+	return nil
 }
 
 func genEntityApiSpec(apiSpecOpt Field,
@@ -579,182 +787,43 @@ func genEntityApiSpec(apiSpecOpt Field,
 
 	// Добавим методы
 	for _, methodDefEntry := range methodsDefMap {
-
-		fmt.Println("methodDef.desc.Kind()", methodDefEntry.desc.FullName())
-		var methodDefMessage pref.Message
 		if methodDefEntry.desc.IsList() {
-			// TODO: Обработать не только 0 элемент
-			methodDefMessage = methodDefEntry.val.List().Get(0).Message()
-		} else {
-			methodDefMessage = methodDefEntry.val.Message()
-		}
-		// в полях заданы параметры метода
-		methodFieldMap := getFieldMap(methodDefMessage)
-		// переопределяем Определение уникальных полей сервиса
-		keyFieldsDefinition := serviceKeyFieldsDefinition
-		if val, ok := methodFieldMap["key_fields_definition"]; ok {
-			keyFieldsDefinition = val.val
-		}
-		// в опциях параметры генерации метода
-		methodOptsMap := getFieldMap(methodDefMessage.Descriptor().Options().ProtoReflect())
-		// шаблон имени в name_template
-		methodName := strings.Replace(methodOptsMap["name_template"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-		methodName = strings.Replace(methodName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
-
-		// methodFullName := strings.Replace(methodTemplatesMap["name_template"].val.String(), "{EntityTypeName}", string(msgDesc.FullName()), -1)
-		// шаблон имени запроса в request_name
-		requestName := strings.Replace(methodOptsMap["request_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-		requestName = strings.Replace(requestName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
-		requestFullName := *genFileProto.Package + "." + requestName
-		// шаблон имени ответа в response_name
-		responseName := strings.Replace(methodOptsMap["response_name"].val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-		responseName = strings.Replace(responseName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
-		responseFullName := *genFileProto.Package + "." + responseName
-		// определяем список ключевых полей для метода
-		keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
-		// шаблон запроса в request_template
-		// там только одно поле
-		tmpl := methodOptsMap["request_template"]
-
-		requestMessageProtodesc, err := createTypeDescByTemplateParent(
-			&tmpl.val,
-			requestName,
-			requestFullName,
-			*entityMessageProtodesc.Name,
-			entityPrefDesc,
-			keyFieldList,
-			methodFieldMap,
-			genFileComments,
-			addProtoRoot,
-		)
-		if err != nil {
-			return err
-		}
-
-		tmpl = methodOptsMap["response_template"]
-		responseMessageProtodesc, err := createTypeDescByTemplateParent(
-			&tmpl.val,
-			responseName,
-			responseFullName,
-			*entityMessageProtodesc.Name,
-			entityPrefDesc,
-			keyFieldList,
-			methodFieldMap,
-			genFileComments,
-			addProtoRoot,
-		)
-		if err != nil {
-			return err
-		}
-
-		genFileProto.MessageType = append(genFileProto.MessageType, requestMessageProtodesc)
-		genFileProto.MessageType = append(genFileProto.MessageType, responseMessageProtodesc)
-
-		genMethodProto := &descriptorpb.MethodDescriptorProto{
-			Name:            proto.String(methodName),
-			InputType:       proto.String(requestName),
-			OutputType:      proto.String(responseName),
-			ServerStreaming: proto.Bool(true),
-			ClientStreaming: proto.Bool(true),
-			Options:         &descriptorpb.MethodOptions{},
-		}
-		// в поле server_streaming признак ответа в потоке
-		if val, ok := methodOptsMap["server_streaming"]; ok {
-			if val.val.Bool() {
-				b := true
-				genMethodProto.ServerStreaming = &b
-			} else {
-				b := false
-				genMethodProto.ServerStreaming = &b
-			}
-		} else {
-			b := false
-			genMethodProto.ServerStreaming = &b
-		}
-		// в поле client_streaming признак ответа в потоке
-		if val, ok := methodOptsMap["client_streaming"]; ok {
-			if val.val.Bool() {
-				b := true
-				genMethodProto.ClientStreaming = &b
-			} else {
-				b := false
-				genMethodProto.ClientStreaming = &b
-			}
-		} else {
-			b := false
-			genMethodProto.ClientStreaming = &b
-		}
-		// в полях entity.api.http_rule http опции google.api.HttpRule
-		// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
-		// с заменой по шаблону
-		if val, ok := methodOptsMap["http_rule"]; ok {
-			if httpRoot != "" && httpRoot != "<nil>" {
-				var keyFieldPath string
-				if len(keyFieldList) == 1 {
-					keyFieldPath = keyFieldPath + "{" + *keyFieldList[0].fieldDescProto.Name + "}"
-				} else {
-					for i := range keyFieldList {
-						keyFieldPath = keyFieldPath + *keyFieldList[i].fieldDescProto.Name + "/{" + *keyFieldList[i].fieldDescProto.Name + "}"
-						if i != len(keyFieldList)-1 {
-							keyFieldPath = keyFieldPath + "/"
-						}
-					}
+			for j := range methodDefEntry.val.List().Len() {
+				err := genMethod(
+					methodDefEntry.val.List().Get(j).Message(),
+					serviceKeyFieldsDefinition,
+					genFileProto,
+					entityPrefDesc,
+					entityMessageProtodesc,
+					genFileComments,
+					addProtoRoot,
+					httpRoot,
+					googleApiAnnotationsPrefDesc,
+					genServiceProto,
+					serviceName,
+				)
+				if err != nil {
+					return err
 				}
-				methodHttpRuleMap := getFieldMap(val.val.Message())
-				var valOpt string = "{ "
-
-				fdHttp := googleApiAnnotationsPrefDesc.Extensions().ByName("http")
-				fdHttpV := dynamicpb.NewMessage(fdHttp.Message())
-				for k, v := range methodHttpRuleMap {
-					fd := fdHttp.Message().Fields().ByName(pref.Name(k))
-					httpPath := strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1)
-					httpPath = strings.Replace(httpPath, "{KeyFields}", keyFieldPath, -1)
-					httpPath = strings.Replace(httpPath, "{LinkedKeyPath}", methodFieldMap["linked_key_path"].val.String(), -1)
-					httpPath = strings.Replace(httpPath, "{LinkedTypeName}", strings.ToLower(methodFieldMap["linked_type_name"].val.String()), -1)
-					fdHttpV.Set(fd, pref.ValueOf(httpPath))
-					valOpt = valOpt + k + ": \"" +
-						// strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
-						httpPath + "\", "
-				}
-				genMethodProto.Options.ProtoReflect().Set(fdHttp, pref.ValueOf(fdHttpV))
-
 			}
-
-		}
-
-		// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
-		printEnumEl(methodOptsMap["key_field_behavior"])
-
-		// Добавляем метод с комментарием
-		// Добавляем комментарии к запросу и ответу метода
-		genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
-		methodComment := "Метод " + methodName
-		if val, ok := methodOptsMap["leading_comment"]; ok {
-			methodComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-			methodComment = strings.Replace(methodComment, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
-		}
-		requestComment := "Запрос метода " + methodName
-		responseComment := "Ответ на запрос метода " + methodName
-
-		if val, ok := methodFieldMap["custom_comments"]; ok {
-			customCommentMap := getFieldMap(val.val.Message())
-			if val, ok := customCommentMap["leading_comment"]; ok {
-				methodComment = val.val.String()
-			}
-			if val, ok := customCommentMap["additional_leading_comment"]; ok {
-				methodComment = methodComment + ".\n" + val.val.String()
-			}
-			if val, ok := customCommentMap["request_leading_comment"]; ok {
-				requestComment = val.val.String()
-			}
-			if val, ok := customCommentMap["response_leading_comment"]; ok {
-				responseComment = val.val.String()
+		} else {
+			err := genMethod(
+				methodDefEntry.val.Message(),
+				serviceKeyFieldsDefinition,
+				genFileProto,
+				entityPrefDesc,
+				entityMessageProtodesc,
+				genFileComments,
+				addProtoRoot,
+				httpRoot,
+				googleApiAnnotationsPrefDesc,
+				genServiceProto,
+				serviceName,
+			)
+			if err != nil {
+				return err
 			}
 		}
-		genFileComments[*genFileProto.Package+"."+serviceName+"."+methodName] = methodComment
-		genFileComments[*genFileProto.Package+"."+requestName] = requestComment
-		genFileComments[*genFileProto.Package+"."+responseName] = responseComment
-
 	}
 	genFileProto.Service = append(genFileProto.Service, genServiceProto)
 

@@ -11,7 +11,7 @@ package entity.feature.api.method;
 // TODO: вынести неиспользуемые в prerelease
 // TODO: Проверить, что поля и опции нельзя выставить там где не надо. разнести по пакетам
 extend google.protobuf.MessageOptions {
-  string name_template = 2998;
+  string name = 2998;
   string request_name = 2999;
   string response_name = 3000;
   string leading_comment = 3001;

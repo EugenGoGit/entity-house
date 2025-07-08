@@ -21,16 +21,28 @@ message Post {
       http_root: "post/api/v1/post"
       method_set: {
         method: {
-          name_template: "Save{EntityTypeName}";
+          name: "Save{EntityTypeName}";
           request_name: "Save{EntityTypeName}Request";
           response_name: "Save{EntityTypeName}Response";
           response_template: {entity:{}};
-          request_template: {entity_key:{}};
+          request_template: {entity:{}};
           leading_comment: "Метод создания/редактирования сущности {EntityTypeName}";
           http_rule: {
               post: "/{HttpRoot}",
                   body: "*"
               };
+          key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED;
+        }
+        method: {
+          name: "Get{EntityTypeName}";
+          request_name: "Get{EntityTypeName}Request";
+          response_name: "Get{EntityTypeName}Response";
+          response_template: {entity:{}};
+          request_template: {entity_key:{}};
+          leading_comment: "Метод получения сущности {EntityTypeName}";
+          http_rule: {
+            get: "/{HttpRoot}/{KeyFields}"
+          };
           key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED;
         }
       }

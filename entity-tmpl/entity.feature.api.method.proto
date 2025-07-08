@@ -26,7 +26,7 @@ message Method {
   // TODO: Сделать name
   // Имя метода по умолчанию
   // Может быть переопределено полем name
-  option (name_template) = "Method{EntityTypeName}";
+  option (name) = "Method{EntityTypeName}";
   // Имя запроса метода по умолчанию
   // Может быть переопределено полем request_name
   option (request_name) = "Method{EntityTypeName}Request";
@@ -52,7 +52,7 @@ message Method {
   // Может быть переопределено полем key_field_behavior
   option (key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
   // Имя сервиса, переопределяет опцию name
-  string name_template = 1;
+  string name = 1;
   string request_name = 2;
   string response_name = 3;
   string leading_comment = 4;

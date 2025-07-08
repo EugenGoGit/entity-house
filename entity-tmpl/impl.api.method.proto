@@ -14,7 +14,7 @@ extend google.protobuf.MessageOptions {
 }
 
 message SaveCreateReplace {
-  option (entity.feature.api.method.name_template) = "Save{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Save{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Save{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Save{EntityTypeName}Response";
   option (response_template) = {one_entity_saving_error:{}};
@@ -29,7 +29,7 @@ message SaveCreateReplace {
 }
 
 message SaveListCreateReplace {
-  option (entity.feature.api.method.name_template) = "Save{EntityTypeName}List";
+  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
   option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
 
@@ -41,7 +41,7 @@ message SaveListCreateReplace {
 }
 
 message SaveCreateOnly {
-  option (entity.feature.api.method.name_template) = "Save{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Save{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Save{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Save{EntityTypeName}Response";
   option (entity.feature.api.method.http_rule) = {
@@ -52,7 +52,7 @@ message SaveCreateOnly {
 }
 
 message SaveListCreateOnly {
-  option (entity.feature.api.method.name_template) = "Save{EntityTypeName}List";
+  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
   option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
   option (entity.feature.api.method.http_rule) = {
@@ -63,7 +63,7 @@ message SaveListCreateOnly {
 }
 
 message EditById {
-  option (entity.feature.api.method.name_template) = "Edit{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
   option (entity.feature.api.method.http_rule) = {
@@ -77,7 +77,7 @@ message EditById {
 }
 
 message Edit {
-  option (entity.feature.api.method.name_template) = "Edit{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
   option (entity.feature.api.method.http_rule) = {
@@ -88,7 +88,7 @@ message Edit {
 }
 
 message EditList {
-  option (entity.feature.api.method.name_template) = "Edit{EntityTypeName}List";
+  option (entity.feature.api.method.name) = "Edit{EntityTypeName}List";
   option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}ListResponse";
   option (entity.feature.api.method.http_rule) = {
@@ -100,7 +100,7 @@ message EditList {
 
 
 message DeleteById {
-  option (entity.feature.api.method.name_template) = "Delete{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
   option (entity.feature.api.method.leading_comment) = "Метод удаления единичной сущности {EntityTypeName} по ключу";
@@ -116,7 +116,7 @@ message DeleteById {
 }
 
 message RestoreById {
-  option (entity.feature.api.method.name_template) = "Post{EntityTypeName}Restore";
+  option (entity.feature.api.method.name) = "Post{EntityTypeName}Restore";
   option (entity.feature.api.method.request_name) = "Post{EntityTypeName}RestoreRequest";
   option (entity.feature.api.method.response_name) = "Post{EntityTypeName}RestoreResponse";
   option (entity.feature.api.method.leading_comment) = "Метод восстановлении удаленной сущности {EntityTypeName} по ключу";
@@ -134,7 +134,7 @@ message RestoreById {
 
 message Delete {
 
-  option (entity.feature.api.method.name_template) = "Delete{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
   option (entity.feature.api.method.http_rule) = {
@@ -145,7 +145,7 @@ message Delete {
 
 message DeleteList {
 
-  option (entity.feature.api.method.name_template) = "Delete{EntityTypeName}List";
+  option (entity.feature.api.method.name) = "Delete{EntityTypeName}List";
   option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}ListResponse";
   option (entity.feature.api.method.http_rule) = {
@@ -155,7 +155,7 @@ message DeleteList {
 }
 
 message GetById {
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
   option (response_template) = {entity_error:{}};
@@ -172,7 +172,7 @@ message GetById {
 }
 
 message Get {
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
   option (entity.feature.api.method.http_rule) = {
@@ -182,7 +182,7 @@ message Get {
 }
 
 message GetList {
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}List";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}List";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}ListResponse";
   option (request_template) = {filter_paging:{}};
@@ -199,7 +199,7 @@ message GetList {
 
 message GetCount {
 
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}Count";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}Count";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}CountRequest";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}CountResponse";
   option (request_template) = {filter:{}};
@@ -220,7 +220,7 @@ message GetCount {
 // TODO: в extension DetachList
 
 message Attach {
-  option (entity.feature.api.method.name_template) = "Put{EntityTypeName}{LinkedTypeName}Attach";
+  option (entity.feature.api.method.name) = "Put{EntityTypeName}{LinkedTypeName}Attach";
   option (entity.feature.api.method.request_name) = "Put{EntityTypeName}{LinkedTypeName}AttachRequest";
   option (entity.feature.api.method.response_name) = "Put{EntityTypeName}{LinkedTypeName}AttachResponse";
   option (request_template) = {link:{}};
@@ -236,7 +236,7 @@ message Attach {
 }
 
 message Detach {
-  option (entity.feature.api.method.name_template) = "Put{EntityTypeName}{LinkedTypeName}Detach";
+  option (entity.feature.api.method.name) = "Put{EntityTypeName}{LinkedTypeName}Detach";
   option (entity.feature.api.method.request_name) = "Put{EntityTypeName}{LinkedTypeName}DetachRequest";
   option (entity.feature.api.method.response_name) = "Put{EntityTypeName}{LinkedTypeName}DetachResponse";
   option (request_template) = {link:{}};
@@ -252,7 +252,7 @@ message Detach {
 }
 
 message GetLinkList {
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}{LinkedTypeName}List";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}{LinkedTypeName}List";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}{LinkedTypeName}ListRequest";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}{LinkedTypeName}ListResponse";
   option (request_template) = {link_filter_paging:{}};
@@ -269,7 +269,7 @@ message GetLinkList {
 }
 
 message GetLinkCount {
-  option (entity.feature.api.method.name_template) = "Get{EntityTypeName}{LinkedTypeName}Count";
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}{LinkedTypeName}Count";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}{LinkedTypeName}CountRequest";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}{LinkedTypeName}CountResponse";
   option (request_template) = {link_filter:{}};
