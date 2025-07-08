@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+
+import "google/api/field_behavior.proto";
+import "entity.feature.api.dto.options.proto";
+
+package entity.feature.api.dto;
+
+// TODO: проверить расширяемость
+message RequestTemplate {
+  oneof template {
+    EntityKey entity_key = 1;
+  }
+}
+
+message ResponseTemplate {
+  oneof template {
+    Entity entity = 1;
+  }
+}
+
+message EntityKey {
+  ReplaceTypeDummy entity_key = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message Entity {
+  ReplaceTypeDummy data = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (replace_field_type_to) = "{EntityTypeName}",
+    (field_comments) = "{EntityTypeComment}"
+  ];
+}
+
+
+
+
+
+
+

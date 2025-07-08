@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "entity-tmpl/entity.feature.api.proto";
+import "entity-tmpl/entity.feature.aml.proto";
 
 package keyapis.vc.v1;
 

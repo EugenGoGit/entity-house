@@ -56,6 +56,7 @@ func compareFilesByteByByte(fileOut, fileAssert string) (bool, error) {
 }
 
 func TestGenProto(t *testing.T) {
+	// m := BuildEntityFeatures("./test_proto/vc/v1", []string{".", "../proto_deps", ".."})
 	m := BuildEntityFeatures("./test_proto/vc/v1", []string{".", "../proto_deps", ".."})
 	fmt.Println("generation: ", len(m))
 	for k, v := range m {

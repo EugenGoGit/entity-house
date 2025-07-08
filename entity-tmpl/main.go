@@ -170,6 +170,7 @@ func getTypeDescByTemplate(
 					fieldTypeOpts := getFieldMap(fieldTypePrefDesc.Options().ProtoReflect())
 					msgDescProto := protodesc.ToDescriptorProto(fieldTypePrefDesc)
 					if val, ok := fieldTypeOpts["replace_message_type_name_to"]; ok {
+						msgDescProto.Options.ProtoReflect().Clear(val.desc)
 						s := strings.Replace(val.val.String(), "{EntityTypeName}", entityTypeName, -1)
 						s = strings.Replace(s, "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
 						msgDescProto.Name = &s
@@ -190,7 +191,9 @@ func getTypeDescByTemplate(
 						if err != nil {
 							return err
 						}
+
 						addMessageToProtoRoot[string(fieldTypePrefDesc.Name())] = msgDescProto
+						
 					}
 					// Добавим коммент для него
 					if val, ok := fieldTypeOpts["message_comments"]; ok {
@@ -437,7 +440,7 @@ func getProtoJ(c protocompile.Compiler, fd *descriptorpb.FileDescriptorProto, ap
 
 // TODO: убрать prefixName
 func getMessageComments(messJhumpDesc *desc.MessageDescriptor, prefixName string, commentsMap map[string]string) {
-	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()),*messJhumpDesc.GetSourceInfo().LeadingComments)
+	fmt.Println("messJhumpDesc.GetFullyQualifiedName()", messJhumpDesc.GetFullyQualifiedName(), prefixName, string(messJhumpDesc.GetName()), *messJhumpDesc.GetSourceInfo().LeadingComments)
 	// TODO: проверка на существование комментов
 	commentsMap[messJhumpDesc.GetFullyQualifiedName()] = *messJhumpDesc.GetSourceInfo().LeadingComments
 	for i := range messJhumpDesc.GetNestedMessageTypes() {
@@ -492,6 +495,10 @@ func fillMessageComments(messJhumpDesc *desc.MessageDescriptor, messBuilder *bui
 		}
 	}
 
+}
+
+func genMethod() {
+	
 }
 
 func genEntityApiSpec(apiSpecOpt Field,
@@ -551,6 +558,8 @@ func genEntityApiSpec(apiSpecOpt Field,
 	}
 
 	// Добавим сам Entity
+	// удалим опцию АПИ
+	entityPrefDesc.Options().ProtoReflect().Clear(apiSpecOpt.desc)
 	entityMessageProtodesc := protodesc.ToDescriptorProto(entityPrefDesc)
 
 	// Если сервис уже есть в генерации, добавим методы к нему
@@ -767,6 +776,15 @@ func ToSnakeCase(s string, divider string) string {
 	return strings.Replace(s, divider, "_", -1)
 }
 
+func printerSort(a, b protoprint.Element) bool {
+	if a.Kind() == protoprint.KindService {
+		if b.Kind() == protoprint.KindMessage {
+			return true
+		}
+	}
+	return false
+}
+
 func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string]string {
 	var protoFileNames []string
 	m := make(map[string]string)
@@ -830,14 +848,19 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			// ищем опции entity.feature
 			// TODO: рекурсивно смотреть во вложенные Messages
 			for _, msgOpt := range getFieldMap(msgDesc.Options().ProtoReflect()) {
-				// если есть entity.feature.api_specification, считаем, что в поле api_specification описание сервиса
+				// если есть опция на поле опции entity.feature.api.specification, если она true считаем, что в поле описание спецификации АПИ
 				// считаем, что опция Kind = message
 				// считаем, что данный Message описывает сущность для которой нужен сервис
-				if msgOpt.fullName == "entity.feature.api_specification" {
-					entityMsgApiSpecOpt[msgDesc] = msgOpt
+				msgOptOpt := getFieldMap(msgOpt.desc.Options().ProtoReflect())
+				if val, ok := msgOptOpt["specification"]; ok {
+					if val.fullName == "entity.feature.api.specification" {
+						if val.val.Bool() == true {
+							entityMsgApiSpecOpt[msgDesc] = msgOpt
+						}
+					}
 				}
 				// если есть entity.feature.aml_specification
-				if msgOpt.fullName == "entity.feature.aml_specification" {
+				if msgOpt.fullName == "entity.feature.aml.specification" {
 					entityMsgAmlSpecOpt[msgDesc] = msgOpt
 
 				}
@@ -875,11 +898,10 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				genFileProto.Service = append(genFileProto.Service, protodesc.ToServiceDescriptorProto(sourceFilePrefDesc[k].Services().Get(i)))
 				genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).FullName())] = *sourceFileJhumpDesc.FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).GetSourceInfo().LeadingComments
 
-				
 				for j := range sourceFilePrefDesc[k].Services().Get(i).Methods().Len() {
-									fmt.Println("FindMethodByName",sourceFileJhumpDesc.
-							FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
-							FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())))
+					fmt.Println("FindMethodByName", sourceFileJhumpDesc.
+						FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
+						FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())))
 					fmt.Println("(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName()))", (string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())))
 					genFileComments[string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())] =
 						*sourceFileJhumpDesc.
@@ -949,15 +971,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				genFileProto.MessageType = append(genFileProto.MessageType, v)
 			}
 
-			// уберем опции entity.feature с entity, они не нужны в генерации
-			for i := range genFileProto.MessageType {
-				m := getFieldMap(genFileProto.MessageType[i].Options.ProtoReflect())
-				for _, val := range m {
-					if strings.Contains(string(val.fullName), "entity.feature.") {
-						genFileProto.MessageType[i].Options.ProtoReflect().Clear(val.desc)
-					}
-				}
-			}
 			// убираем импорт entity-tmpl/entity-feature.proto
 			for i := range genFileProto.Dependency {
 				if genFileProto.Dependency[i] == "entity-tmpl/entity-feature.proto" {
@@ -1011,7 +1024,11 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			}
 
 			p := new(protoprint.Printer)
+			// TODO: своя сортировка p.CustomSortFunction
+			p.CustomSortFunction = printerSort
 			p.SortElements = true
+			p.Compact = true
+			p.ForceFullyQualifiedNames = false
 			p.Indent = "    "
 			protoStr, err := p.PrintProtoToString(genFileDesc)
 			if err != nil {

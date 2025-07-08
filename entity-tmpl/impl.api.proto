@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "impl.api.service.proto";
+import "entity.feature.api.options.proto";
+
+package impl.api;
+
+extend google.protobuf.MessageOptions {
+  // .
+  Specification specification = 3016 [(entity.feature.api.specification) = true];
+}
+
+// Protobuf service generation
+message Specification {
+  oneof service {
+    service.ServersideEntityCRUD serverside_entity_crud = 1;
+    service.ServersideSingletonCRUD serverside_singleton_crud = 2;
+  }
+}

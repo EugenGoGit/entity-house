@@ -3,7 +3,7 @@ syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
 
-package entity.feature.service;
+package entity.feature.api.service;
 
 extend google.protobuf.MessageOptions {
   string name = 3006;

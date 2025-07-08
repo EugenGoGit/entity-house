@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
 
-package entity.feature.dto;
+package entity.feature.api.dto;
 
 // TODO: вынести неиспользуемые в prerelease
 // TODO: Проверить , что поля и опции нельзя выставить там где не надо. разнести по пакетам

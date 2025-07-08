@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "entity.feature.api.service.proto";
+import "entity.feature.api.options.proto";
+
+package entity.feature;
+
+extend google.protobuf.MessageOptions {
+  // .
+  Specification specification = 3010 [(entity.feature.api.specification) = true];
+}
+
+// Protobuf service generation
+// Абстрактная шаблон спецификации АПИ, который может быть расширена частными имплементациями
+message Specification {
+    api.service.EntityService entity_service = 3;
+}
+

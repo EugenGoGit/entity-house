@@ -5,10 +5,10 @@
 syntax = "proto3";
 //
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "entity-tmpl/entity.feature.api.proto";
 import "google/api/field_behavior.proto";
-//import "google/api/annotations.proto";
-//import "google/protobuf/descriptor.proto";
+import "impl.api.proto";
+import "entity.feature.aml.proto";
+import "entity.feature.options.proto";
 
 package pet.v1;
 
@@ -29,17 +29,17 @@ service SetSettingsService1 {
 
 //Настройки SET
 message SetSettings {
-  option (entity.feature.api_specification) = {
+  option (impl.api.specification) = {
     serverside_entity_crud: {
       http_root: "device/api/v1/settings"
       method_set:{
-        get_method: {
+        get: {
           key_fields_definition: {
             unique_field_group: UG5
           }
         }
-        save_method_create_replace:{}
-        delete_method: {
+        save_create_replace:{}
+        delete: {
           custom_comments: {
             leading_comment: "Метод удаления настроек",
             additional_leading_comment: "Метод доступен для: admin"
@@ -48,7 +48,7 @@ message SetSettings {
       }
     }
   };
-  option (entity.feature.aml_specification) = {};
+  option (entity.feature.aml.specification) = {};
   option deprecated = true;
   option no_standard_descriptor_accessor = true;
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {discriminator: "jfjfjf"};

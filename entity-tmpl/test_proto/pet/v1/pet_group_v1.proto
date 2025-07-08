@@ -6,7 +6,9 @@ syntax = "proto3";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
-import "entity-tmpl/entity.feature.api.proto";
+import "impl.api.proto";
+import "entity.feature.options.proto";
+
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 package pet.v1;
@@ -25,7 +27,7 @@ option optimize_for = LITE_RUNTIME;
 
 // Группа животных
 message PetGroup {
-  option (entity.feature.api_specification) = {
+  option (impl.api.specification) = {
     serverside_entity_crud: {
       http_root: "pet/api/v1/pet_group"
       custom_comments: {
@@ -33,7 +35,7 @@ message PetGroup {
         additional_leading_comment: "Сервис реализуется в проекте Dummy"
       }
       method_set: {
-        get_method: {
+        get: {
           custom_comments:{
             leading_comment: "Метод получения группы животных"
             additional_leading_comment: "Для owner, employee возвращаются только группы животных c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, seller, owner, employee"
@@ -41,7 +43,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос получения группы животных"
           }
         }
-        get_list_method: {
+        get_list: {
           custom_comments:{
             leading_comment: "Метод получения списка групп животных"
             additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
@@ -52,7 +54,7 @@ message PetGroup {
           order_by_set: {name:"CREATED_AT", title: "По времени создания"}
           order_by_set: {name:"STREET_THEN_NUMBER_THEN_PART", title: "По улице, номеру дома, корпусу"}
         }
-        get_count_method: {
+        get_count: {
           custom_comments:{
             leading_comment: "Метод получения количества групп животных"
             additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
@@ -60,7 +62,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос получения количества групп животных"
           }
         }
-        save_method_create_replace:{
+        save_create_replace:{
           custom_comments:{
             leading_comment: "Метод создания и изменения группы животных"
             additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
@@ -68,7 +70,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос создания/редактирования группы животных"
           }
         }
-        delete_method: {
+        delete: {
           custom_comments: {
             leading_comment: "Метод удаления группы животных"
             additional_leading_comment: "Метод доступен для: admin, service, bti, seller, owner, employee"
@@ -76,7 +78,7 @@ message PetGroup {
             response_leading_comment: "Ответ на запрос удаления группы животных"
           }
         }
-        attach_methods: {
+        attach: {
           custom_comments: {
             leading_comment: "Метод привязки группы животных и комнаты"
             additional_leading_comment: "Метод доступен для: admin, service, bti, owner, employee"
@@ -86,14 +88,14 @@ message PetGroup {
           linked_type_name: "Room"
           linked_key_path: "id/{data.id}/room_id/{data.room_id}"
         }
-        detach_methods: {
+        detach: {
           custom_comments: {
             leading_comment: "Метод отвязки группы животных и комнаты"
             additional_leading_comment: "Метод доступен для: admin, service, bti, owner, employee"
             request_leading_comment: "Запрос на отвязку группы животных и комнаты"
             response_leading_comment: "Ответ на запрос на отвязку группы животных и комнаты"
           }
-          linked_type: "Room"
+          linked_type_name: "Room"
           linked_key_path: "id/{data.id}/room_id/{data.room_id}"
         }
       }

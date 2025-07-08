@@ -5,7 +5,7 @@ import "google/api/http.proto";
 import "google/api/field_behavior.proto";
 
 
-package entity.feature.method;
+package entity.feature.api.method;
 
 
 // TODO: вынести неиспользуемые в prerelease

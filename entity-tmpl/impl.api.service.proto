@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-import "entity.feature.method.proto";
+import "impl.api.method.proto";
 import "entity.feature.options.proto";
-import "entity.feature.service.options.proto";
+import "entity.feature.api.service.options.proto";
 
-package entity.feature.service;
+package impl.api.service;
 
 //
 //
@@ -66,28 +66,9 @@ package entity.feature.service;
 //    Получение всех связей - Get_List GET c фильтром, пагинацией в query, возврат stream DTO связи
 //    Запрос существования по ключу, по параметрам
 
-
-message AnyService {
-  option (name) = "{EntityTypeName}Service";
-  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
-  message MethodSet {
-    // TODO: Сделать массив
-    method.Method method = 1;
-  }
-  string http_root = 1;
-  MethodSet method_set = 2;
-  CustomComments custom_comments = 3;
-  // Определение ключевых полей сущности для использования в сервисе
-  // Может быть переопределен в методах
-  KeyFieldsDefinition key_fields_definition = 4;
-}
-
-
-// TODO: вынести неиспользуемые в prerelease
-// TODO: проверить расширяемость
 message ServersideSingletonCRUD {
-  option (name) = "{EntityTypeName}Service";
-  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (entity.feature.api.service.name) = "{EntityTypeName}Service";
+  option (entity.feature.api.service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     method.Get get = 1;
     method.SaveCreateReplace save_create_replace = 2;
@@ -96,17 +77,12 @@ message ServersideSingletonCRUD {
   }
   string http_root = 1;
   MethodSet method_set = 2;
-  CustomComments custom_comments = 3;
+  entity.feature.api.service.CustomComments custom_comments = 3;
 }
 
-// TODO: Определить политики доступа
-// TODO: Определить аутентификацию, авторизацию
-// TODO: прописать работу с клаймами в запросе, апикей
-// TODO: Сделать генерируемый объект связки
-// TODO: проверка обязательности полей в LinkType
 message ServersideEntityCRUD {
-  option (name) = "{EntityTypeName}Service";
-  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  option (entity.feature.api.service.name) = "{EntityTypeName}Service";
+  option (entity.feature.api.service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   message MethodSet {
     method.GetById get = 1;
     method.GetList get_list = 2;
@@ -139,8 +115,8 @@ message ServersideEntityCRUD {
   MethodSet method_set = 2;
   // Определение ключевых полей сущности для использования в сервисе
   // Может быть переопределен в методах
-  KeyFieldsDefinition key_fields_definition = 3;
-  CustomComments custom_comments = 4;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 3;
+  entity.feature.api.service.CustomComments custom_comments = 4;
 }
 
 

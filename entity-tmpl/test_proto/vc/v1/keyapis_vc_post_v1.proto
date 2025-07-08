@@ -9,23 +9,23 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
 import "entity.feature.options.proto";
-import "entity.feature.proto";
+import "entity.feature.api.proto";
 
 package post.v1;
 
 
-// ю
+// Сущность
 message Post {
-  option (entity.feature.api_specification) = {
-    any_service: {
+  option (entity.feature.specification) = {
+    entity_service: {
       http_root: "post/api/v1/post"
       method_set: {
         method: {
           name_template: "Save{EntityTypeName}";
           request_name: "Save{EntityTypeName}Request";
           response_name: "Save{EntityTypeName}Response";
-          response_template: {one_entity_saving_error:{}};
-          request_template: {entity:{}};
+          response_template: {entity:{}};
+          request_template: {entity_key:{}};
           leading_comment: "Метод создания/редактирования сущности {EntityTypeName}";
           http_rule: {
               post: "/{HttpRoot}",

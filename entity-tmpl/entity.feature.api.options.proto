@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package entity.feature.api;
+
+extend google.protobuf.FieldOptions {
+  // .
+  bool specification = 3004;
+}
+
+

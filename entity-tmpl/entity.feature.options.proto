@@ -9,6 +9,7 @@ extend google.protobuf.FieldOptions {
   UniqueFieldGroup unique_field_group = 3003;
 }
 
+
 enum UniqueFieldGroup {
   PK = 0;
   UG1 = 1;

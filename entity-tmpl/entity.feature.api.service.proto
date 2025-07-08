@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+import "entity.feature.api.method.proto";
+import "entity.feature.options.proto";
+import "entity.feature.api.service.options.proto";
+
+package entity.feature.api.service;
+
+// TODO: вынести неиспользуемые в prerelease
+// TODO: проверить расширяемость
+// TODO: Определить политики доступа
+// TODO: Определить аутентификацию, авторизацию
+// TODO: прописать работу с клаймами в запросе, апикей
+// TODO: Сделать генерируемый объект связки
+// TODO: проверка обязательности полей в LinkType
+// TODO: в опциях умолчания, в полях переопределение
+// Абстрактный шаблон сервиса, состоящий из абстрактных шаблонов методов
+// На основе этого сервиса реализуются частные имплементации АПИ
+message EntityService {
+  // Имя сервиса по умолчанию
+  // Может быть переопределено полем name
+  option (name) = "{EntityTypeName}Service";
+  // Комментарий к сервису по умолчанию
+  // Может быть переопределен в исходном proto-файле через custom_comments.leading_comment
+  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
+  // Набор абстрактных шаблонов методов сервиса
+  message MethodSet {
+    repeated method.Method method = 1;
+  }
+  // Корневая часть HTTP пути методов сервиса
+  string http_root = 1;
+  // Набор абстрактных методов сервиса
+  MethodSet method_set = 2;
+  // Набор комментариев к сервису
+  CustomComments custom_comments = 3;
+  // Определение ключевых полей сущности для использования в сервисе
+  // Может быть переопределен в методах
+  KeyFieldsDefinition key_fields_definition = 4;
+  // Имя сервиса, переопределяет опцию name
+  string name = 5;
+}
