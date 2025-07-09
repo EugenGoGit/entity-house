@@ -16,6 +16,7 @@ extend google.protobuf.MessageOptions {
 }
 
 // TODO: примеры на расширяемость
+// TODO: в опциях то же что и в полях
 // TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
 // Абстрактный шаблон метода
 // На основе этого могут создаваться частные имплементации шаблонов методов

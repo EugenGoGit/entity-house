@@ -58,13 +58,11 @@ func compareFilesByteByByte(fileOut, fileAssert string) (bool, error) {
 func TestGenProto(t *testing.T) {
 	// m := BuildEntityFeatures("./test_proto/vc/v1", []string{".", "../proto_deps", ".."})
 	m := BuildEntityFeatures("./test_proto/vc/v1", []string{".", "../proto_deps", ".."})
-	fmt.Println("generation: ", len(m))
 	for k, v := range m {
 		// The file permissions (e.g., 0644 for read/write by owner, read-only by others)
 		// You can adjust these permissions as needed.
 		permissions := os.FileMode(0644)
 
-		fmt.Println("generation: ", v)
 		// Write the string content (converted to a byte slice) to the file
 		err := os.WriteFile(k+"_out", []byte(v), permissions)
 		if err != nil {

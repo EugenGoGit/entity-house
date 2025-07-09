@@ -171,6 +171,23 @@ message GetById {
   entity.feature.api.method.CustomComments custom_comments = 2;
 }
 
+message GetByIdScope {
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
+  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
+  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
+  option (response_template) = {entity_error:{}};
+  option (request_template) = {entity_key_scope:{}};
+  option (entity.feature.api.method.leading_comment) = "Метод получения единичной сущности {EntityTypeName} по ключу";
+  option (entity.feature.api.method.http_rule) = {
+    get: "/{HttpRoot}/{KeyFields}"
+  };
+  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
+  // Определение ключевых полей сущности для использования в методе
+  // Переопределяет key_fields сервиса
+  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
+  entity.feature.api.method.CustomComments custom_comments = 2;
+}
+
 message Get {
   option (entity.feature.api.method.name) = "Get{EntityTypeName}";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
@@ -197,12 +214,41 @@ message GetList {
   repeated entity.feature.api.method.EnumValue order_by_values = 2;
 }
 
-message GetCount {
+message GetListScope {
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}List";
+  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}ListRequest";
+  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}ListResponse";
+  option (request_template) = {filter_paging_scope:{}};
+  option (response_template) = {entity_error:{}};
+  option (entity.feature.api.method.leading_comment) = "Метод получения списка сущностей {EntityTypeName} по фильтру";
+  option (entity.feature.api.method.http_rule) = {
+    get: "/{HttpRoot}/list"
+  };
+  option (entity.feature.api.method.server_streaming) = true;
+  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  entity.feature.api.method.CustomComments custom_comments = 1;
+  repeated entity.feature.api.method.EnumValue order_by_values = 2;
+}
 
+message GetCount {
   option (entity.feature.api.method.name) = "Get{EntityTypeName}Count";
   option (entity.feature.api.method.request_name) = "Get{EntityTypeName}CountRequest";
   option (entity.feature.api.method.response_name) = "Get{EntityTypeName}CountResponse";
   option (request_template) = {filter:{}};
+  option (response_template) = {count_entity_error:{}};
+  option (entity.feature.api.method.leading_comment) = "Метод получения количества сущностей {EntityTypeName} по фильтру";
+  option (entity.feature.api.method.http_rule) = {
+    get: "/{HttpRoot}/count"
+  };
+  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+  entity.feature.api.method.CustomComments custom_comments = 1;
+}
+
+message GetCountScope {
+  option (entity.feature.api.method.name) = "Get{EntityTypeName}Count";
+  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}CountRequest";
+  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}CountResponse";
+  option (request_template) = {filter_scope:{}};
   option (response_template) = {count_entity_error:{}};
   option (entity.feature.api.method.leading_comment) = "Метод получения количества сущностей {EntityTypeName} по фильтру";
   option (entity.feature.api.method.http_rule) = {

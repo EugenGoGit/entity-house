@@ -291,7 +291,7 @@ func getTypeDescByTemplate(
 
 				}
 			}
-			fmt.Println("rresultDescProto.EnumType[i].Value", resultDescProto.EnumType[i].Value)
+			// fmt.Println("rresultDescProto.EnumType[i].Value", resultDescProto.EnumType[i].Value)
 			// убираем опцию enum_by_method_attribute
 			resultDescProto.EnumType[i].Options.ProtoReflect().Clear(methodAttribute.desc)
 		}
@@ -745,7 +745,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 	serviceOptsMap := getFieldMap(serviceOptVal.Descriptor().Options().ProtoReflect())
 	serviceFieldsMap := getFieldMap(serviceOptVal)
 	var serviceName string
-	if val, ok := serviceFieldsMap["custom_comments"]; ok {
+	if val, ok := serviceFieldsMap["name"]; ok {
 		serviceName = val.val.String()
 	} else {
 		serviceName = serviceOptsMap["name"].val.String()
@@ -762,7 +762,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 
 	// Добавим комменты к сервису
 	serviceComment := "Сервис " + serviceName
-	fmt.Println("serviceOptsMap", serviceOptsMap)
+	// fmt.Println("serviceOptsMap", serviceOptsMap)
 	if val, ok := serviceOptsMap["leading_comment"]; ok {
 		serviceComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 	}
@@ -875,6 +875,26 @@ func printerSort(a, b protoprint.Element) bool {
 			return true
 		}
 	}
+	if a.Kind() == protoprint.KindMessage {
+		if b.Kind() == protoprint.KindField {
+			return true
+		}
+	}
+	if a.Kind() == protoprint.KindEnum {
+		if b.Kind() == protoprint.KindField {
+			return true
+		}
+	}
+	if a.Kind() == protoprint.KindField && b.Kind() == protoprint.KindField {
+		return a.Number() < b.Number()
+	}
+	if a.Kind() == protoprint.KindEnumValue && b.Kind() == protoprint.KindEnumValue {
+		return a.Number() < b.Number()
+	}
+	if a.Kind() == b.Kind() {
+		return a.Name() < b.Name()
+	}
+
 	return false
 }
 
@@ -965,7 +985,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				fmt.Println(entityPrefDesc.FullName(), amlSpecOpt, ": entity.feature.aml_specification not implemented")
 			}
 		}
-		// Если есть сущности с entity.feature.api_specification, генерируем файл АПИ спецификации
+		// Если есть сущности с specification, генерируем файл АПИ спецификации
 		if len(entityMsgApiSpecOpt) > 0 {
 			// создаем файл для генерации
 			sourceFileDescriptorProto := protodesc.ToFileDescriptorProto(sourceFilePrefDesc[k])
@@ -1060,7 +1080,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			// Добавим типы, которые пришли с шаблонами, но не внутри шаблона
 			for _, v := range addProtoRoot {
 				for i := 0; i < len(genFileProto.MessageType); i++ {
-					fmt.Println("genFileProto.MessageType[i].Name", *genFileProto.MessageType[i].Name)
 					if *genFileProto.MessageType[i].Name == *v.Name {
 						fmt.Println("Тип " + *v.Name + " уже присутствует в генерации, он будет заменен")
 						genFileProto.MessageType = append(genFileProto.MessageType[:i], genFileProto.MessageType[i+1:]...)
@@ -1069,15 +1088,23 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				}
 				genFileProto.MessageType = append(genFileProto.MessageType, v)
 			}
-
-			// убираем импорт entity-tmpl/entity-feature.proto
-			for i := range genFileProto.Dependency {
-				if genFileProto.Dependency[i] == "entity-tmpl/entity-feature.proto" {
-					genFileProto.Dependency[i] = genFileProto.Dependency[len(genFileProto.Dependency)-1]
+			// Уберем опции entity.feature
+			var deps map[string]string = make(map[string]string)
+			for _, v := range entityMsgApiSpecOpt {
+				fmt.Println("v.desc.ParentFile()", v.desc.ParentFile().FullName())
+				// убираем импорт entity-tmpl/entity-feature.proto
+				for i := range genFileProto.Dependency {
+					if genFileProto.Dependency[i] != string(v.desc.ParentFile().FullName())+".proto" &&
+						genFileProto.Dependency[i] != "entity.feature.options.proto" {
+						deps[genFileProto.Dependency[i]] = genFileProto.Dependency[i]
+					}
 				}
 			}
-			deps := genFileProto.Dependency[:len(genFileProto.Dependency)-1]
-			genFileProto.Dependency = deps
+			var depsArr []string
+			for k, _ := range deps {
+				depsArr = append(depsArr, k)
+			}
+			genFileProto.Dependency = depsArr
 
 			var dpj []*desc.FileDescriptor
 			for _, v := range filesJhumpDesc {
@@ -1095,9 +1122,9 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			}
 
 			// Добавим комменты в генерацию
-			for k, v := range genFileComments {
-				fmt.Println("genFileComments", sourceFileJhumpDesc.GetFile().GetName(), k, v)
-			}
+			// for k, v := range genFileComments {
+			// 	fmt.Println("genFileComments", sourceFileJhumpDesc.GetFile().GetName(), k, v)
+			// }
 			for i := range genFileJhumpDesc.GetServices() {
 				if val, ok := genFileComments[genFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()]; ok {
 					genFileBuilder.GetService(genFileJhumpDesc.GetServices()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})

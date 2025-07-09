@@ -15,6 +15,9 @@ message RequestTemplate {
     Filter filter = 5;
     LinkFilter link_filter = 6;
     Link link = 7;
+    FilterPagingScope filter_paging_scope = 8;
+    FilterScope filter_scope = 9;
+    EntityKeyScope entity_key_scope = 10;
   }
 }
 
@@ -80,6 +83,18 @@ message EntityKey {
   ];
 }
 
+message EntityKeyScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки"
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy entity_key = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (entity.feature.api.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+
 message Entity {
   entity.feature.api.dto.ReplaceTypeDummy data = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -96,6 +111,24 @@ message FilterPaging {
   oneof pagination {
     option (entity.feature.api.dto.oneof_comments) = "Вариант разбиения на страницы";
     Paging paging = 2 [
+      (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (entity.feature.api.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message FilterPagingScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки"
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy filter = 2 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",
+    (entity.feature.api.dto.field_comments) = "Фильтр"
+  ];
+  oneof pagination {
+    option (entity.feature.api.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 3 [
       (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Paging",
       (entity.feature.api.dto.field_comments) = "Постраничный вывод"
     ];
@@ -120,6 +153,17 @@ message LinkFilterPaging {
 message Filter {
   entity.feature.api.dto.ReplaceTypeDummy filter = 1 [(entity.feature.api.dto.replace_field_type_to) =
       "{EntityTypeName}Filter", (entity.feature.api.dto.field_comments) = "Фильтр"];
+}
+
+message FilterScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки"
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy filter = 2 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",
+    (entity.feature.api.dto.field_comments) = "Фильтр"
+  ];
 }
 
 message LinkFilter {

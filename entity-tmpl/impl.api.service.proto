@@ -110,6 +110,9 @@ message ServersideEntityCRUD {
     repeated method.Detach detach = 16;
     repeated method.GetLinkList get_link_list = 17;
     repeated method.GetLinkCount get_link_count = 18;
+    method.GetListScope get_list_scope = 19;
+    method.GetCountScope get_count_scope = 20;
+    method.GetByIdScope get_scope = 21;
   }
   string http_root = 1;
   MethodSet method_set = 2;

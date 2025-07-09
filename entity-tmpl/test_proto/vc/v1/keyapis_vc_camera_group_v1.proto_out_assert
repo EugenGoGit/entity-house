@@ -195,6 +195,7 @@ message CameraCollectionCameraFilter {
   // По Идентификаторам камер
   repeated string external_camera_ids = 2;
 }
+
 // Пагинация связей камеры и коллекции камер
 message CameraCollectionCameraPaging {
   // Тип значения сортировки.

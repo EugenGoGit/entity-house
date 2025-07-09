@@ -6,6 +6,9 @@ import "entity.feature.api.options.proto";
 
 package entity.feature;
 
+
+// TODO: в опциях то же что и в полях
+// TODO: обойтись без спецификации, сразу сервис
 extend google.protobuf.MessageOptions {
   // .
   Specification specification = 3010 [(entity.feature.api.specification) = true];
