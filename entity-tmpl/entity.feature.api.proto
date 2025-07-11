@@ -1,22 +1,20 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "entity.feature.api.service.proto";
-import "entity.feature.api.options.proto";
 
-package entity.feature;
+package entity.feature.api;
 
+// TODO: проверить расширяемость
+// TODO: Определить политики доступа
+// TODO: Определить передачу обязательных параметров пользователя в UserData
+// TODO: Определить аутентификацию, авторизацию
+// TODO: прописать работу с клаймами в запросе, апикей
+// TODO: Сделать генерируемый объект связки
+// TODO: проверка обязательности полей в LinkType
+// TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
 
-// TODO: в опциях то же что и в полях
-// TODO: обойтись без спецификации, сразу сервис
-extend google.protobuf.MessageOptions {
-  // .
-  Specification specification = 3010 [(entity.feature.api.specification) = true];
+extend google.protobuf.FieldOptions {
+  string specification = 3020;
 }
 
-// Protobuf service generation
-// Абстрактная шаблон спецификации АПИ, который может быть расширена частными имплементациями
-message Specification {
-    api.service.EntityService entity_service = 3;
-}
 

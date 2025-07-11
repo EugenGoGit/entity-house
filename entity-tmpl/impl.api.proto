@@ -2,19 +2,252 @@ syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
 import "impl.api.service.proto";
-import "entity.feature.api.options.proto";
+import "entity.feature.api.proto";
 
 package impl.api;
 
+// TODO: обойтись без спецификации, сразу сервис
 extend google.protobuf.MessageOptions {
-  // .
-  Specification specification = 3016 [(entity.feature.api.specification) = true];
+  // Шаблон спецификации Rev1
+  Specification specification = 3001 [(entity.feature.api.specification) = "impl.rev1"];
 }
 
-// Protobuf service generation
+// Шаблон спецификации Rev1
 message Specification {
+  option (specification) =
+  {
+    serverside_entity_crud:
+    {
+      override_attributes:{
+        leading_comment: "Сервис управления сущностью {EntityTypeName}";
+      }
+      attributes:{
+        name: "{EntityTypeName}Service"
+      }
+      method_set: {
+        get:{
+          attributes:{
+            name:"Get{EntityTypeName}"
+            request_name: "Get{EntityTypeName}Request"
+            response_name: "Get{EntityTypeName}Response"
+            http_rule:{
+              get: "/{HttpRoot}/{KeyFields}"
+            }
+            key_field_behavior: REQUIRED
+          }
+          response_template: {entity_error:{}}
+          request_template: {entity_key:{}}
+          override_attributes: {
+            leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+          }
+        }
+        get_scope:{
+          attributes:{
+            name: "Get{EntityTypeName}"
+            request_name: "Get{EntityTypeName}Request"
+            response_name: "Get{EntityTypeName}Response"
+            http_rule: {
+              get: "/{HttpRoot}/{KeyFields}"
+            }
+            key_field_behavior: REQUIRED
+          }
+          response_template: {entity_error:{}}
+          request_template: {entity_key_scope:{}}
+          override_attributes: {
+            leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+          }
+        }
+        get_list:{
+          attributes:{
+            name:"Get{EntityTypeName}List"
+            request_name:"Get{EntityTypeName}ListRequest"
+            response_name:"Get{EntityTypeName}ListResponse"
+            http_rule: {
+              get: "/{HttpRoot}/list"
+            }
+            server_streaming: true
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {filter_paging:{}}
+          response_template: {entity_error:{}}
+          override_attributes:{
+            leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+          }
+        }
+        save_create_replace: {
+          attributes:{
+            name: "Save{EntityTypeName}"
+            request_name: "Save{EntityTypeName}Request"
+            response_name: "Save{EntityTypeName}Response"
+            http_rule: {
+              post: "/{HttpRoot}",
+              body: "*"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          response_template: {one_entity_saving_error:{}}
+          request_template: {entity:{}}
+          override_attributes: {
+            leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
+
+          }
+        }
+        get_count:{
+          attributes:{
+            name: "Get{EntityTypeName}Count"
+            request_name: "Get{EntityTypeName}CountRequest"
+            response_name: "Get{EntityTypeName}CountResponse"
+            http_rule: {
+              get: "/{HttpRoot}/count"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED;
+          }
+          request_template: {filter:{}}
+          response_template: {count_entity_error:{}}
+          override_attributes:{
+            leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+
+          }
+        }
+        get_count_scope:{
+          attributes:{
+            name: "Get{EntityTypeName}Count"
+            request_name: "Get{EntityTypeName}CountRequest"
+            response_name: "Get{EntityTypeName}CountResponse"
+            http_rule: {
+              get: "/{HttpRoot}/count"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {filter_scope:{}};
+          response_template: {count_entity_error:{}};
+          override_attributes:{
+            leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру";
+          }
+        }
+        get_link_count: {
+          attributes:{
+            name: "Get{EntityTypeName}{LinkedTypeName}Count"
+            request_name: "Get{EntityTypeName}{LinkedTypeName}CountRequest";
+            response_name: "Get{EntityTypeName}{LinkedTypeName}CountResponse"
+            http_rule: {
+              get: "/{HttpRoot}/{LinkedTypeName}/count"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {link_filter:{}};
+          response_template: {count_entity_error:{}};
+          override_attributes:{
+            leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+          }
+        }
+        get_link_list:{
+          attributes:{
+            name: "Get{EntityTypeName}{LinkedTypeName}List"
+            request_name: "Get{EntityTypeName}{LinkedTypeName}ListRequest"
+            response_name: "Get{EntityTypeName}{LinkedTypeName}ListResponse"
+            http_rule: {
+              get: "/{HttpRoot}/{LinkedTypeName}/list"
+            };
+            server_streaming: true
+          }
+          request_template: {link_filter_paging:{}}
+          response_template: {link_error:{}}
+          override_attributes:{
+            leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+          }
+        }
+        delete:{
+          attributes:{
+            name: "Delete{EntityTypeName}"
+            request_name: "Delete{EntityTypeName}Request"
+            response_name: "Delete{EntityTypeName}Response"
+            http_rule: {
+              delete: "/{HttpRoot}/{KeyFields}"
+            }
+            key_field_behavior: REQUIRED
+          }
+          response_template: {valid_error:{}}
+          request_template: {entity_key:{}}
+          override_attributes:{
+            leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
+          }
+        }
+        restore: {
+          attributes:{
+            name: "Post{EntityTypeName}Restore"
+            request_name: "Post{EntityTypeName}RestoreRequest"
+            response_name: "Post{EntityTypeName}RestoreResponse"
+            http_rule: {
+              post: "/{HttpRoot}/restore/{KeyFields}"
+            }
+            key_field_behavior: REQUIRED
+          }
+          override_attributes:{
+            leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
+          }
+          response_template: {valid_error:{}}
+          request_template: {entity_key:{}}
+        }
+        get_list_scope: {
+          attributes:{
+            name: "Get{EntityTypeName}List"
+            request_name: "Get{EntityTypeName}ListRequest"
+            response_name: "Get{EntityTypeName}ListResponse"
+            http_rule: {
+              get: "/{HttpRoot}/list"
+            }
+            server_streaming: true
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          override_attributes:{
+            leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+          }
+          request_template: {filter_paging_scope:{}}
+          response_template: {entity_error:{}}
+        }
+        attach:{
+          attributes:{
+            name: "Put{EntityTypeName}{LinkedTypeName}Attach"
+            request_name: "Put{EntityTypeName}{LinkedTypeName}AttachRequest"
+            response_name: "Put{EntityTypeName}{LinkedTypeName}AttachResponse"
+            http_rule: {
+              put: "/{HttpRoot}/{LinkKeyFieldPath}/attach"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {link:{}}
+          response_template: {valid_error:{}}
+          override_attributes:{
+            leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
+            request_leading_comment: "Запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+            response_leading_comment: "Ответ на запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+          }
+        }
+        detach:{
+          attributes:{
+            name: "Put{EntityTypeName}{LinkedTypeName}Detach"
+            request_name: "Put{EntityTypeName}{LinkedTypeName}DetachRequest"
+            response_name: "Put{EntityTypeName}{LinkedTypeName}DetachResponse"
+            http_rule: {
+                put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
+                }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {link:{}}
+          response_template: {valid_error:{}}
+          override_attributes:{
+            leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
+            request_leading_comment: "Запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+            response_leading_comment: "Ответ на запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+          }
+        }
+      }
+    }
+  };
   oneof service {
     service.ServersideEntityCRUD serverside_entity_crud = 1;
-    service.ServersideSingletonCRUD serverside_singleton_crud = 2;
+    //    service.ServersideSingletonCRUD serverside_singleton_crud = 2;
   }
 }
+

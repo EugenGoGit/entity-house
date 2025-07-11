@@ -1,261 +1,190 @@
 syntax = "proto3";
 
-import "google/protobuf/descriptor.proto";
 import "impl.api.dto.proto";
-import "entity.feature.options.proto";
-import "entity.feature.api.method.options.proto";
-
+import "entity.feature.api.method.proto";
 
 package impl.api.method;
 
-extend google.protobuf.MessageOptions {
-  dto.RequestTemplate request_template = 2994;
-  dto.ResponseTemplate response_template = 2995;
-}
-
+// todo: сделать имплементацию на абстрактном методе. Или не надо. или как пример
+// TODO: чем методы отличаются? сделать различие в полях. На основе заполненности опций
 message SaveCreateReplace {
-  option (entity.feature.api.method.name) = "Save{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}Response";
-  option (response_template) = {one_entity_saving_error:{}};
-  option (request_template) = {entity:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод создания/редактирования сущности {EntityTypeName}";
-  option (entity.feature.api.method.http_rule) = {
-    post: "/{HttpRoot}",
-    body: "*"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
-message SaveListCreateReplace {
-  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
+//message SaveListCreateReplace {
+//  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
+//  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
+//  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
+//
+//  option (entity.feature.api.method.http_rule) = {
+//    post: "/{HttpRoot}/list",
+//    body: "*"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+//}
 
-  option (entity.feature.api.method.http_rule) = {
-    post: "/{HttpRoot}/list",
-    body: "*"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-}
+//message SaveCreateOnly {
+//  option (entity.feature.api.method.name) = "Save{EntityTypeName}";
+//  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}Request";
+//  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}Response";
+//  option (entity.feature.api.method.http_rule) = {
+//    post: "/{HttpRoot}",
+//    body: "*"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
+//}
 
-message SaveCreateOnly {
-  option (entity.feature.api.method.name) = "Save{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}Response";
-  option (entity.feature.api.method.http_rule) = {
-    post: "/{HttpRoot}",
-    body: "*"
-  };
-  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
-}
+//message SaveListCreateOnly {
+//  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
+//  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
+//  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
+//  option (entity.feature.api.method.http_rule) = {
+//    post: "/{HttpRoot}/list",
+//    body: "*"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
+//}
+//
 
-message SaveListCreateOnly {
-  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
-  option (entity.feature.api.method.http_rule) = {
-    post: "/{HttpRoot}/list",
-    body: "*"
-  };
-  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
-}
+//message EditById {
+//  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
+//  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
+//  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
+//  option (entity.feature.api.method.http_rule) = {
+//    patch: "/{HttpRoot}/{KeyFields}",
+//    body: "data"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
+//  // Определение ключевых полей сущности для использования в методе
+//  // Переопределяет key_fields сервиса
+//  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
+//}
 
-message EditById {
-  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
-  option (entity.feature.api.method.http_rule) = {
-    patch: "/{HttpRoot}/{KeyFields}",
-    body: "data"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-  // Определение ключевых полей сущности для использования в методе
-  // Переопределяет key_fields сервиса
-  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
-}
+//message Edit {
+//  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
+//  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
+//  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
+//  option (entity.feature.api.method.http_rule) = {
+//    patch: "/{HttpRoot}",
+//    body: "data"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+//}
 
-message Edit {
-  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}Response";
-  option (entity.feature.api.method.http_rule) = {
-    patch: "/{HttpRoot}",
-    body: "data"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-}
-
-message EditList {
-  option (entity.feature.api.method.name) = "Edit{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}ListResponse";
-  option (entity.feature.api.method.http_rule) = {
-    patch: "/{HttpRoot}/list",
-    body: "data"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-}
+//message EditList {
+//  option (entity.feature.api.method.name) = "Edit{EntityTypeName}List";
+//  option (entity.feature.api.method.request_name) = "Edit{EntityTypeName}ListRequest";
+//  option (entity.feature.api.method.response_name) = "Edit{EntityTypeName}ListResponse";
+//  option (entity.feature.api.method.http_rule) = {
+//    patch: "/{HttpRoot}/list",
+//    body: "data"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
+//}
 
 
 message DeleteById {
-  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
-  option (entity.feature.api.method.leading_comment) = "Метод удаления единичной сущности {EntityTypeName} по ключу";
-  option (response_template) = {valid_error:{}};
-  option (request_template) = {entity_key:{}};
-  option (entity.feature.api.method.http_rule) = {
-    delete: "/{HttpRoot}/{KeyFields}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-  // Переопределяет key_fields сервиса
-  repeated string key_fields = 1;
-  entity.feature.api.method.CustomComments custom_comments = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message RestoreById {
-  option (entity.feature.api.method.name) = "Post{EntityTypeName}Restore";
-  option (entity.feature.api.method.request_name) = "Post{EntityTypeName}RestoreRequest";
-  option (entity.feature.api.method.response_name) = "Post{EntityTypeName}RestoreResponse";
-  option (entity.feature.api.method.leading_comment) = "Метод восстановлении удаленной сущности {EntityTypeName} по ключу";
-  option (response_template) = {valid_error:{}};
-  option (request_template) = {entity_key:{}};
-  option (entity.feature.api.method.http_rule) = {
-    post: "/{HttpRoot}/restore/{KeyFields}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-  // Определение ключевых полей сущности для использования в методе
-  // Переопределяет key_fields сервиса
-  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
-  entity.feature.api.method.CustomComments custom_comments = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
-message Delete {
-
-  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
-  option (entity.feature.api.method.http_rule) = {
-    delete: "/{HttpRoot}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-}
-
-message DeleteList {
-
-  option (entity.feature.api.method.name) = "Delete{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}ListResponse";
-  option (entity.feature.api.method.http_rule) = {
-    delete: "/{HttpRoot}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-}
+//message Delete {
+//
+//  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
+//  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
+//  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
+//  option (entity.feature.api.method.http_rule) = {
+//    delete: "/{HttpRoot}"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+//}
+//
+//message DeleteList {
+//
+//  option (entity.feature.api.method.name) = "Delete{EntityTypeName}List";
+//  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}ListRequest";
+//  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}ListResponse";
+//  option (entity.feature.api.method.http_rule) = {
+//    delete: "/{HttpRoot}"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+//}
 
 message GetById {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
-  option (response_template) = {entity_error:{}};
-  option (request_template) = {entity_key:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения единичной сущности {EntityTypeName} по ключу";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/{KeyFields}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-  // Определение ключевых полей сущности для использования в методе
-  // Переопределяет key_fields сервиса
-  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
-  entity.feature.api.method.CustomComments custom_comments = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetByIdScope {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
-  option (response_template) = {entity_error:{}};
-  option (request_template) = {entity_key_scope:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения единичной сущности {EntityTypeName} по ключу";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/{KeyFields}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
-  // Определение ключевых полей сущности для использования в методе
-  // Переопределяет key_fields сервиса
-  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
-  entity.feature.api.method.CustomComments custom_comments = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
-
-message Get {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-}
+//
+//message Get {
+//  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
+//  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
+//  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
+//  option (entity.feature.api.method.http_rule) = {
+//    get: "/{HttpRoot}"
+//  };
+//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
+//  entity.feature.api.method.Comments comments = 1;
+//  entity.feature.api.method.Attributes attributes = 2;
+//  dto.RequestTemplate request_template = 3;
+//  dto.ResponseTemplate response_template = 4;
+//}
 
 message GetList {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}ListResponse";
-  option (request_template) = {filter_paging:{}};
-  option (response_template) = {entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения списка сущностей {EntityTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/list"
-  };
-  option (entity.feature.api.method.server_streaming) = true;
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  repeated entity.feature.api.method.EnumValue order_by_values = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetListScope {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}List";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}ListResponse";
-  option (request_template) = {filter_paging_scope:{}};
-  option (response_template) = {entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения списка сущностей {EntityTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/list"
-  };
-  option (entity.feature.api.method.server_streaming) = true;
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  repeated entity.feature.api.method.EnumValue order_by_values = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetCount {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}Count";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}CountRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}CountResponse";
-  option (request_template) = {filter:{}};
-  option (response_template) = {count_entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения количества сущностей {EntityTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/count"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetCountScope {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}Count";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}CountRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}CountResponse";
-  option (request_template) = {filter_scope:{}};
-  option (response_template) = {count_entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения количества сущностей {EntityTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/count"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 // TODO: в extension  Exists
@@ -266,67 +195,35 @@ message GetCountScope {
 // TODO: в extension DetachList
 
 message Attach {
-  option (entity.feature.api.method.name) = "Put{EntityTypeName}{LinkedTypeName}Attach";
-  option (entity.feature.api.method.request_name) = "Put{EntityTypeName}{LinkedTypeName}AttachRequest";
-  option (entity.feature.api.method.response_name) = "Put{EntityTypeName}{LinkedTypeName}AttachResponse";
-  option (request_template) = {link:{}};
-  option (response_template) = {valid_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод привязки {EntityTypeName} и {LinkedTypeName}";
-  option (entity.feature.api.method.http_rule) = {
-    put: "/{HttpRoot}/{LinkKeyFieldPath}/attach"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  string linked_type_name = 2;
-  string link_key_field_path = 3;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message Detach {
-  option (entity.feature.api.method.name) = "Put{EntityTypeName}{LinkedTypeName}Detach";
-  option (entity.feature.api.method.request_name) = "Put{EntityTypeName}{LinkedTypeName}DetachRequest";
-  option (entity.feature.api.method.response_name) = "Put{EntityTypeName}{LinkedTypeName}DetachResponse";
-  option (request_template) = {link:{}};
-  option (response_template) = {valid_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод отвязки {EntityTypeName} и {LinkedTypeName}";
-  option (entity.feature.api.method.http_rule) = {
-    put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  string linked_type_name = 2;
-  string link_key_field_path = 3;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetLinkList {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}{LinkedTypeName}List";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}{LinkedTypeName}ListRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}{LinkedTypeName}ListResponse";
-  option (request_template) = {link_filter_paging:{}};
-  option (response_template) = {entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/{LinkedTypeName}/list"
-  };
-  option (entity.feature.api.method.server_streaming) = true;
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  repeated entity.feature.api.method.EnumValue order_by_values = 2;
-  string linked_type_name = 3;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 message GetLinkCount {
-  option (entity.feature.api.method.name) = "Get{EntityTypeName}{LinkedTypeName}Count";
-  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}{LinkedTypeName}CountRequest";
-  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}{LinkedTypeName}CountResponse";
-  option (request_template) = {link_filter:{}};
-  option (response_template) = {count_entity_error:{}};
-  option (entity.feature.api.method.leading_comment) = "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру";
-  option (entity.feature.api.method.http_rule) = {
-    get: "/{HttpRoot}/{LinkedTypeName}/count"
-  };
-  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-  entity.feature.api.method.CustomComments custom_comments = 1;
-  string linked_type_name = 2;
+  entity.feature.api.method.OverrideAttributes override_attributes = 1;
+  entity.feature.api.method.Attributes attributes = 2;
+  dto.RequestTemplate request_template = 3;
+  dto.ResponseTemplate response_template = 4;
+  entity.feature.api.method.Variables variables = 5;
 }
 
 

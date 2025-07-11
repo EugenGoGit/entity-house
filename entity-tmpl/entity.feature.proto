@@ -6,9 +6,8 @@ package entity.feature;
 
 extend google.protobuf.FieldOptions {
   // .
-  UniqueFieldGroup unique_field_group = 3003;
+  UniqueFieldGroup unique_field_group = 3001;
 }
-
 
 enum UniqueFieldGroup {
   PK = 0;

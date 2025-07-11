@@ -32,6 +32,7 @@ import (
 	// "google.golang.org/protobuf/types/dynamicpb"
 	// "github.com/bufbuild/protocompile/protoutil"
 	// "google.golang.org/protobuf/encoding/protojson"
+	"maps"
 )
 
 // Собираем map полей и значений protoreflect.Message
@@ -65,16 +66,20 @@ func createTypeDescByTemplateParent(
 	methodDescFields map[string]Field,
 	fileCommentsMap map[string]string,
 	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
+	linkedTypeName string,
 ) (*descriptorpb.DescriptorProto, error) {
 	var templatePrefDesc pref.MessageDescriptor
 	var resultProtodesc *descriptorpb.DescriptorProto
+	fmt.Println("templateParent", templateParent)
 	if templateParent.String() != "<nil>" {
 		// Берем шаблон из поля, поле там одно
 		for _, v := range getFieldMap(templateParent.Message()) {
 			templatePrefDesc = v.val.Message().Descriptor()
 			break
 		}
+
 		resultProtodesc = protodesc.ToDescriptorProto(templatePrefDesc)
+		fmt.Println("resultProtodesc", resultProtodesc)
 		resultProtodesc.Name = &messageName
 		err := getTypeDescByTemplate(
 			resultProtodesc,
@@ -88,6 +93,7 @@ func createTypeDescByTemplateParent(
 			messageFullName,
 			fileCommentsMap,
 			addMessageToProtoRoot,
+			linkedTypeName,
 		)
 		if err != nil {
 			return nil, err
@@ -113,6 +119,7 @@ func getTypeDescByTemplate(
 	parentFullNameToType string,
 	fileCommentsMap map[string]string,
 	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
+	linkedTypeName string,
 ) error {
 	var i int32 = 0
 	for len(resultDescProto.Field) > int(i) {
@@ -159,10 +166,9 @@ func getTypeDescByTemplate(
 					}
 				}
 			} else {
-
 				// Меняем тип поля на тип сущности и добавляем коммент от сущности
 				replaceToType := strings.Replace(val.val.String(), "{EntityTypeName}", entityTypeName, -1)
-				replaceToType = strings.Replace(replaceToType, "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+				replaceToType = strings.Replace(replaceToType, "{LinkedTypeName}", linkedTypeName, -1)
 				resultDescProto.Field[i].TypeName = &replaceToType
 
 				if *resultDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
@@ -172,7 +178,7 @@ func getTypeDescByTemplate(
 					if val, ok := fieldTypeOpts["replace_message_type_name_to"]; ok {
 						msgDescProto.Options.ProtoReflect().Clear(val.desc)
 						s := strings.Replace(val.val.String(), "{EntityTypeName}", entityTypeName, -1)
-						s = strings.Replace(s, "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+						s = strings.Replace(s, "{LinkedTypeName}", linkedTypeName, -1)
 						msgDescProto.Name = &s
 						fmt.Println("string(templatePrefDesc.ParentFile().Package())11111msgDescProto.GetName()", packageNameToType+"."+msgDescProto.GetName())
 						err := getTypeDescByTemplate(
@@ -187,6 +193,7 @@ func getTypeDescByTemplate(
 							packageNameToType+"."+msgDescProto.GetName(),
 							fileCommentsMap,
 							addMessageToProtoRoot,
+							linkedTypeName,
 						)
 						if err != nil {
 							return err
@@ -198,7 +205,7 @@ func getTypeDescByTemplate(
 					// Добавим коммент для него
 					if val, ok := fieldTypeOpts["message_comments"]; ok {
 						fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-						fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+						fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", linkedTypeName, -1)
 						msgDescProto.GetOptions().ProtoReflect().Clear(val.desc)
 					}
 				}
@@ -206,7 +213,7 @@ func getTypeDescByTemplate(
 			// ставим комменты из опции field_comments поля в шаблоне, убираем опцию
 			if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
 				comment := strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-				comment = strings.Replace(comment, "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+				comment = strings.Replace(comment, "{LinkedTypeName}", linkedTypeName, -1)
 				comment = strings.Replace(comment, "{EntityTypeName}", entityTypeName, -1)
 				fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = comment
 				resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
@@ -235,6 +242,7 @@ func getTypeDescByTemplate(
 							string(templatePrefDesc.ParentFile().Package())+"."+msgDescProto.GetName(),
 							fileCommentsMap,
 							addMessageToProtoRoot,
+							linkedTypeName,
 						)
 						if err != nil {
 							return err
@@ -242,7 +250,7 @@ func getTypeDescByTemplate(
 						// Добавим этот тип в генерацию и коммент для него
 						if val, ok := getFieldMap(msgDescProto.GetOptions().ProtoReflect())["message_comments"]; ok {
 							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", linkedTypeName, -1)
 							msgDescProto.GetOptions().ProtoReflect().Clear(val.desc)
 						}
 						addMessageToProtoRoot[string(templatePrefDesc.Fields().Get(int(i)).Message().Name())] = msgDescProto
@@ -252,7 +260,7 @@ func getTypeDescByTemplate(
 				// ставим комменты из опции field_comments поля в шаблоне, убираем опцию
 				if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
 					fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-					fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = strings.Replace(fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+					fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = strings.Replace(fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()], "{LinkedTypeName}", linkedTypeName, -1)
 					resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
 				}
 				resultDescProto.Field[i].TypeName = &s
@@ -260,7 +268,7 @@ func getTypeDescByTemplate(
 				// Поле не заменяем, скалярный тип оставляем, ставим комменты из опции field_comments поля в шаблоне, убираем опцию
 				if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
 					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.Field[i].Name] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.Field[i].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.Field[i].Name], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.Field[i].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.Field[i].Name], "{LinkedTypeName}", linkedTypeName, -1)
 					resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
 				}
 			}
@@ -287,7 +295,7 @@ func getTypeDescByTemplate(
 						&descriptorpb.EnumValueDescriptorProto{Name: &name,
 							Number: &number})
 					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+name] = strings.Replace(title, "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+name], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+					fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+name], "{LinkedTypeName}", linkedTypeName, -1)
 
 				}
 			}
@@ -298,7 +306,7 @@ func getTypeDescByTemplate(
 		// Добавим комменты
 		if commentDesc, ok := enumOpts["enum_comments"]; ok {
 			fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name] = strings.Replace(commentDesc.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-			fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+			fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name], "{LinkedTypeName}", linkedTypeName, -1)
 			// убираем опцию
 			resultDescProto.EnumType[i].Options.ProtoReflect().Clear(commentDesc.desc)
 		}
@@ -307,7 +315,7 @@ func getTypeDescByTemplate(
 			enumValOpts := getFieldMap(resultDescProto.EnumType[i].GetValue()[j].Options.ProtoReflect())
 			if commentDesc, ok := enumValOpts["enum_value_comments"]; ok {
 				fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+*resultDescProto.EnumType[i].GetValue()[j].Name] = strings.Replace(commentDesc.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-				fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+*resultDescProto.EnumType[i].GetValue()[j].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+*resultDescProto.EnumType[i].GetValue()[j].Name], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+				fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+*resultDescProto.EnumType[i].GetValue()[j].Name] = strings.Replace(fileCommentsMap[packageNameToType+"."+parentNameToType+"."+*resultDescProto.EnumType[i].Name+"."+*resultDescProto.EnumType[i].GetValue()[j].Name], "{LinkedTypeName}", linkedTypeName, -1)
 				// убираем опцию
 				resultDescProto.EnumType[i].GetValue()[j].Options.ProtoReflect().Clear(commentDesc.desc)
 			}
@@ -320,7 +328,7 @@ func getTypeDescByTemplate(
 	for i := range resultDescProto.NestedType {
 		if val, ok := getFieldMap(resultDescProto.NestedType[i].GetOptions().ProtoReflect())["message_comments"]; ok {
 			fileCommentsMap[parentFullNameToType+"."+resultDescProto.NestedType[i].GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-			fileCommentsMap[parentFullNameToType+"."+resultDescProto.NestedType[i].GetName()] = strings.Replace(fileCommentsMap[parentFullNameToType+"."+resultDescProto.NestedType[i].GetName()], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+			fileCommentsMap[parentFullNameToType+"."+resultDescProto.NestedType[i].GetName()] = strings.Replace(fileCommentsMap[parentFullNameToType+"."+resultDescProto.NestedType[i].GetName()], "{LinkedTypeName}", linkedTypeName, -1)
 			resultDescProto.NestedType[i].GetOptions().ProtoReflect().Clear(val.desc)
 		}
 		s := strings.Replace(*resultDescProto.NestedType[i].Name, templateTypeName, parentFullNameToType, -1)
@@ -338,6 +346,7 @@ func getTypeDescByTemplate(
 			parentFullNameToType+"."+resultDescProto.NestedType[i].GetName(),
 			fileCommentsMap,
 			addMessageToProtoRoot,
+			linkedTypeName,
 		)
 		if err != nil {
 			return err
@@ -348,7 +357,7 @@ func getTypeDescByTemplate(
 	for i := range resultDescProto.GetOneofDecl() {
 		if val, ok := getFieldMap(resultDescProto.GetOneofDecl()[i].GetOptions().ProtoReflect())["oneof_comments"]; ok {
 			fileCommentsMap[string(parentFullNameToType)+"."+resultDescProto.GetOneofDecl()[i].GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-			fileCommentsMap[string(parentFullNameToType)+"."+resultDescProto.GetOneofDecl()[i].GetName()] = strings.Replace(fileCommentsMap[string(parentFullNameToType)+"."+resultDescProto.GetOneofDecl()[i].GetName()], "{LinkedTypeName}", methodDescFields["linked_type_name"].val.String(), -1)
+			fileCommentsMap[string(parentFullNameToType)+"."+resultDescProto.GetOneofDecl()[i].GetName()] = strings.Replace(fileCommentsMap[string(parentFullNameToType)+"."+resultDescProto.GetOneofDecl()[i].GetName()], "{LinkedTypeName}", linkedTypeName, -1)
 			resultDescProto.GetOneofDecl()[i].GetOptions().ProtoReflect().Clear(val.desc)
 		}
 	}
@@ -496,7 +505,8 @@ func fillMessageComments(messJhumpDesc *desc.MessageDescriptor, messBuilder *bui
 }
 
 func genMethod(
-	methodDefMessage pref.Message,
+	tmplMethod pref.Message,
+	varMethod pref.Message,
 	serviceKeyFieldsDefinition pref.Value,
 	genFileProto *descriptorpb.FileDescriptorProto,
 	entityPrefDesc pref.MessageDescriptor,
@@ -509,55 +519,60 @@ func genMethod(
 	serviceName string,
 
 ) error {
-	// в полях заданы параметры метода
-	methodFieldMap := getFieldMap(methodDefMessage)
-	// переопределяем Определение уникальных полей сервиса
+	var methodParameters map[string]Field = make(map[string]Field)
+	// Атрибуты, которые определяются в шаблоне спецификации
+	maps.Copy(methodParameters, getFieldMap(getFieldMap(tmplMethod)["attributes"].val.Message()))
+
+	methodParameters["request_template"] = getFieldMap(tmplMethod)["request_template"]
+	methodParameters["response_template"] = getFieldMap(tmplMethod)["response_template"]
+
+	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
+	if val, ok := getFieldMap(varMethod)["variables"]; ok {
+		maps.Copy(methodParameters, getFieldMap(val.val.Message()))
+	}
+	fmt.Println("tmplMethodt", tmplMethod)
+	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
+	maps.Copy(methodParameters, getFieldMap(getFieldMap(tmplMethod)["override_attributes"].val.Message()))
+	if val, ok := getFieldMap(varMethod)["override_attributes"]; ok {
+		maps.Copy(methodParameters, getFieldMap(val.val.Message()))
+	}
+
+	fmt.Println("methodParameters", methodParameters)
+	var linkedTypeName string
+	var linkedTypeKeyFieldPath string
+	if val, ok := methodParameters["linked_type"]; ok {
+		linkedType := getFieldMap(val.val.Message())
+		linkedTypeName = linkedType["name"].val.String()
+		linkedTypeKeyFieldPath = linkedType["key_field_path"].val.String()
+	}
+
+	// Определение уникальных полей сервиса
+	// TODO: переопределить с сервиса
 	keyFieldsDefinition := serviceKeyFieldsDefinition
-	if val, ok := methodFieldMap["key_fields_definition"]; ok {
-		keyFieldsDefinition = val.val
-	}
-	// в опциях параметры генерации метода
-	methodOptsMap := getFieldMap(methodDefMessage.Descriptor().Options().ProtoReflect())
-	// шаблон имени в name
-	var methodName string
-	if val, ok := methodFieldMap["name"]; ok {
-		methodName = val.val.String()
-	} else {
-		methodName = methodOptsMap["name"].val.String()
-	}
+	keyFieldsDefinition = methodParameters["key_fields_definition"].val
+
+	methodName := methodParameters["name"].val.String()
 	methodName = strings.Replace(methodName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-	methodName = strings.Replace(methodName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	methodName = strings.Replace(methodName, "{LinkedTypeName}", linkedTypeName, -1)
 
 	// шаблон имени запроса в request_name
-	var requestName string
-	if val, ok := methodFieldMap["request_name"]; ok {
-		requestName = val.val.String()
-	} else {
-		requestName = methodOptsMap["request_name"].val.String()
-	}
+	requestName := methodParameters["request_name"].val.String()
 	requestName = strings.Replace(requestName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-	requestName = strings.Replace(requestName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	requestName = strings.Replace(requestName, "{LinkedTypeName}", linkedTypeName, -1)
 	requestFullName := *genFileProto.Package + "." + requestName
+
 	// шаблон имени ответа в response_name
-	var responseName string
-	if val, ok := methodFieldMap["response_name"]; ok {
-		responseName = val.val.String()
-	} else {
-		responseName = methodOptsMap["response_name"].val.String()
-	}
+	responseName := methodParameters["response_name"].val.String()
 	responseName = strings.Replace(responseName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-	responseName = strings.Replace(responseName, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+	responseName = strings.Replace(responseName, "{LinkedTypeName}", linkedTypeName, -1)
 	responseFullName := *genFileProto.Package + "." + responseName
+
 	// определяем список ключевых полей для метода
+	// Переопределяем этот параметр сервиса
 	keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
+
 	// шаблон запроса в request_template
-	// там только одно поле
-	var requestTmpl Field
-	if val, ok := methodFieldMap["request_template"]; ok {
-		requestTmpl = val
-	} else {
-		requestTmpl = methodOptsMap["request_template"]
-	}
+	requestTmpl := methodParameters["request_template"]
 
 	requestMessageProtodesc, err := createTypeDescByTemplateParent(
 		&requestTmpl.val,
@@ -566,20 +581,16 @@ func genMethod(
 		*entityMessageProtodesc.Name,
 		entityPrefDesc,
 		keyFieldList,
-		methodFieldMap,
+		methodParameters,
 		genFileComments,
 		addProtoRoot,
+		linkedTypeName,
 	)
 	if err != nil {
 		return err
 	}
 
-	var responseTmpl Field
-	if val, ok := methodFieldMap["response_template"]; ok {
-		responseTmpl = val
-	} else {
-		responseTmpl = methodOptsMap["response_template"]
-	}
+	responseTmpl := methodParameters["response_template"]
 
 	responseMessageProtodesc, err := createTypeDescByTemplateParent(
 		&responseTmpl.val,
@@ -588,9 +599,10 @@ func genMethod(
 		*entityMessageProtodesc.Name,
 		entityPrefDesc,
 		keyFieldList,
-		methodFieldMap,
+		methodParameters,
 		genFileComments,
 		addProtoRoot,
+		linkedTypeName,
 	)
 	if err != nil {
 		return err
@@ -610,44 +622,30 @@ func genMethod(
 
 	// в поле server_streaming признак ответа в потоке
 	var serverStreaming bool
-	if fieldServerStreaming, ok := methodFieldMap["server_streaming"]; ok {
-		serverStreaming = fieldServerStreaming.val.Bool()
+	if val, ok := methodParameters["server_streaming"]; ok {
+		serverStreaming = val.val.Bool()
 	} else {
-		if optServerStreaming, ok := methodOptsMap["server_streaming"]; ok {
-			serverStreaming = optServerStreaming.val.Bool()
-		} else {
-			serverStreaming = false
-		}
+		serverStreaming = false
 	}
 	genMethodProto.ServerStreaming = &serverStreaming
 
 	// в поле client_streaming признак ответа в потоке
 	var clientStreaming bool
-	if fieldClientStreaming, ok := methodFieldMap["client_streaming"]; ok {
-		clientStreaming = fieldClientStreaming.val.Bool()
+	if val, ok := methodParameters["client_streaming"]; ok {
+		clientStreaming = val.val.Bool()
 	} else {
-		if optClientStreaming, ok := methodOptsMap["client_streaming"]; ok {
-			clientStreaming = optClientStreaming.val.Bool()
-		} else {
-			clientStreaming = false
-		}
+		clientStreaming = false
 	}
 	genMethodProto.ClientStreaming = &clientStreaming
 
 	// в полях entity.api.http_rule http опции google.api.HttpRule
 	// если заданы http_rule и httpRoot, то добавляем опции google.api.http для этого метода
 	// с заменой по шаблону
-
 	var httpRule Field
 	isHttpRule := false
-	if fieldHttpRule, ok := methodFieldMap["http_rule"]; ok {
+	if fieldHttpRule, ok := methodParameters["http_rule"]; ok {
 		httpRule = fieldHttpRule
 		isHttpRule = true
-	} else {
-		if optHttpRule, ok := methodOptsMap["http_rule"]; ok {
-			httpRule = optHttpRule
-			isHttpRule = true
-		}
 	}
 	if isHttpRule {
 		if httpRoot != "" && httpRoot != "<nil>" {
@@ -671,53 +669,45 @@ func genMethod(
 				fd := fdHttp.Message().Fields().ByName(pref.Name(k))
 				httpPath := strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1)
 				httpPath = strings.Replace(httpPath, "{KeyFields}", keyFieldPath, -1)
-				httpPath = strings.Replace(httpPath, "{LinkKeyFieldPath}", methodFieldMap["link_key_field_path"].val.String(), -1)
-				httpPath = strings.Replace(httpPath, "{LinkedTypeName}", strings.ToLower(methodFieldMap["linked_type_name"].val.String()), -1)
+				httpPath = strings.Replace(httpPath, "{LinkKeyFieldPath}", linkedTypeKeyFieldPath, -1)
+				httpPath = strings.Replace(httpPath, "{LinkedTypeName}", strings.ToLower(linkedTypeName), -1)
 				fdHttpV.Set(fd, pref.ValueOf(httpPath))
 				valOpt = valOpt + k + ": \"" +
 					// strings.Replace(strings.Replace(v.val.String(), "{HttpRoot}", httpRoot, -1), "{KeyFields}", keyFieldPath, -1) +
 					httpPath + "\", "
 			}
 			genMethodProto.Options.ProtoReflect().Set(fdHttp, pref.ValueOf(fdHttpV))
-
 		}
-
-	}
-
-	// TODO: вычислить требуемый для сущности
-	// в поле entity.rules.key_field_behavior поведение полей ключа, требуемое для данного метода
-	if val, ok := methodFieldMap["key_field_behavior"]; ok {
-		printEnumEl(val)
-	} else {
-		printEnumEl(methodOptsMap["key_field_behavior"])
 	}
 
 	// Добавляем метод с комментарием
 	// Добавляем комментарии к запросу и ответу метода
 	genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
-	methodComment := "Метод " + methodName
-	if val, ok := methodOptsMap["leading_comment"]; ok {
+	fmt.Println("genServiceProto.Method", genServiceProto.Method)
+	var methodComment string
+	if val, ok := methodParameters["leading_comment"]; ok {
+		fmt.Println("methodParameters[leading_comment]", methodParameters["leading_comment"].val.String())
 		methodComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-		methodComment = strings.Replace(methodComment, "{LinkedTypeName}", methodFieldMap["linked_type_name"].val.String(), -1)
+		methodComment = strings.Replace(methodComment, "{LinkedTypeName}", linkedTypeName, -1)
 	}
-	requestComment := "Запрос метода " + methodName
-	responseComment := "Ответ на запрос метода " + methodName
+	fmt.Println("methodParameters[leading_comment]", methodComment)
+	var requestComment string
+	var responseComment string
 
-	if val, ok := methodFieldMap["custom_comments"]; ok {
-		customCommentMap := getFieldMap(val.val.Message())
-		if val, ok := customCommentMap["leading_comment"]; ok {
-			methodComment = val.val.String()
-		}
-		if val, ok := customCommentMap["additional_leading_comment"]; ok {
-			methodComment = methodComment + ".\n" + val.val.String()
-		}
-		if val, ok := customCommentMap["request_leading_comment"]; ok {
-			requestComment = val.val.String()
-		}
-		if val, ok := customCommentMap["response_leading_comment"]; ok {
-			responseComment = val.val.String()
-		}
+	if val, ok := methodParameters["additional_leading_comment"]; ok {
+		methodComment = methodComment + ".\n" + val.val.String()
 	}
+	if val, ok := methodParameters["request_leading_comment"]; ok {
+		requestComment = val.val.String()
+		requestComment = strings.Replace(requestComment, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		requestComment = strings.Replace(requestComment, "{LinkedTypeName}", linkedTypeName, -1)
+	}
+	if val, ok := methodParameters["response_leading_comment"]; ok {
+		responseComment = val.val.String()
+		responseComment = strings.Replace(responseComment, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
+		responseComment = strings.Replace(responseComment, "{LinkedTypeName}", linkedTypeName, -1)
+	}
+
 	genFileComments[*genFileProto.Package+"."+serviceName+"."+methodName] = methodComment
 	genFileComments[*genFileProto.Package+"."+requestName] = requestComment
 	genFileComments[*genFileProto.Package+"."+responseName] = responseComment
@@ -732,65 +722,62 @@ func genEntityApiSpec(apiSpecOpt Field,
 	genFileComments map[string]string,
 	addProtoRoot map[string]*descriptorpb.DescriptorProto,
 ) error {
-
-	// берем поле фичи, в котором описан сервис
-	// считаем, что поле там только одно
-	var serviceOptVal pref.Message
-	for _, value := range getFieldMap(apiSpecOpt.val.Message()) {
-		serviceOptVal = value.val.Message()
+	// Возьмем описание сервиса из опции сущности
+	// Считаем, что там только один сервис
+	// TODO: обработать несколько сервисов
+	var entitySourceService map[string]Field
+	for _, v := range getFieldMap(apiSpecOpt.val.Message()) {
+		entitySourceService = getFieldMap(v.val.Message())
 		break
 	}
-	// Создаем сервис
-	// в опциях шаблон имени
-	serviceOptsMap := getFieldMap(serviceOptVal.Descriptor().Options().ProtoReflect())
-	serviceFieldsMap := getFieldMap(serviceOptVal)
-	var serviceName string
-	if val, ok := serviceFieldsMap["name"]; ok {
-		serviceName = val.val.String()
-	} else {
-		serviceName = serviceOptsMap["name"].val.String()
+	// Возьмем описание сервиса из имплементации шаблона спецификации
+	// Считаем, что там только один сервис
+	// TODO: обработать несколько сервисов
+	var tmplService map[string]Field
+	for _, v := range getFieldMap(getFieldMap(apiSpecOpt.val.Message().Descriptor().Options().ProtoReflect())["specification"].val.Message()) {
+		tmplService = getFieldMap(v.val.Message())
+		break
 	}
+
+	var serviceParameters map[string]Field = make(map[string]Field)
+	// Атрибуты, которые определяются в шаблоне спецификации
+	maps.Copy(serviceParameters, getFieldMap(tmplService["attributes"].val.Message()))
+
+	// serviceParameters["request_template"]  = getFieldMap(tmplMethod)["request_template"]
+	// serviceParameters["response_template"]  = getFieldMap(tmplMethod)["response_template"]
+
+	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
+	if val, ok := entitySourceService["variables"]; ok {
+		maps.Copy(serviceParameters, getFieldMap(val.val.Message()))
+	}
+
+	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
+	maps.Copy(serviceParameters, getFieldMap(tmplService["override_attributes"].val.Message()))
+	if val, ok := entitySourceService["override_attributes"]; ok {
+		maps.Copy(serviceParameters, getFieldMap(val.val.Message()))
+	}
+
+	fmt.Println("serviceParameters", serviceParameters)
+
+	// в опциях атрибуты override_attributes
+	serviceName := serviceParameters["name"].val.String()
+	serviceComment := serviceParameters["leading_comment"].val.String()
+	if val, ok := serviceParameters["additional_leading_comment"]; ok {
+		serviceComment = serviceComment + ".\n" + val.val.String()
+	}
+
 	// TODO: Универсальная процедура подстановок
 	serviceName = strings.Replace(serviceName, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-
-	// в полях сервиса требуемые методы в method_set
-	methodsDefMap := getFieldMap(serviceFieldsMap["method_set"].val.Message())
-	// Корневой httpPath в http_root, он же - признак добавления опций http
-	httpRoot := serviceFieldsMap["http_root"].val.String()
+	serviceComment = strings.Replace(serviceComment, "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
 	// Определение уникальных полей сервиса, будет использовано, если не переопределено на уровне метода
-	serviceKeyFieldsDefinition := serviceFieldsMap["key_fields_definition"].val
+	serviceKeyFieldsDefinition := serviceParameters["http_root"].val
+	// Корневой httpPath в http_root, он же - признак добавления опций http
+	httpRoot := serviceParameters["http_root"].val.String()
 
-	// Добавим комменты к сервису
-	serviceComment := "Сервис " + serviceName
-	// fmt.Println("serviceOptsMap", serviceOptsMap)
-	if val, ok := serviceOptsMap["leading_comment"]; ok {
-		serviceComment = strings.Replace(val.val.String(), "{EntityTypeName}", string(entityPrefDesc.Name()), -1)
-	}
-	if val, ok := serviceFieldsMap["custom_comments"]; ok {
-		customCommentMap := getFieldMap(val.val.Message())
-		if val, ok := customCommentMap["leading_comment"]; ok {
-			serviceComment = val.val.String()
-		}
-		if val, ok := customCommentMap["additional_leading_comment"]; ok {
-			serviceComment = serviceComment + ".\n" + val.val.String()
-		}
-	}
 	genFileComments[*genFileProto.Package+"."+serviceName] = serviceComment
 
-	// Заполним комменты по всем сущностям файла
-	for i := range sourceFileJhumpDesc.GetMessageTypes() {
-		getMessageComments(sourceFileJhumpDesc.GetMessageTypes()[i], genFileComments)
-	}
-
-	// Заполним комменты по всем сервисам файла
-	for i := range sourceFileJhumpDesc.GetServices() {
-		if sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments != nil {
-			genFileComments[sourceFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()] = *sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments
-		}
-	}
-
 	// Добавим сам Entity
-	// удалим опцию АПИ
+	// удалим опцию спецификации
 	entityPrefDesc.Options().ProtoReflect().Clear(apiSpecOpt.desc)
 	entityMessageProtodesc := protodesc.ToDescriptorProto(entityPrefDesc)
 
@@ -803,18 +790,28 @@ func genEntityApiSpec(apiSpecOpt Field,
 	for i := 0; i < len(genFileProto.Service); i++ {
 		if *genFileProto.Service[i].Name == serviceName {
 			genServiceProto = genFileProto.Service[i]
-			// Удалим из списка
+			// Удалим из списка, он будет добавлен после генерации
 			genFileProto.Service = append(genFileProto.Service[:i], genFileProto.Service[i+1:]...)
 			i = i - 1
 		}
 	}
+	// TODO: смержить определение методов
+	// в method_set описания сущности требуемые методы
+	var requiredMethods map[string]Field
+	if val, ok := entitySourceService["method_set"]; ok {
+		requiredMethods = getFieldMap(val.val.Message())
+	}
+	// В шаблоне спецификации шаблоны методов
+	tmplMethodSet := tmplService["method_set"].val.Message()
 
 	// Добавим методы
-	for _, methodDefEntry := range methodsDefMap {
-		if methodDefEntry.desc.IsList() {
-			for j := range methodDefEntry.val.List().Len() {
+	for _, method := range requiredMethods {
+		//  TODO: смержить массив
+		if method.desc.IsList() {
+			for j := range method.val.List().Len() {
 				err := genMethod(
-					methodDefEntry.val.List().Get(j).Message(),
+					tmplMethodSet.Get(method.desc).List().Get(0).Message(),
+					method.val.List().Get(j).Message(),
 					serviceKeyFieldsDefinition,
 					genFileProto,
 					entityPrefDesc,
@@ -832,7 +829,8 @@ func genEntityApiSpec(apiSpecOpt Field,
 			}
 		} else {
 			err := genMethod(
-				methodDefEntry.val.Message(),
+				tmplMethodSet.Get(method.desc).Message(),
+				method.val.Message(),
 				serviceKeyFieldsDefinition,
 				genFileProto,
 				entityPrefDesc,
@@ -850,8 +848,10 @@ func genEntityApiSpec(apiSpecOpt Field,
 		}
 	}
 	genFileProto.Service = append(genFileProto.Service, genServiceProto)
+	fmt.Println("genFileProto.Service", genFileProto.Service)
 
 	genFileProto.MessageType = append(genFileProto.MessageType, entityMessageProtodesc)
+	fmt.Println("genFileProto.MessageType", genFileProto.MessageType)
 
 	return nil
 }
@@ -961,15 +961,11 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			// ищем опции entity.feature
 			// TODO: рекурсивно смотреть во вложенные Messages
 			for _, msgOpt := range getFieldMap(msgDesc.Options().ProtoReflect()) {
-				// если есть опция на поле опции entity.feature.api.specification, если она true считаем, что в поле описание спецификации АПИ
-				// считаем, что опция Kind = message
-				// считаем, что данный Message описывает сущность для которой нужен сервис
+				// если есть опция на поле опции entity.feature.api.specification, считаем, что в поле описание спецификации АПИ
 				msgOptOpt := getFieldMap(msgOpt.desc.Options().ProtoReflect())
 				if val, ok := msgOptOpt["specification"]; ok {
 					if val.fullName == "entity.feature.api.specification" {
-						if val.val.Bool() == true {
-							entityMsgApiSpecOpt[msgDesc] = msgOpt
-						}
+						entityMsgApiSpecOpt[msgDesc] = msgOpt
 					}
 				}
 				// если есть entity.feature.aml_specification
@@ -998,7 +994,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				Dependency: sourceFileDescriptorProto.Dependency,
 				Options:    sourceFileDescriptorProto.Options,
 			}
-			// Типы без фичей добавим в генерацию
+			// Типы без фичей specification добавим в генерацию
 			for i := range sourceFilePrefDesc[k].Messages().Len() {
 				if _, ok := entityMsgApiSpecOpt[sourceFilePrefDesc[k].Messages().Get(i)]; !ok {
 					genFileProto.MessageType = append(genFileProto.MessageType, protodesc.ToDescriptorProto(sourceFilePrefDesc[k].Messages().Get(i)))
@@ -1015,10 +1011,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				}
 
 				for j := range sourceFilePrefDesc[k].Services().Get(i).Methods().Len() {
-					fmt.Println("FindMethodByName", sourceFileJhumpDesc.
-						FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
-						FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())))
-					fmt.Println("(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName()))", (string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).FullName())))
 					leadingComments := sourceFileJhumpDesc.
 						FindService(string(sourceFilePrefDesc[k].Services().Get(i).FullName())).
 						FindMethodByName(string(sourceFilePrefDesc[k].Services().Get(i).Methods().Get(j).Name())).
@@ -1042,6 +1034,19 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 					genFileProto.Options.ProtoReflect().Set(v.desc, pref.ValueOf(strings.Replace(genFileProto.Options.ProtoReflect().Get(v.desc).String(), "{PackageNameDoubleColonCamelCase}", ToCamelCase(string(sourceFilePrefDesc[k].Package()), ".", "::"), -1)))
 				}
 			}
+
+			// Заполним комменты по всем типам файла
+			for i := range sourceFileJhumpDesc.GetMessageTypes() {
+				getMessageComments(sourceFileJhumpDesc.GetMessageTypes()[i], genFileComments)
+			}
+
+			// Заполним комменты по всем сервисам файла
+			for i := range sourceFileJhumpDesc.GetServices() {
+				if sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments != nil {
+					genFileComments[sourceFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()] = *sourceFileJhumpDesc.GetServices()[i].GetSourceInfo().LeadingComments
+				}
+			}
+
 			// Обработаем сущности
 			for entityPrefDesc, apiSpecOpt := range entityMsgApiSpecOpt {
 				// Добавим комментарий всего файла

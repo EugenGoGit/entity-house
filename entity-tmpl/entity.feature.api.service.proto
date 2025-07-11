@@ -1,42 +1,32 @@
 syntax = "proto3";
 
-import "entity.feature.api.method.proto";
-import "entity.feature.options.proto";
-import "entity.feature.api.service.options.proto";
+
+import "google/protobuf/descriptor.proto";
+import "entity.feature.proto";
 
 package entity.feature.api.service;
 
+// TODO: Разделить аттрибуты на группы
+// TODO: возможно тут подойдет ServiceDescriptorProto
+// TODO: как навернуть опции на service
+// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
+message OverrideAttributes {
+  string leading_comment = 2;
+}
 
-// TODO: проверить расширяемость
-// TODO: Определить политики доступа
-// TODO: Определить передачу обязательных параметров пользователя в UserData
-// TODO: Определить аутентификацию, авторизацию
-// TODO: прописать работу с клаймами в запросе, апикей
-// TODO: Сделать генерируемый объект связки
-// TODO: проверка обязательности полей в LinkType
-// TODO: в опциях то же что и в полях
-// Абстрактный шаблон сервиса, состоящий из абстрактных шаблонов методов
-// На основе этого сервиса реализуются частные имплементации АПИ
-message EntityService {
-  // Имя сервиса по умолчанию
-  // Может быть переопределено полем name
-  option (name) = "{EntityTypeName}Service";
-  // Комментарий к сервису по умолчанию
-  // Может быть переопределен в исходном proto-файле через custom_comments.leading_comment
-  option (leading_comment) = "Сервис управления сущностью {EntityTypeName}";
-  // Набор абстрактных шаблонов методов сервиса
-  message MethodSet {
-    repeated method.Method method = 1;
-  }
-  // Корневая часть HTTP пути методов сервиса
+// Атрибуты, которые определяются в шаблоне спецификации
+message Attributes {
+  string name = 1;
+}
+
+// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
+message Variables {
   string http_root = 1;
-  // Набор абстрактных методов сервиса
-  MethodSet method_set = 2;
-  // Набор комментариев к сервису
-  CustomComments custom_comments = 3;
   // Определение ключевых полей сущности для использования в сервисе
   // Может быть переопределен в методах
-  KeyFieldsDefinition key_fields_definition = 4;
-  // Имя сервиса, переопределяет опцию name
-  string name = 5;
+  // Не для опций, только для полей
+  entity.feature.KeyFieldsDefinition key_fields_definition = 2;
+  // Дополнительный комментарий к сервису
+  // Не для опций, только для полей
+  string additional_leading_comment = 3;
 }

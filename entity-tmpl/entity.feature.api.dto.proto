@@ -1,39 +1,44 @@
 syntax = "proto3";
 
-
-import "google/api/field_behavior.proto";
-import "entity.feature.api.dto.options.proto";
+import "google/protobuf/descriptor.proto";
 
 package entity.feature.api.dto;
 
-// TODO: проверить расширяемость
-message RequestTemplate {
-  oneof template {
-    EntityKey entity_key = 1;
-    Entity entity = 2;
-  }
+extend google.protobuf.MessageOptions {
+  string message_comments = 3008;
+  // Тип в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле
+  string replace_message_type_name_to = 3009;
 }
 
-message ResponseTemplate {
-  oneof template {
-    Entity entity = 1;
-  }
+// TODO: попробовать не типы, а опции для указания ключа и сущности в шаблоне
+extend google.protobuf.FieldOptions {
+  // TODO: возможность взять коммент с подставленного измененного типа
+  string field_comments = 3030;
+  // TODO: Добавить возможность менять имя поля
+  // Тип поля в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
+  // Если значение опции EntityKeyFields, то поле заменяется на массив ключевых полей
+  string replace_field_type_to = 3031;
 }
 
-message EntityKey {
-  ReplaceTypeDummy entity_key = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (replace_field_type_to) = "EntityKeyFields"
-  ];
+extend google.protobuf.EnumOptions {
+  // В перечисление будут добавлены элементы из указанного поля опций метода. Поле ДОЛЖНО иметь тип массив entity.feature.api.method.EnumValue
+  string enum_by_method_attribute = 3001;
+  string enum_comments = 3002;
 }
 
-message Entity {
-  ReplaceTypeDummy data = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (replace_field_type_to) = "{EntityTypeName}",
-    (field_comments) = "{EntityTypeComment}"
-  ];
+extend google.protobuf.EnumValueOptions {
+  string enum_value_comments = 3001;
 }
+
+extend google.protobuf.OneofOptions {
+  string oneof_comments = 3001;
+}
+
+// Тип заглушка для замены на тип, указанный в опции поля replace_field_type_to
+// Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
+message ReplaceTypeDummy {}
 
 
 

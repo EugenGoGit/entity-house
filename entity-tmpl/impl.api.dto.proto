@@ -2,7 +2,7 @@ syntax = "proto3";
 
 
 import "google/api/field_behavior.proto";
-import "entity.feature.api.dto.options.proto";
+import "entity.feature.api.dto.proto";
 
 package impl.api.dto;
 
@@ -29,6 +29,7 @@ message ResponseTemplate {
     ValidError valid_error = 4;
     OneEntityWSavingError one_entity_saving_error = 5;
     Entity entity = 6;
+    LinkWError link_error = 7;
   }
 }
 
@@ -173,12 +174,27 @@ message LinkFilter {
 
 // TODO: Отказаться от отдельного типа для связок
 message Link {
-  option (entity.feature.api.dto.message_comments) =
-      "Запрос на добавление/удаление связи {EntityTypeName} и {LinkedTypeName}";
   entity.feature.api.dto.ReplaceTypeDummy data = 1 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}{LinkedTypeName}",
     (entity.feature.api.dto.field_comments) = "Связь {EntityTypeName} и {LinkedTypeName}",
     (google.api.field_behavior) = REQUIRED];
+}
+
+message LinkWError {
+  message Error {
+    option (entity.feature.api.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (entity.feature.api.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(entity.feature.api.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (entity.feature.api.dto.oneof_comments) = "Тип ответа";
+    entity.feature.api.dto.ReplaceTypeDummy data = 1 [
+      (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}{LinkedTypeName}",
+      (entity.feature.api.dto.field_comments) = "Связь {EntityTypeName} и {LinkedTypeName}"];
+    Error error = 2 [(entity.feature.api.dto.field_comments) = "Ошибка"];
+  }
 }
 
 message Paging {
