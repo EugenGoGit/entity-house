@@ -18,17 +18,20 @@ message Specification {
   {
     serverside_entity_crud:
     {
-      override_attributes:{
-        leading_comment: "Сервис управления сущностью {EntityTypeName}";
-      }
       attributes:{
+        override_default:{
+          leading_comment: "Сервис управления сущностью {EntityTypeName}"
+        }
         name: "{EntityTypeName}Service"
       }
       method_set: {
         get:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+              request_leading_comment: "Запрос получения единичной сущности {EntityTypeName} по ключу"
+              response_leading_comment: "Ответ на запрос получения единичной сущности {EntityTypeName} по ключу"
+
             }
             name:"Get{EntityTypeName}"
             request_name: "Get{EntityTypeName}Request"
@@ -43,8 +46,11 @@ message Specification {
         }
         get_list:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+              request_leading_comment: "Запрос получения списка сущностей {EntityTypeName} по фильтру"
+              response_leading_comment: "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру"
+
             }
             name:"Get{EntityTypeName}List"
             request_name:"Get{EntityTypeName}ListRequest"
@@ -60,8 +66,11 @@ message Specification {
         }
         save_create_replace: {
           attributes:{
-            default: {
+            override_default: {
               leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
+              request_leading_comment: "Запрос на создание/редактирование сущности {EntityTypeName}"
+              response_leading_comment: "Ответ на запрос на создание/редактирование сущности {EntityTypeName}"
+
             }
             name: "Save{EntityTypeName}"
             request_name: "Save{EntityTypeName}Request"
@@ -77,7 +86,7 @@ message Specification {
         }
         get_count:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}Count"
@@ -93,7 +102,7 @@ message Specification {
         }
         get_link_count: {
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}{LinkedTypeName}Count"
@@ -109,7 +118,7 @@ message Specification {
         }
         get_link_list:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}{LinkedTypeName}List"
@@ -125,7 +134,7 @@ message Specification {
         }
         delete:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
             }
             name: "Delete{EntityTypeName}"
@@ -141,7 +150,7 @@ message Specification {
         }
         restore: {
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
             }
             name: "Post{EntityTypeName}Restore"
@@ -157,7 +166,7 @@ message Specification {
         }
         attach:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
               request_leading_comment: "Запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
               response_leading_comment: "Ответ на запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
@@ -175,7 +184,7 @@ message Specification {
         }
         detach:{
           attributes:{
-            default:{
+            override_default:{
               leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
               request_leading_comment: "Запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
               response_leading_comment: "Ответ на запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"

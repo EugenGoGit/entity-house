@@ -526,9 +526,9 @@ func genMethod(
 	maps.Copy(methodParameters, getFieldMap(tmplFieldMap["attributes"].val.Message()))
 
 	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-	maps.Copy(methodParameters, getFieldMap(methodParameters["default"].val.Message()))
+	maps.Copy(methodParameters, getFieldMap(methodParameters["override_default"].val.Message()))
 	if val, ok := varFieldMap["attributes"]; ok {
-		if def, ok := getFieldMap(val.val.Message())["default"]; ok {
+		if def, ok := getFieldMap(val.val.Message())["override_default"]; ok {
 			maps.Copy(methodParameters, getFieldMap(def.val.Message()))
 		}
 	}
@@ -759,23 +759,23 @@ func genEntityApiSpec(apiSpecOpt Field,
 	// Атрибуты, которые определяются в шаблоне спецификации
 	maps.Copy(serviceParameters, getFieldMap(tmplService["attributes"].val.Message()))
 
-	// serviceParameters["request_template"]  = getFieldMap(tmplMethod)["request_template"]
-	// serviceParameters["response_template"]  = getFieldMap(tmplMethod)["response_template"]
+	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
+	maps.Copy(serviceParameters, getFieldMap(serviceParameters["override_default"].val.Message()))
+	if val, ok := entitySourceService["attributes"]; ok {
+		if def, ok := getFieldMap(val.val.Message())["override_default"]; ok {
+			maps.Copy(serviceParameters, getFieldMap(def.val.Message()))
+		}
+	}
 
 	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
 	if val, ok := entitySourceService["variables"]; ok {
 		maps.Copy(serviceParameters, getFieldMap(val.val.Message()))
 	}
-
-	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-	maps.Copy(serviceParameters, getFieldMap(tmplService["override_attributes"].val.Message()))
-	if val, ok := entitySourceService["override_attributes"]; ok {
-		maps.Copy(serviceParameters, getFieldMap(val.val.Message()))
-	}
+	// Перезаписываем значениями описания метода в описании сущности
+	maps.Copy(serviceParameters, entitySourceService)
 
 	fmt.Println("serviceParameters", serviceParameters)
 
-	// в опциях атрибуты override_attributes
 	serviceName := serviceParameters["name"].val.String()
 	serviceComment := serviceParameters["leading_comment"].val.String()
 	if val, ok := serviceParameters["additional_leading_comment"]; ok {
@@ -1112,17 +1112,16 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			// Уберем опции entity.feature
 			var deps map[string]string = make(map[string]string)
 			for _, v := range entityMsgApiSpecOpt {
-				fmt.Println("v.desc.ParentFile()", v.desc.ParentFile().FullName())
 				// убираем импорт entity-tmpl/entity-feature.proto
 				for i := range genFileProto.Dependency {
 					if genFileProto.Dependency[i] != string(v.desc.ParentFile().FullName())+".proto" &&
-						genFileProto.Dependency[i] != "entity.feature.options.proto" {
+						genFileProto.Dependency[i] != "entity.feature.proto" {
 						deps[genFileProto.Dependency[i]] = genFileProto.Dependency[i]
 					}
 				}
 			}
 			var depsArr []string
-			for k, _ := range deps {
+			for k := range deps {
 				depsArr = append(depsArr, k)
 			}
 			genFileProto.Dependency = depsArr

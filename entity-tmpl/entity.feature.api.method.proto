@@ -25,7 +25,7 @@ message EnumValue {
 // TODO: как навернуть опции на метод
 // Атрибуты, которые определяются в шаблоне спецификации
 message Attributes {
-  Default default = 1;
+  Default override_default = 1;
   string name = 3;
   string request_name = 4;
   string response_name = 5;

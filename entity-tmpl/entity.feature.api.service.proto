@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-
-import "google/protobuf/descriptor.proto";
 import "entity.feature.proto";
 
 package entity.feature.api.service;
@@ -10,13 +8,14 @@ package entity.feature.api.service;
 // TODO: возможно тут подойдет ServiceDescriptorProto
 // TODO: как навернуть опции на service
 // Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-message OverrideAttributes {
+message Default {
   string leading_comment = 2;
 }
 
 // Атрибуты, которые определяются в шаблоне спецификации
 message Attributes {
-  string name = 1;
+  Default override_default = 1;
+  string name = 2;
 }
 
 // Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
