@@ -2,17 +2,27 @@ syntax = "proto3";
 
 import "impl.api.dto.proto";
 import "entity.feature.api.method.proto";
+import "entity.feature.proto";
 
 package impl.api.method;
 
-// todo: сделать имплементацию на абстрактном методе. Или не надо. или как пример
-// TODO: чем методы отличаются? сделать различие в полях. На основе заполненности опций
 message SaveCreateReplace {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.EntityWSavingError entity_saving_error = 1;
+      dto.Entity entity = 2;
+      dto.Empty empty = 3;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 //message SaveListCreateReplace {
@@ -88,19 +98,39 @@ message SaveCreateReplace {
 
 
 message DeleteById {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+      dto.Empty empty = 2;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 message RestoreById {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+      dto.Empty empty = 2;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 //message Delete {
@@ -125,21 +155,29 @@ message RestoreById {
 //  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
 //}
 
-message GetById {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+message Get {
+  message RequestTemplate {
+    oneof template {
+      dto.EntityKey entity_key = 1;
+      dto.EntityKeyScope entity_key_scope = 2;
+      dto.EntityKeyReqScope entity_key_req_scope = 3;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.Entity entity = 1;
+      dto.EntityWError entity_error = 2;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  // Определение ключевых полей сущности для использования в методе
+  // Переопределяет key_fields сервиса
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+  entity.feature.api.method.Variables variables = 6;
 }
 
-message GetByIdScope {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
-}
 //
 //message Get {
 //  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
@@ -151,40 +189,49 @@ message GetByIdScope {
 //  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
 //  entity.feature.api.method.Comments comments = 1;
 //  entity.feature.api.method.Attributes attributes = 2;
-//  dto.RequestTemplate request_template = 3;
-//  dto.ResponseTemplate response_template = 4;
+//  RequestTemplate request_template = 3;
+//  ResponseTemplate response_template = 4;
 //}
 
 message GetList {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.FilterPaging filter_paging = 1;
+      dto.FilterPagingScope filter_paging_scope = 2;
+      dto.FilterPagingReqScope filter_paging_req_scope = 3;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.Entity entity = 1;
+      dto.EntityWError entity_error = 2;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  repeated entity.feature.api.method.EnumValue order_by_values = 4;
+  entity.feature.api.method.Variables variables = 6;
 }
 
-message GetListScope {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
-}
 
 message GetCount {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
-}
-
-message GetCountScope {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.Filter filter = 1;
+      dto.FilterScope filter_scope = 2;
+      dto.FilterReqScope filter_req_scope = 3;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.CountEntityWError count_entity_error = 1;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 // TODO: в extension  Exists
@@ -195,35 +242,78 @@ message GetCountScope {
 // TODO: в extension DetachList
 
 message Attach {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 message Detach {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 message GetLinkList {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.LinkFilterPaging link_filter_paging = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.Link link = 1;
+      dto.LinkWError link_error = 7;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+  repeated entity.feature.api.method.EnumValue order_by_values = 5;
+  entity.feature.api.method.Variables variables = 6;
 }
 
 message GetLinkCount {
-  entity.feature.api.method.OverrideAttributes override_attributes = 1;
-  entity.feature.api.method.Attributes attributes = 2;
-  dto.RequestTemplate request_template = 3;
-  dto.ResponseTemplate response_template = 4;
-  entity.feature.api.method.Variables variables = 5;
+  message RequestTemplate {
+    oneof template {
+      dto.LinkFilter link_filter = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.CountEntityWError count_entity_error = 1;
+    }
+  }
+  entity.feature.api.method.Attributes attributes = 1;
+  RequestTemplate request_template = 2;
+  ResponseTemplate response_template = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+  entity.feature.api.method.Variables variables = 6;
 }
+
 
 

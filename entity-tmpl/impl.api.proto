@@ -27,6 +27,9 @@ message Specification {
       method_set: {
         get:{
           attributes:{
+            default:{
+              leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+            }
             name:"Get{EntityTypeName}"
             request_name: "Get{EntityTypeName}Request"
             response_name: "Get{EntityTypeName}Response"
@@ -37,28 +40,12 @@ message Specification {
           }
           response_template: {entity_error:{}}
           request_template: {entity_key:{}}
-          override_attributes: {
-            leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
-          }
-        }
-        get_scope:{
-          attributes:{
-            name: "Get{EntityTypeName}"
-            request_name: "Get{EntityTypeName}Request"
-            response_name: "Get{EntityTypeName}Response"
-            http_rule: {
-              get: "/{HttpRoot}/{KeyFields}"
-            }
-            key_field_behavior: REQUIRED
-          }
-          response_template: {entity_error:{}}
-          request_template: {entity_key_scope:{}}
-          override_attributes: {
-            leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
-          }
         }
         get_list:{
           attributes:{
+            default:{
+              leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+            }
             name:"Get{EntityTypeName}List"
             request_name:"Get{EntityTypeName}ListRequest"
             response_name:"Get{EntityTypeName}ListResponse"
@@ -70,12 +57,12 @@ message Specification {
           }
           request_template: {filter_paging:{}}
           response_template: {entity_error:{}}
-          override_attributes:{
-            leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
-          }
         }
         save_create_replace: {
           attributes:{
+            default: {
+              leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
+            }
             name: "Save{EntityTypeName}"
             request_name: "Save{EntityTypeName}Request"
             response_name: "Save{EntityTypeName}Response"
@@ -85,15 +72,14 @@ message Specification {
             }
             key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
           }
-          response_template: {one_entity_saving_error:{}}
+          response_template: {entity_saving_error:{}}
           request_template: {entity:{}}
-          override_attributes: {
-            leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
-
-          }
         }
         get_count:{
           attributes:{
+            default:{
+              leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+            }
             name: "Get{EntityTypeName}Count"
             request_name: "Get{EntityTypeName}CountRequest"
             response_name: "Get{EntityTypeName}CountResponse"
@@ -104,29 +90,12 @@ message Specification {
           }
           request_template: {filter:{}}
           response_template: {count_entity_error:{}}
-          override_attributes:{
-            leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
-
-          }
-        }
-        get_count_scope:{
-          attributes:{
-            name: "Get{EntityTypeName}Count"
-            request_name: "Get{EntityTypeName}CountRequest"
-            response_name: "Get{EntityTypeName}CountResponse"
-            http_rule: {
-              get: "/{HttpRoot}/count"
-            }
-            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
-          }
-          request_template: {filter_scope:{}};
-          response_template: {count_entity_error:{}};
-          override_attributes:{
-            leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру";
-          }
         }
         get_link_count: {
           attributes:{
+            default:{
+              leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+            }
             name: "Get{EntityTypeName}{LinkedTypeName}Count"
             request_name: "Get{EntityTypeName}{LinkedTypeName}CountRequest";
             response_name: "Get{EntityTypeName}{LinkedTypeName}CountResponse"
@@ -137,12 +106,12 @@ message Specification {
           }
           request_template: {link_filter:{}};
           response_template: {count_entity_error:{}};
-          override_attributes:{
-            leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
-          }
         }
         get_link_list:{
           attributes:{
+            default:{
+              leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+            }
             name: "Get{EntityTypeName}{LinkedTypeName}List"
             request_name: "Get{EntityTypeName}{LinkedTypeName}ListRequest"
             response_name: "Get{EntityTypeName}{LinkedTypeName}ListResponse"
@@ -153,12 +122,12 @@ message Specification {
           }
           request_template: {link_filter_paging:{}}
           response_template: {link_error:{}}
-          override_attributes:{
-            leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
-          }
         }
         delete:{
           attributes:{
+            default:{
+              leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
+            }
             name: "Delete{EntityTypeName}"
             request_name: "Delete{EntityTypeName}Request"
             response_name: "Delete{EntityTypeName}Response"
@@ -169,12 +138,12 @@ message Specification {
           }
           response_template: {valid_error:{}}
           request_template: {entity_key:{}}
-          override_attributes:{
-            leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
-          }
         }
         restore: {
           attributes:{
+            default:{
+              leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
+            }
             name: "Post{EntityTypeName}Restore"
             request_name: "Post{EntityTypeName}RestoreRequest"
             response_name: "Post{EntityTypeName}RestoreResponse"
@@ -183,31 +152,16 @@ message Specification {
             }
             key_field_behavior: REQUIRED
           }
-          override_attributes:{
-            leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
-          }
           response_template: {valid_error:{}}
           request_template: {entity_key:{}}
         }
-        get_list_scope: {
-          attributes:{
-            name: "Get{EntityTypeName}List"
-            request_name: "Get{EntityTypeName}ListRequest"
-            response_name: "Get{EntityTypeName}ListResponse"
-            http_rule: {
-              get: "/{HttpRoot}/list"
-            }
-            server_streaming: true
-            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
-          }
-          override_attributes:{
-            leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
-          }
-          request_template: {filter_paging_scope:{}}
-          response_template: {entity_error:{}}
-        }
         attach:{
           attributes:{
+            default:{
+              leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
+              request_leading_comment: "Запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+              response_leading_comment: "Ответ на запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+            }
             name: "Put{EntityTypeName}{LinkedTypeName}Attach"
             request_name: "Put{EntityTypeName}{LinkedTypeName}AttachRequest"
             response_name: "Put{EntityTypeName}{LinkedTypeName}AttachResponse"
@@ -218,29 +172,24 @@ message Specification {
           }
           request_template: {link:{}}
           response_template: {valid_error:{}}
-          override_attributes:{
-            leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
-            request_leading_comment: "Запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
-            response_leading_comment: "Ответ на запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
-          }
         }
         detach:{
           attributes:{
+            default:{
+              leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
+              request_leading_comment: "Запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+              response_leading_comment: "Ответ на запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+            }
             name: "Put{EntityTypeName}{LinkedTypeName}Detach"
             request_name: "Put{EntityTypeName}{LinkedTypeName}DetachRequest"
             response_name: "Put{EntityTypeName}{LinkedTypeName}DetachResponse"
             http_rule: {
-                put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
-                }
+              put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
+            }
             key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
           }
           request_template: {link:{}}
           response_template: {valid_error:{}}
-          override_attributes:{
-            leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
-            request_leading_comment: "Запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
-            response_leading_comment: "Ответ на запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
-          }
         }
       }
     }

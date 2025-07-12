@@ -520,22 +520,38 @@ func genMethod(
 
 ) error {
 	var methodParameters map[string]Field = make(map[string]Field)
+	tmplFieldMap := getFieldMap(tmplMethod)
+	varFieldMap := getFieldMap(varMethod)
 	// Атрибуты, которые определяются в шаблоне спецификации
-	maps.Copy(methodParameters, getFieldMap(getFieldMap(tmplMethod)["attributes"].val.Message()))
+	maps.Copy(methodParameters, getFieldMap(tmplFieldMap["attributes"].val.Message()))
 
-	methodParameters["request_template"] = getFieldMap(tmplMethod)["request_template"]
-	methodParameters["response_template"] = getFieldMap(tmplMethod)["response_template"]
+	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
+	maps.Copy(methodParameters, getFieldMap(methodParameters["default"].val.Message()))
+	if val, ok := varFieldMap["attributes"]; ok {
+		if def, ok := getFieldMap(val.val.Message())["default"]; ok {
+			maps.Copy(methodParameters, getFieldMap(def.val.Message()))
+		}
+	}
+
+	// Шаблон запроса берем из описания сущности, если не задан, то из шаблона
+	if val, ok := varFieldMap["request_template"]; ok {
+		methodParameters["request_template"] = val
+	} else {
+		methodParameters["request_template"] = tmplFieldMap["request_template"]
+	}
+	// Шаблон ответа берем из описания сущности, если не задан, то из шаблона
+	if val, ok := varFieldMap["response_template"]; ok {
+		methodParameters["response_template"] = val
+	} else {
+		methodParameters["response_template"] = tmplFieldMap["response_template"]
+	}
 
 	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
-	if val, ok := getFieldMap(varMethod)["variables"]; ok {
+	if val, ok := varFieldMap["variables"]; ok {
 		maps.Copy(methodParameters, getFieldMap(val.val.Message()))
 	}
-	fmt.Println("tmplMethodt", tmplMethod)
-	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-	maps.Copy(methodParameters, getFieldMap(getFieldMap(tmplMethod)["override_attributes"].val.Message()))
-	if val, ok := getFieldMap(varMethod)["override_attributes"]; ok {
-		maps.Copy(methodParameters, getFieldMap(val.val.Message()))
-	}
+	// Перезаписываем значениями описания метода в описании сущности
+	maps.Copy(methodParameters, varFieldMap)
 
 	fmt.Println("methodParameters", methodParameters)
 	var linkedTypeName string

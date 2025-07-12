@@ -81,18 +81,18 @@ package impl.api.service;
 
 message ServersideEntityCRUD {
   message MethodSet {
-      method.GetById get = 1;
-      method.GetByIdScope get_scope = 21;
-      method.GetList get_list = 2;
-      method.GetListScope get_list_scope = 19;
-      method.GetCount get_count = 3;
-      method.GetCountScope get_count_scope = 20;
+    method.Get get = 1;
+    //      method.GetByIdScope get_scope = 21;
+    method.GetList get_list = 2;
+    //      method.GetListScope get_list_scope = 19;
+    method.GetCount get_count = 3;
+    //      method.GetCountScope get_count_scope = 20;
     //    method.ExistsKey exists_key = 4;
     //    method.Exists exists = 5;
     // .
-      // .
-      //      method.SaveCreateOnly save_create_only = 6;
-      method.SaveCreateReplace save_create_replace = 7;
+    // .
+    //      method.SaveCreateOnly save_create_only = 6;
+    method.SaveCreateReplace save_create_replace = 7;
     // .
     //    oneof save_list {
     //      // .
@@ -104,8 +104,8 @@ message ServersideEntityCRUD {
     method.DeleteById delete = 12;
     method.RestoreById restore = 13;
     //    method.DeleteList delete_list = 14;
-        repeated method.Attach attach = 15;
-        repeated method.Detach detach = 16;
+    repeated method.Attach attach = 15;
+    repeated method.Detach detach = 16;
     repeated method.GetLinkList get_link_list = 17;
     repeated method.GetLinkCount get_link_count = 18;
   }

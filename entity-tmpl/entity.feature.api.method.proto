@@ -7,7 +7,7 @@ import "entity.feature.proto";
 package entity.feature.api.method;
 
 // Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-message OverrideAttributes {
+message Default {
   string leading_comment = 1;
   // Комментарий к запросу метода
   string request_leading_comment = 2;
@@ -25,19 +25,20 @@ message EnumValue {
 // TODO: как навернуть опции на метод
 // Атрибуты, которые определяются в шаблоне спецификации
 message Attributes {
-  string name = 1;
-  string request_name = 2;
-  string response_name = 3;
-  bool server_streaming = 4;
-  bool client_streaming = 5;
+  Default default = 1;
+  string name = 3;
+  string request_name = 4;
+  string response_name = 5;
+  bool server_streaming = 6;
+  bool client_streaming = 7;
   // TODO: вычислить key_field_behavior для ключевых полей
   // Строгость (Cardinality) ключевых полей, требуемая для метода
-  google.api.FieldBehavior key_field_behavior = 6;
+  google.api.FieldBehavior key_field_behavior = 8;
   // TODO: сделать подстановки в additional_bindings
-  google.api.HttpRule http_rule = 7;
+  google.api.HttpRule http_rule = 9;
 }
 
-// TODO: разнести атрибуты на группы, нужны всем методам, нужны некоторым, для опций, для полей
+// TODO: убрать все кроме additional_leading_comment
 // Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
 message Variables {
   // Определение ключевых полей сущности для использования в методе

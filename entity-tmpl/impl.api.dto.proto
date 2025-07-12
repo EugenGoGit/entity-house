@@ -5,32 +5,35 @@ import "google/api/field_behavior.proto";
 import "entity.feature.api.dto.proto";
 
 package impl.api.dto;
+//
+//message RequestTemplate {
+//  oneof template {
+//    EntityKey entity_key = 1;
+//    Entity entity = 2;
+//    FilterPaging filter_paging = 3;
+//    LinkFilterPaging link_filter_paging = 4;
+//    Filter filter = 5;
+//    LinkFilter link_filter = 6;
+//    Link link = 7;
+//    FilterPagingScope filter_paging_scope = 8;
+//    FilterScope filter_scope = 9;
+//    EntityKeyScope entity_key_scope = 10;
+//  }
+//}
+//
+//message ResponseTemplate {
+//  oneof template {
+//    EntityWError entity_error = 1;
+//    EntityList entity_list = 2;
+//    CountEntityWError count_entity_error = 3;
+//    ValidError valid_error = 4;
+//    EntityWSavingError one_entity_saving_error = 5;
+//    Entity entity = 6;
+//    LinkWError link_error = 7;
+//  }
+//}
 
-message RequestTemplate {
-  oneof template {
-    EntityKey entity_key = 1;
-    Entity entity = 2;
-    FilterPaging filter_paging = 3;
-    LinkFilterPaging link_filter_paging = 4;
-    Filter filter = 5;
-    LinkFilter link_filter = 6;
-    Link link = 7;
-    FilterPagingScope filter_paging_scope = 8;
-    FilterScope filter_scope = 9;
-    EntityKeyScope entity_key_scope = 10;
-  }
-}
-
-message ResponseTemplate {
-  oneof template {
-    EntityWError entity_error = 1;
-    EntityList entity_list = 2;
-    CountEntityWError count_entity_error = 3;
-    ValidError valid_error = 4;
-    OneEntityWSavingError one_entity_saving_error = 5;
-    Entity entity = 6;
-    LinkWError link_error = 7;
-  }
+message Empty {
 }
 
 message EntityWError {
@@ -51,7 +54,7 @@ message EntityWError {
   }
 }
 
-message OneEntityWSavingError {
+message EntityWSavingError {
   message Error {
     option (entity.feature.api.dto.message_comments) = "Ошибка запроса";
     oneof reason {
@@ -88,6 +91,18 @@ message EntityKeyScope {
   entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
     (entity.feature.api.dto.field_comments) = "Ограничение выборки"
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy entity_key = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (entity.feature.api.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message EntityKeyReqScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки",
+    (google.api.field_behavior) = REQUIRED
   ];
   entity.feature.api.dto.ReplaceTypeDummy entity_key = 2 [
     (google.api.field_behavior) = REQUIRED,
@@ -136,6 +151,26 @@ message FilterPagingScope {
   }
 }
 
+
+message FilterPagingReqScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки",
+    (google.api.field_behavior) = REQUIRED
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy filter = 2 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",
+    (entity.feature.api.dto.field_comments) = "Фильтр"
+  ];
+  oneof pagination {
+    option (entity.feature.api.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 3 [
+      (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (entity.feature.api.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
 // TODO: Отказаться от отдельного типа для связок
 message LinkFilterPaging {
   entity.feature.api.dto.ReplaceTypeDummy filter = 1 [
@@ -160,6 +195,18 @@ message FilterScope {
   entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
     (entity.feature.api.dto.field_comments) = "Ограничение выборки"
+  ];
+  entity.feature.api.dto.ReplaceTypeDummy filter = 2 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",
+    (entity.feature.api.dto.field_comments) = "Фильтр"
+  ];
+}
+
+message FilterReqScope {
+  entity.feature.api.dto.ReplaceTypeDummy scope = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (entity.feature.api.dto.field_comments) = "Ограничение выборки",
+    (google.api.field_behavior) = REQUIRED
   ];
   entity.feature.api.dto.ReplaceTypeDummy filter = 2 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",
@@ -259,7 +306,7 @@ message CountEntityWError {
   }
 }
 
-message ValidError {
+message OnlyValidError {
   message Error {
     option (entity.feature.api.dto.message_comments) = "Ошибка запроса";
     oneof reason {
