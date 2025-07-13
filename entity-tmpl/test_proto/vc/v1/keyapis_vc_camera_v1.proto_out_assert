@@ -1,0 +1,405 @@
+// Спецификация АПИ управления сущностью Camera
+
+syntax = "proto3";
+package keyapis.vc.v1;
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+option cc_enable_arenas = true;
+option csharp_namespace = "Keyapis.Vc.V1";
+option go_package = "/keyapis_vc_v1";
+option java_multiple_files = false;
+option java_outer_classname = "KeyapisVcV1Proto";
+option java_package = "ru.keyapis.vc.v1";
+option java_string_check_utf8 = true;
+option objc_class_prefix = "KEYAPISVCV1";
+option optimize_for = LITE_RUNTIME;
+option php_namespace = "Keyapis\\Vc\\V1";
+option ruby_package = "Keyapis::Vc::V1";
+// Сервис работы с камерами
+service CameraService {
+    // Метод получения камеры.
+    // Для owner, employee параметр filter.vc_company_id подставляется из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCamera ( GetCameraRequest ) returns ( GetCameraResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera/{uid}" };
+    }
+    // Метод получения количества камер.
+    // Для owner, employee параметр filter.vc_company_id подставляется из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCount ( GetCameraCountRequest ) returns ( GetCameraCountResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera/count" };
+    }
+    // Метод получения списка камер.
+    // Для owner, employee параметр filter.vc_company_id подставляется из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraList ( GetCameraListRequest ) returns ( stream GetCameraListResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera/list" };
+    }
+    // Метод получения количества связей камеры и квартиры.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraRoomCount ( GetCameraRoomCountRequest ) returns ( GetCameraRoomCountResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera/room/count" };
+    }
+    // Метод получения списка связей камеры и квартиры.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraRoomList ( GetCameraRoomListRequest ) returns ( stream GetCameraRoomListResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera/room/list" };
+    }
+    // Метод получения RTSP-ссылки по идентификатору камеры в vcfront.
+    // Метод доступен для: admin, service.
+    // Метод доступен для: ApiKey
+    rpc GetCameraRtspUrlExternalId ( GetCameraRtspUrlExternalIdRequest ) returns ( GetCameraRtspUrlExternalIdResponse ) {
+        option (google.api.http) = {
+            get: "/vc/api/v1/camera/rtsp_url/external_id/{external_id}"
+        };
+    }
+    // Метод привязки камеры и квартиры.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc PutCameraRoomAttach ( PutCameraRoomAttachRequest ) returns ( PutCameraRoomAttachResponse ) {
+        option (google.api.http) = {
+            put: "/vc/api/v1/camera/{data.camera_uid}/room/{data.orpon}/{data.room_number}/attach"
+        };
+    }
+    // Метод отвязки камеры и квартиры.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc PutCameraRoomDetach ( PutCameraRoomDetachRequest ) returns ( PutCameraRoomDetachResponse ) {
+        option (google.api.http) = {
+            put: "/vc/api/v1/camera/{data.camera_uid}/room/{data.orpon}/{data.room_number}/detach"
+        };
+    }
+}
+// Камера
+message Camera {
+    // Идентификатор камеры
+    string id = 1;
+    // uid камеры
+    string uid = 2;
+    // Название камеры
+    string name = 3;
+    // Признак: онлайн камера или нет
+    bool online = 4;
+    // Признак: Есть ли у камеры активный пользователь
+    bool with_active_user_camera = 5;
+    // Дата и время изменения статуса камеры
+    string status_changed_since = 6;
+    // MAC-адрес камеры
+    string mac = 7;
+    // IP камеры
+    string ip = 8;
+    // Внешний IP камеры
+    string remote_ip = 9;
+    // Дата начала действия текущего тарифа
+    string tariff_use_since = 10;
+    // Дата окончания действия текущего тарифа
+    string tariff_use_till = 11;
+    // Наименование тарифа
+    string tariff_title = 12;
+}
+// Фильтр камер
+message CameraFilter {
+}
+// Постраничный вывод
+message CameraPaging {
+    // Справочник типов направлений сортировки.
+    // # Тип: byte
+    enum DirectionType {
+        // Значение не указано
+        DIRECTION_TYPE_UNKNOWN = 0;
+        // От большего к меньшему
+        DESC = 1;
+        // От меньшего к большему
+        ASC = 2;
+    }
+    // Справочник типов значений сортировки.
+    // # Тип: byte
+    enum OrderByType {
+        // Значение не указано
+        ORDER_BY_TYPE_UNKNOWN = 0;
+        // По идентификатору
+        UID = 1;
+    }
+    // Тип значения сортировки.
+    // Если значение не передано, то будет взято значение по умолчанию
+    OrderByType order_by_type = 1;
+    // Тип направления сортировки.
+    // # По умолчанию: DESC
+    DirectionType direction_type = 2;
+    // Количество записей на страницу.
+    // Если значение 0 (не передано), то будет взято значение по умолчанию.
+    // # Диапазон: 0..100.
+    // # По умолчанию: 20
+    int32 limit = 3;
+    // Сдвиг.
+    // # Диапазон: 0..2147483647
+    int32 offset = 4;
+}
+message CameraRoom {
+    // Идентификатор камеры
+    string camera_uid = 1 [(google.api.field_behavior) = REQUIRED];
+    // ОРПОН дома
+    int64 orpon = 2 [(google.api.field_behavior) = REQUIRED];
+    // Номер квартиры.
+    // # Диапазон: 1..4
+    string room_number = 3 [(google.api.field_behavior) = REQUIRED];
+}
+// Фильтр связок камеры и квартиры
+message CameraRoomFilter {
+    // По Идентификаторам камер
+    repeated string uid = 1;
+    // По ОРПОНам
+    repeated int64 orpons = 2;
+    // По номерам квартир
+    repeated string room_numbers = 3;
+}
+// Постраничный вывод
+message CameraRoomPaging {
+    // Справочник типов направлений сортировки.
+    // # Тип: byte
+    enum DirectionType {
+        // Значение не указано
+        DIRECTION_TYPE_UNKNOWN = 0;
+        // От большего к меньшему
+        DESC = 1;
+        // От меньшего к большему
+        ASC = 2;
+    }
+    // Справочник типов значений сортировки.
+    // # Тип: byte
+    enum OrderByType {
+        // Значение не указано
+        ORDER_BY_TYPE_UNKNOWN = 0;
+        // По Идентификатору камеры
+        CAMERA_UID = 1;
+        // По ОРПОН и номеру квартиры
+        ORPON_ROOM_NUMBER = 2;
+    }
+    // Тип значения сортировки.
+    // Если значение не передано, то будет взято значение по умолчанию
+    OrderByType order_by_type = 1;
+    // Тип направления сортировки.
+    // # По умолчанию: DESC
+    DirectionType direction_type = 2;
+    // Количество записей на страницу.
+    // Если значение 0 (не передано), то будет взято значение по умолчанию.
+    // # Диапазон: 0..100.
+    // # По умолчанию: 20
+    int32 limit = 3;
+    // Сдвиг.
+    // # Диапазон: 0..2147483647
+    int32 offset = 4;
+}
+// Ограничение выборки камер
+message CameraScope {
+    // Внешний идентификатор компании
+    int32 vc_company_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+// Запрос на получение количества камер
+message GetCameraCountRequest {
+    // Ограничение выборки камер
+    CameraScope scope = 1 [(google.api.field_behavior) = REQUIRED];
+    // Фильтр камер
+    CameraFilter filter = 2;
+}
+// Ответ на получение количества камер
+message GetCameraCountResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Всего количество
+        int32 data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос на получение списка камер
+message GetCameraListRequest {
+    // Ограничение выборки камер
+    CameraScope scope = 1 [(google.api.field_behavior) = REQUIRED];
+    // Фильтр камер
+    CameraFilter filter = 2;
+    // Вариант разбиения на страницы
+    oneof pagination {
+        // Постраничный вывод
+        CameraPaging paging = 3;
+    }
+}
+// Ответ на получение списка камер
+message GetCameraListResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Камера
+        Camera data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос получения камеры
+message GetCameraRequest {
+    // Ограничение выборки камер
+    CameraScope scope = 1 [(google.api.field_behavior) = REQUIRED];
+    // uid камеры
+    string uid = 2 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ на запрос получения камеры
+message GetCameraResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Камера
+        Camera data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос получения количества связей камеры и квартиры
+message GetCameraRoomCountRequest {
+    // Фильтр связок камеры и квартиры
+    CameraRoomFilter filter = 1;
+}
+// Ответ получения количества связей камеры и квартиры
+message GetCameraRoomCountResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Всего количество
+        int32 data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос получения списка связей камеры и квартиры
+message GetCameraRoomListRequest {
+    // Фильтр связок камеры и квартиры
+    CameraRoomFilter filter = 1;
+    // Вариант разбиения на страницы
+    oneof pagination {
+        // Постраничный вывод
+        CameraRoomPaging paging = 2;
+    }
+}
+// Ответ получения списка связей камеры и квартиры
+message GetCameraRoomListResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Связь Camera и Room
+        CameraRoom data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос получения камеры
+message GetCameraRtspUrlExternalIdRequest {
+    // Идентификатор камеры в vcfront.
+    // # Тип: Guid
+    string external_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ на запрос получения RTSP-ссылки по идентификатору камеры в vcfront
+message GetCameraRtspUrlExternalIdResponse {
+    // RTSP-ссылка
+    message CameraRtspUrl {
+        // RTSP-ссылка
+        string rtsp_url = 1;
+    }
+    // Ошибка запроса получения списка камер
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип результата
+    oneof type {
+        // RTSP-ссылка
+        CameraRtspUrl data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос привязки камеры и квартиры
+message PutCameraRoomAttachRequest {
+    // Связь Camera и Room
+    CameraRoom data = 1 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ привязки камеры и квартиры
+message PutCameraRoomAttachResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
+}
+// Запрос отвязки камеры и квартиры
+message PutCameraRoomDetachRequest {
+    // Связь Camera и Room
+    CameraRoom data = 1 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ отвязки камеры и квартиры
+message PutCameraRoomDetachResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
+}
+// Ошибки валидации.
+// Эти проверки выполняются до обращения в базу данных
+message ValidationError {
+    // Путь к полю в формате наименования прото
+    string path = 1 [(google.api.field_behavior) = REQUIRED];
+    // Валидационное сообщение
+    string message = 2 [(google.api.field_behavior) = REQUIRED];
+}

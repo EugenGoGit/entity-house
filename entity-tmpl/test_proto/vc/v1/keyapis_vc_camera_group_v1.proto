@@ -1,0 +1,301 @@
+/*
+  Сервис управления коллекциями камер
+*/
+syntax = "proto3";
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "impl.api.proto";
+import "entity.feature.proto";
+
+package keyapis.vc.v1;
+
+option java_package = "ru.keyapis.vc.v1";
+option java_outer_classname = "KeyapisVcV1Proto";
+option java_multiple_files = false;
+option java_string_check_utf8 = true;
+option go_package = "/keyapis_vc_v1";
+option cc_enable_arenas = true;
+option csharp_namespace = "Keyapis.Vc.V1";
+option objc_class_prefix = "KEYAPISVCV1";
+option php_namespace = "Keyapis\\Vc\\V1";
+option ruby_package = "Keyapis::Vc::V1";
+option optimize_for = LITE_RUNTIME;
+
+
+// Фильтр для запроса связей камеры и коллекции камер.
+// При передаче массива в параметр фильтра элементы массива работают в выборке через ИЛИ.
+// При передаче нескольких разных параметров фильтра они работают в выборке через И
+message CameraCollectionCameraFilter {
+  // По Идентификаторам коллекций камер
+  repeated string camera_collection_ids = 1;
+  // По Идентификаторам камер
+  repeated string external_camera_ids = 2;
+}
+
+// Связь камеры и коллекции камер
+message CameraCollectionCamera {
+  // Идентификатор коллекции камер.
+  // Тип: Guid
+  string camera_collection_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Идентификатор камеры.
+  // Используется идентификатор внешнего сервиса.
+  // Тип: Guid
+  string external_camera_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Фильтр коллекций камер
+message CameraCollectionFilter {
+  // По тексту.
+  // Если значение не передано то поиск по нему не производится.
+  // # Диапазон: 3..64.
+  // # Поиск производится по полям:
+  // # - Наименование.
+  // # - Описание.
+  // # - Теги коллекции
+  string text = 1;
+  // По тегам.
+  // Диапазон: 0..10
+  repeated string tags = 2;
+  // По компаниям.
+  // Диапазон: 0..10
+  repeated int32 company_ids = 3;
+  // Показывать удаленные.
+  // Если поле не передано, по умолчанию false, фильтр исключает удаленные
+  google.protobuf.BoolValue is_deleted = 4;
+}
+
+// Коллекция камер
+message CameraCollection {
+  option (impl.api.specification) = {
+    serverside_entity_crud: {
+      attributes:{
+        override_default:{
+          leading_comment: "Сервис управления коллекциями камер"
+        }
+      }
+      variables:{
+        http_root: "vc/api/v1/camera_collection"
+      }
+      method_set: {
+        get: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод получения коллекции камер"
+              request_leading_comment: "Запрос получения коллекции камер"
+              response_leading_comment: "Ответ на запрос получения коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+        }
+        get_list: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод получения списка коллекций камер"
+              request_leading_comment: "Запрос получения списка коллекций камер"
+              response_leading_comment: "Ответ на запрос получения списка коллекций камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+          order_by_values: {name:"ID", title: "По идентификатору"}
+          order_by_values: {name:"NAME", title: "По имени"}
+          order_by_values: {name:"CHANGED_AT", title: "По времени изменения"}
+        }
+        get_count: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод получения количества коллекций камер"
+              request_leading_comment: "Запрос получения количества коллекций камер"
+              response_leading_comment: " Ответ на запрос получения количества коллекций камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+        }
+        save_create_replace:{
+          attributes:{
+            override_default:{
+              leading_comment: "Метод создания и изменения коллекции камер"
+              request_leading_comment: "Запрос на создание коллекции камер"
+              response_leading_comment: "Ответ на запрос на создание коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+        }
+        delete: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод удаления коллекции камер"
+              request_leading_comment: "Запрос удаления коллекции камер"
+              response_leading_comment: "Ответ на запрос удаления коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Проставляет в поле deleted_at текущую дату.\nДля owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+        }
+        restore: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод восстановления удаленной коллекции камер"
+              request_leading_comment: "Запрос восстановления удаленной коллекции камер"
+              response_leading_comment: "Ответ на запрос восстановления удаленной коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Проставляет null в поле deleted_at.\nДля owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+        }
+        attach: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод привязки камеры к коллекции камер"
+              request_leading_comment: "Запрос на добавление связи камеры и коллекции камер"
+              response_leading_comment: "Ответ на запрос на добавление связи камеры и коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+          linked_type:{
+            name: "Camera"
+            key_field_path: "{data.camera_collection_id}/external_camera_id/{data.external_camera_id}"
+          }
+        }
+        detach: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод удаления привязки камеры к коллекции камер"
+              request_leading_comment: "Запрос на удаление связи камеры и коллекции камер"
+              response_leading_comment: "Ответ на запрос удаления связи камеры и коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+          linked_type:{
+            name: "Camera"
+            key_field_path: "{data.camera_collection_id}/external_camera_id/{data.external_camera_id}"
+          }
+        }
+        get_link_list: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод получения списка связей камер и коллекций камер"
+              request_leading_comment: "Запрос получения списка связей камеры и коллекции камер"
+              response_leading_comment: "Ответ на запрос получения списка связей камеры и коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+          order_by_values: {name:"CAMERA_COLLECTION_ID", title: "По Идентификатору коллекции"}
+          order_by_values: {name:"EXTERNAL_CAMERA_ID", title: "По Идентификатору камеры"}
+          linked_type: {
+            name: "Camera"
+          }
+        }
+        get_link_count: {
+          attributes:{
+            override_default:{
+              leading_comment: "Метод получения количества связей камер и коллекций камер"
+              request_leading_comment: "Запрос получения количества связей камеры и коллекции камер"
+              response_leading_comment: "Ответ на запрос получения количества связей камеры и коллекции камер"
+            }
+          }
+          variables:{
+            additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
+          }
+          linked_type:{
+            name: "Camera"
+          }
+        }
+      }
+    }
+  };
+  // Идентификатор коллекции камер.
+  // Тип: Guid
+  string id = 1 [(entity.feature.unique_field_group) = PK];
+  // Наименование.
+  // Диапазон: 3..256
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  // Дата изменения коллекции камер.
+  // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
+  google.protobuf.Timestamp changed_at = 3 [(google.api.field_behavior) = REQUIRED];
+  // Идентификатор компании
+  int32 company_id = 4 [(google.api.field_behavior) = REQUIRED];
+  // Дата удаления коллекции камер.
+  // Поле изменяется через методы Delete и Restore
+  google.protobuf.Timestamp deleted_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Описание.
+  // Диапазон: 3..256
+  string description = 6;
+  // Теги коллекции.
+  // Диапазон: 0..10
+  repeated string tags = 7;
+  // Ошибка сохранения
+  message SavingError {
+    // Конфликт версий.
+    // Причины:
+    // - В базе хранится другая версия строки, значения changed_at отличаются
+    message Conflict {}
+    // Попытка сохранить коллекцию камер с company_id не своей компании.
+    // Для ролей owner, employee сохранение разрешено только с company_id своей компании
+    message WrongCompanyId {}
+    // Причина ошибки
+    oneof reason {
+      // Конфликт версий
+      Conflict conflict = 1;
+      // Попытка сохранить коллекцию камер с company_id не своей компании
+      WrongCompanyId wrong_company_id = 2;
+    }
+  }
+}
+
+// Животное
+message Pet {
+  option (impl.api.specification) = {
+    serverside_entity_crud: {
+      variables:{
+        http_root: "vc/api/v1/pet"
+      }
+      method_set: {
+        get: {
+          key_fields_definition:{
+            key_field_list:{
+              key_fields:"id"
+              key_fields:"name"
+            }
+          }
+        }
+      }
+    }
+  };
+  // Идентификатор животного.
+  // Тип: Guid
+  string id = 1 [(entity.feature.unique_field_group) = PK];
+  // Наименование.
+  // Диапазон: 3..256
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  // Тип
+  Type type = 3;
+}
+
+
+// Тип
+enum Type {
+  // Тип не известен
+  TYPE_UNKNOWN = 0;
+  // Кот
+  CAT = 1;
+  // Собака
+  DOG = 2;
+}

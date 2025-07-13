@@ -1,0 +1,182 @@
+// Спецификация АПИ управления сущностью CameraVideoData
+
+syntax = "proto3";
+package keyapis.vc.v1;
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/descriptor.proto";
+option cc_enable_arenas = true;
+option csharp_namespace = "Keyapis.Vc.V1";
+option go_package = "/keyapis_vc_v1";
+option java_multiple_files = false;
+option java_outer_classname = "KeyapisVcV1Proto";
+option java_package = "ru.keyapis.vc.v1";
+option java_string_check_utf8 = true;
+option objc_class_prefix = "KEYAPISVCV1";
+option optimize_for = LITE_RUNTIME;
+option php_namespace = "Keyapis\\Vc\\V1";
+option ruby_package = "Keyapis::Vc::V1";
+// Сервис управления видеоданными камер
+service CameraVideoDataService {
+    // Метод получения количества камер.
+    // Для master, owner, employee поля scope подставляем из токена.
+    // Метод доступен для: admin, service, master, owner, employee
+    rpc GetCameraVideoDataCount ( GetCameraVideoDataCountRequest ) returns ( GetCameraVideoDataCountResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_videodata/count" };
+    }
+    // Метод получения списка камер.
+    // Для master, owner, employee поля scope подставляем из токена.
+    // Метод доступен для: admin, service, master, owner, employee
+    rpc GetCameraVideoDataList ( GetCameraVideoDataListRequest ) returns ( stream GetCameraVideoDataListResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_videodata/list" };
+    }
+}
+// Камера
+message CameraVideoData {
+    // Категория камеры
+    message Category {
+        // Идентификатор группы
+        int32 id = 1 [(google.api.field_behavior) = REQUIRED];
+        // Тип группы
+        string type = 2 [(google.api.field_behavior) = REQUIRED];
+        // Имя группы
+        string title = 3 [(google.api.field_behavior) = REQUIRED];
+    }
+    // Статус камеры
+    message Status {
+        // Идентификатор статуса
+        int32 id = 1 [(google.api.field_behavior) = REQUIRED];
+        // online/offline
+        string type = 2 [(google.api.field_behavior) = REQUIRED];
+        // Доступна/Не доступна
+        string title = 3 [(google.api.field_behavior) = REQUIRED];
+    }
+    // Идентификатор камеры
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Категория камеры
+    Category category = 2;
+    // Наименование камеры
+    string title = 3 [(google.api.field_behavior) = REQUIRED];
+    // Модель камеры
+    string model = 4;
+    // Производитель камеры
+    string vendor = 5;
+    // Статус камеры
+    Status status = 6 [(google.api.field_behavior) = REQUIRED];
+    // Глубина хранения видео в минутах
+    int32 archive_length = 7;
+    // Дата создания
+    string created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Дата обновления
+    string updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+// Фильтр камер
+message CameraVideoDataFilter {
+}
+// Постраничный вывод
+message CameraVideoDataPaging {
+    // Справочник типов направлений сортировки.
+    // # Тип: byte
+    enum DirectionType {
+        // Значение не указано
+        DIRECTION_TYPE_UNKNOWN = 0;
+        // От большего к меньшему
+        DESC = 1;
+        // От меньшего к большему
+        ASC = 2;
+    }
+    // Справочник типов значений сортировки.
+    // # Тип: byte
+    enum OrderByType {
+        // Значение не указано
+        ORDER_BY_TYPE_UNKNOWN = 0;
+        // По идентификатору
+        ID = 1;
+    }
+    // Тип значения сортировки.
+    // Если значение не передано, то будет взято значение по умолчанию
+    OrderByType order_by_type = 1;
+    // Тип направления сортировки.
+    // # По умолчанию: DESC
+    DirectionType direction_type = 2;
+    // Количество записей на страницу.
+    // Если значение 0 (не передано), то будет взято значение по умолчанию.
+    // # Диапазон: 0..100.
+    // # По умолчанию: 20
+    int32 limit = 3;
+    // Сдвиг.
+    // # Диапазон: 0..2147483647
+    int32 offset = 4;
+}
+// Ограничение выборки камер
+message CameraVideoDataScope {
+    // Внешний идентификатор пользователя
+    int32 vc_user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор пользователя
+    int32 user_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор компании
+    int64 company_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+// Запрос на получение количества камер
+message GetCameraVideoDataCountRequest {
+    // Ограничение выборки камер
+    CameraVideoDataScope scope = 1 [(google.api.field_behavior) = REQUIRED];
+    // Фильтр камер
+    CameraVideoDataFilter filter = 2;
+}
+// Ответ на получение количества камер
+message GetCameraVideoDataCountResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Всего количество
+        int32 data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос на получение списка камер
+message GetCameraVideoDataListRequest {
+    // Ограничение выборки камер
+    CameraVideoDataScope scope = 1 [(google.api.field_behavior) = REQUIRED];
+    // Фильтр камер
+    CameraVideoDataFilter filter = 2;
+    // Вариант разбиения на страницы
+    oneof pagination {
+        // Постраничный вывод
+        CameraVideoDataPaging paging = 3;
+    }
+}
+// Ответ на получение списка камер
+message GetCameraVideoDataListResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Камера
+        CameraVideoData data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Ошибки валидации.
+// Эти проверки выполняются до обращения в базу данных
+message ValidationError {
+    // Путь к полю в формате наименования прото
+    string path = 1 [(google.api.field_behavior) = REQUIRED];
+    // Валидационное сообщение
+    string message = 2 [(google.api.field_behavior) = REQUIRED];
+}
