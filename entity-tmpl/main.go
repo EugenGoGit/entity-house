@@ -70,7 +70,6 @@ func createTypeDescByTemplateParent(
 ) (*descriptorpb.DescriptorProto, error) {
 	var templatePrefDesc pref.MessageDescriptor
 	var resultProtodesc *descriptorpb.DescriptorProto
-	fmt.Println("templateParent", templateParent)
 	if templateParent.String() != "<nil>" {
 		// Берем шаблон из поля, поле там одно
 		for _, v := range getFieldMap(templateParent.Message()) {
@@ -79,7 +78,6 @@ func createTypeDescByTemplateParent(
 		}
 
 		resultProtodesc = protodesc.ToDescriptorProto(templatePrefDesc)
-		fmt.Println("resultProtodesc", resultProtodesc)
 		resultProtodesc.Name = &messageName
 		err := getTypeDescByTemplate(
 			resultProtodesc,
@@ -180,7 +178,6 @@ func getTypeDescByTemplate(
 						s := strings.Replace(val.val.String(), "{EntityTypeName}", entityTypeName, -1)
 						s = strings.Replace(s, "{LinkedTypeName}", linkedTypeName, -1)
 						msgDescProto.Name = &s
-						fmt.Println("string(templatePrefDesc.ParentFile().Package())11111msgDescProto.GetName()", packageNameToType+"."+msgDescProto.GetName())
 						err := getTypeDescByTemplate(
 							msgDescProto,
 							fieldTypePrefDesc,
@@ -210,13 +207,22 @@ func getTypeDescByTemplate(
 					}
 				}
 			}
-			// ставим комменты из опции field_comments поля в шаблоне, убираем опцию
-			if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
-				comment := strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-				comment = strings.Replace(comment, "{LinkedTypeName}", linkedTypeName, -1)
-				comment = strings.Replace(comment, "{EntityTypeName}", entityTypeName, -1)
-				fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = comment
-				resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
+
+			// Если есть коммент на тип поля его на поле, если нет - ставим комменты из опции field_comments поля в шаблоне
+			// убираем опцию
+			if typeComment, ok := fileCommentsMap[packageNameToType+"."+resultDescProto.Field[i].GetTypeName()]; ok {
+				fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = typeComment
+				if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
+					resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
+				}
+			} else {
+				if val, ok := getFieldMap(resultDescProto.Field[i].Options.ProtoReflect())["field_comments"]; ok {
+					comment := strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
+					comment = strings.Replace(comment, "{LinkedTypeName}", linkedTypeName, -1)
+					comment = strings.Replace(comment, "{EntityTypeName}", entityTypeName, -1)
+					fileCommentsMap[parentFullNameToType+"."+resultDescProto.Field[i].GetName()] = comment
+					resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
+				}
 			}
 			// убираем опцию replace_field_type_to
 			resultDescProto.Field[i].GetOptions().ProtoReflect().Clear(val.desc)
@@ -277,7 +283,6 @@ func getTypeDescByTemplate(
 	}
 
 	for i := range resultDescProto.EnumType {
-		fmt.Println("resultDescProto.EnumType[i].Name", *resultDescProto.Name, *resultDescProto.EnumType[i].Name, templateTypeName, parentFullNameToType)
 
 		enumOpts := getFieldMap(resultDescProto.EnumType[i].Options.ProtoReflect())
 		// Для enum с опцией enum_by_method_attribute дополняем элементы из указанного поля опций метода
@@ -553,7 +558,6 @@ func genMethod(
 	// Перезаписываем значениями описания метода в описании сущности
 	maps.Copy(methodParameters, varFieldMap)
 
-	fmt.Println("methodParameters", methodParameters)
 	var linkedTypeName string
 	var linkedTypeKeyFieldPath string
 	if val, ok := methodParameters["linked_type"]; ok {
@@ -699,7 +703,6 @@ func genMethod(
 	// Добавляем метод с комментарием
 	// Добавляем комментарии к запросу и ответу метода
 	genServiceProto.Method = append(genServiceProto.Method, genMethodProto)
-	fmt.Println("genServiceProto.Method", genServiceProto.Method)
 	var methodComment string
 	if val, ok := methodParameters["leading_comment"]; ok {
 		fmt.Println("methodParameters[leading_comment]", methodParameters["leading_comment"].val.String())
@@ -773,8 +776,6 @@ func genEntityApiSpec(apiSpecOpt Field,
 	}
 	// Перезаписываем значениями описания метода в описании сущности
 	maps.Copy(serviceParameters, entitySourceService)
-
-	fmt.Println("serviceParameters", serviceParameters)
 
 	serviceName := serviceParameters["name"].val.String()
 	serviceComment := serviceParameters["leading_comment"].val.String()
@@ -864,10 +865,8 @@ func genEntityApiSpec(apiSpecOpt Field,
 		}
 	}
 	genFileProto.Service = append(genFileProto.Service, genServiceProto)
-	fmt.Println("genFileProto.Service", genFileProto.Service)
 
 	genFileProto.MessageType = append(genFileProto.MessageType, entityMessageProtodesc)
-	fmt.Println("genFileProto.MessageType", genFileProto.MessageType)
 
 	return nil
 }
@@ -888,6 +887,9 @@ func ToSnakeCase(s string, divider string) string {
 func printerSort(a, b protoprint.Element) bool {
 	if a.Kind() == protoprint.KindService {
 		if b.Kind() == protoprint.KindMessage {
+			return true
+		}
+		if b.Kind() == protoprint.KindEnum {
 			return true
 		}
 	}
@@ -1038,6 +1040,24 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				}
 			}
 
+			// Добавим Enum
+			for i := range sourceFilePrefDesc[k].Enums().Len() {
+				genFileProto.EnumType = append(genFileProto.EnumType, protodesc.ToEnumDescriptorProto(sourceFilePrefDesc[k].Enums().Get(i)))
+				leadingComments := sourceFileJhumpDesc.FindEnum(string(sourceFilePrefDesc[k].Enums().Get(i).FullName())).GetSourceInfo().LeadingComments
+				if leadingComments != nil {
+					genFileComments[string(sourceFilePrefDesc[k].Enums().Get(i).FullName())] = *leadingComments
+				}
+				for j := range sourceFilePrefDesc[k].Enums().Get(i).Values().Len() {
+					enumValue := sourceFileJhumpDesc.
+						FindEnum(string(sourceFilePrefDesc[k].Enums().Get(i).FullName())).
+						FindValueByName(string(sourceFilePrefDesc[k].Enums().Get(i).Values().Get(j).Name()))
+					leadingComments := enumValue.GetSourceInfo().LeadingComments
+					if leadingComments != nil {
+						genFileComments[enumValue.GetFullyQualifiedName()] = *leadingComments
+					}
+				}
+			}
+
 			// Добавим опции файла
 			for _, v := range getFieldMap(sourceFilePrefDesc[k].Options().ProtoReflect()) {
 				if v.desc.Kind() == pref.StringKind {
@@ -1067,9 +1087,9 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			for entityPrefDesc, apiSpecOpt := range entityMsgApiSpecOpt {
 				// Добавим комментарий всего файла
 				if val, ok := genFileComments[sourceFileJhumpDesc.GetName()]; ok {
-					genFileComments[sourceFileJhumpDesc.GetName()] = val + "\n// АПИ управления сущностью " + string(entityPrefDesc.Name())
+					genFileComments[sourceFileJhumpDesc.GetName()] = val + "\n// Спецификация АПИ управления сущностью " + string(entityPrefDesc.Name())
 				} else {
-					genFileComments[sourceFileJhumpDesc.GetName()] = "// АПИ управления сущностью " + string(entityPrefDesc.Name())
+					genFileComments[sourceFileJhumpDesc.GetName()] = "// Спецификация АПИ управления сущностью " + string(entityPrefDesc.Name())
 				}
 
 				// Обработаем cущность
@@ -1142,9 +1162,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			}
 
 			// Добавим комменты в генерацию
-			// for k, v := range genFileComments {
-			// 	fmt.Println("genFileComments", sourceFileJhumpDesc.GetFile().GetName(), k, v)
-			// }
 			for i := range genFileJhumpDesc.GetServices() {
 				if val, ok := genFileComments[genFileJhumpDesc.GetServices()[i].GetFullyQualifiedName()]; ok {
 					genFileBuilder.GetService(genFileJhumpDesc.GetServices()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
@@ -1161,6 +1178,15 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			for i := range genFileJhumpDesc.GetEnumTypes() {
 				if val, ok := genFileComments[genFileJhumpDesc.GetEnumTypes()[i].GetFullyQualifiedName()]; ok {
 					genFileBuilder.GetEnum(genFileJhumpDesc.GetEnumTypes()[i].GetName()).SetComments(builder.Comments{LeadingComment: val})
+				}
+				for j := range genFileJhumpDesc.GetEnumTypes()[i].GetValues() {
+					fmt.Println("leadingComments", genFileJhumpDesc.GetEnumTypes()[i].GetValues()[j].GetFullyQualifiedName())
+					if val, ok := genFileComments[genFileJhumpDesc.GetEnumTypes()[i].GetValues()[j].GetFullyQualifiedName()]; ok {
+						fmt.Println("leadingComments", val)
+						genFileBuilder.GetEnum(genFileJhumpDesc.GetEnumTypes()[i].GetName()).
+							GetValue(genFileJhumpDesc.GetEnumTypes()[i].GetValues()[j].GetName()).
+							SetComments(builder.Comments{LeadingComment: val})
+					}
 				}
 			}
 

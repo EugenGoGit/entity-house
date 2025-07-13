@@ -4,9 +4,9 @@ import "entity.feature.proto";
 
 package entity.feature.api.service;
 
-// TODO: Разделить аттрибуты на группы
 // TODO: возможно тут подойдет ServiceDescriptorProto
 // TODO: как навернуть опции на service
+// TODO: Мультиязычность
 // Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
 message Default {
   string leading_comment = 2;

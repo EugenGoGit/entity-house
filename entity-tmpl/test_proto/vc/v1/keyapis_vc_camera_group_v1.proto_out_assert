@@ -1,6 +1,6 @@
-/*
-  Сервис управления коллекциями камер
-*/
+// Спецификация АПИ управления сущностью CameraCollection
+// Спецификация АПИ управления сущностью Pet
+
 syntax = "proto3";
 package keyapis.vc.v1;
 import "google/api/annotations.proto";
@@ -20,74 +20,74 @@ option php_namespace = "Keyapis\\Vc\\V1";
 option ruby_package = "Keyapis::Vc::V1";
 // Сервис управления коллекциями камер
 service CameraCollectionService {
-  // Метод удаления коллекции камер.
-  // Проставляет в поле deleted_at текущую дату.
-  // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc DeleteCameraCollection ( DeleteCameraCollectionRequest ) returns ( DeleteCameraCollectionResponse ) {
-    option (google.api.http) = { delete: "/vc/api/v1/camera_collection/{id}" };
-  }
-  // Метод получения коллекции камер.
-  // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc GetCameraCollection ( GetCameraCollectionRequest ) returns ( GetCameraCollectionResponse ) {
-    option (google.api.http) = { get: "/vc/api/v1/camera_collection/{id}" };
-  }
-  // Метод получения количества связей камер и коллекций камер.
-  // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc GetCameraCollectionCameraCount ( GetCameraCollectionCameraCountRequest ) returns ( GetCameraCollectionCameraCountResponse ) {
-    option (google.api.http) = { get: "/vc/api/v1/camera_collection/camera/count" };
-  }
-  // Метод получения списка связей камер и коллекций камер.
-  // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc GetCameraCollectionCameraList ( GetCameraCollectionCameraListRequest ) returns ( stream GetCameraCollectionCameraListResponse ) {
-    option (google.api.http) = { get: "/vc/api/v1/camera_collection/camera/list" };
-  }
-  // Метод получения количества коллекций камер.
-  // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc GetCameraCollectionCount ( GetCameraCollectionCountRequest ) returns ( GetCameraCollectionCountResponse ) {
-    option (google.api.http) = { get: "/vc/api/v1/camera_collection/count" };
-  }
-  // Метод получения списка коллекций камер.
-  // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc GetCameraCollectionList ( GetCameraCollectionListRequest ) returns ( stream GetCameraCollectionListResponse ) {
-    option (google.api.http) = { get: "/vc/api/v1/camera_collection/list" };
-  }
-  // Метод восстановления удаленной коллекции камер.
-  // Проставляет null в поле deleted_at.
-  // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc PostCameraCollectionRestore ( PostCameraCollectionRestoreRequest ) returns ( PostCameraCollectionRestoreResponse ) {
-    option (google.api.http) = {
-      post: "/vc/api/v1/camera_collection/restore/{id}"
-    };
-  }
-  // Метод привязки камеры к коллекции камер.
-  // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc PutCameraCollectionCameraAttach ( PutCameraCollectionCameraAttachRequest ) returns ( PutCameraCollectionCameraAttachResponse ) {
-    option (google.api.http) = {
-      put: "/vc/api/v1/camera_collection/{data.camera_collection_id}/external_camera_id/{data.external_camera_id}/attach"
-    };
-  }
-  // Метод удаления привязки камеры к коллекции камер.
-  // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc PutCameraCollectionCameraDetach ( PutCameraCollectionCameraDetachRequest ) returns ( PutCameraCollectionCameraDetachResponse ) {
-    option (google.api.http) = {
-      put: "/vc/api/v1/camera_collection/{data.camera_collection_id}/external_camera_id/{data.external_camera_id}/detach"
-    };
-  }
-  // Метод создания и изменения коллекции камер.
-  // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
-  // Метод доступен для: admin, service, bti, owner, employee
-  rpc SaveCameraCollection ( SaveCameraCollectionRequest ) returns ( SaveCameraCollectionResponse ) {
-    option (google.api.http) = { post: "/vc/api/v1/camera_collection", body: "*" };
-  }
+    // Метод удаления коллекции камер.
+    // Проставляет в поле deleted_at текущую дату.
+    // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc DeleteCameraCollection ( DeleteCameraCollectionRequest ) returns ( DeleteCameraCollectionResponse ) {
+        option (google.api.http) = { delete: "/vc/api/v1/camera_collection/{id}" };
+    }
+    // Метод получения коллекции камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollection ( GetCameraCollectionRequest ) returns ( GetCameraCollectionResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/{id}" };
+    }
+    // Метод получения количества связей камер и коллекций камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollectionCameraCount ( GetCameraCollectionCameraCountRequest ) returns ( GetCameraCollectionCameraCountResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/camera/count" };
+    }
+    // Метод получения списка связей камер и коллекций камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollectionCameraList ( GetCameraCollectionCameraListRequest ) returns ( stream GetCameraCollectionCameraListResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/camera/list" };
+    }
+    // Метод получения количества коллекций камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollectionCount ( GetCameraCollectionCountRequest ) returns ( GetCameraCollectionCountResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/count" };
+    }
+    // Метод получения списка коллекций камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollectionList ( GetCameraCollectionListRequest ) returns ( stream GetCameraCollectionListResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/list" };
+    }
+    // Метод восстановления удаленной коллекции камер.
+    // Проставляет null в поле deleted_at.
+    // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc PostCameraCollectionRestore ( PostCameraCollectionRestoreRequest ) returns ( PostCameraCollectionRestoreResponse ) {
+        option (google.api.http) = {
+            post: "/vc/api/v1/camera_collection/restore/{id}"
+        };
+    }
+    // Метод привязки камеры к коллекции камер.
+    // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc PutCameraCollectionCameraAttach ( PutCameraCollectionCameraAttachRequest ) returns ( PutCameraCollectionCameraAttachResponse ) {
+        option (google.api.http) = {
+            put: "/vc/api/v1/camera_collection/{data.camera_collection_id}/external_camera_id/{data.external_camera_id}/attach"
+        };
+    }
+    // Метод удаления привязки камеры к коллекции камер.
+    // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc PutCameraCollectionCameraDetach ( PutCameraCollectionCameraDetachRequest ) returns ( PutCameraCollectionCameraDetachResponse ) {
+        option (google.api.http) = {
+            put: "/vc/api/v1/camera_collection/{data.camera_collection_id}/external_camera_id/{data.external_camera_id}/detach"
+        };
+    }
+    // Метод создания и изменения коллекции камер.
+    // Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc SaveCameraCollection ( SaveCameraCollectionRequest ) returns ( SaveCameraCollectionResponse ) {
+        option (google.api.http) = { post: "/vc/api/v1/camera_collection", body: "*" };
+    }
 }
 // Сервис управления сущностью Pet
 service PetService {
@@ -99,236 +99,241 @@ service PetService {
 // Коллекция камер
 message CameraCollection {
     // Ошибка сохранения
-  message SavingError { 
-    // Конфликт версий.
-    // Причины:
-    // - В базе хранится другая версия строки, значения changed_at отличаются
-    message Conflict {
-    }
+    message SavingError {
+        // Конфликт версий.
+        // Причины:
+        // - В базе хранится другая версия строки, значения changed_at отличаются
+        message Conflict {
+        }
         // Попытка сохранить коллекцию камер с company_id не своей компании.
-    // Для ролей owner, employee сохранение разрешено только с company_id своей компании
-    message WrongCompanyId {
-    }
+        // Для ролей owner, employee сохранение разрешено только с company_id своей компании
+        message WrongCompanyId {
+        }
         // Причина ошибки
-    oneof reason {
-      // Конфликт версий
-      Conflict conflict = 1;
-      // Попытка сохранить коллекцию камер с company_id не своей компании
-      WrongCompanyId wrong_company_id = 2;
+        oneof reason {
+            // Конфликт версий
+            Conflict conflict = 1;
+            // Попытка сохранить коллекцию камер с company_id не своей компании
+            WrongCompanyId wrong_company_id = 2;
+        }
     }
-  }
-  // Идентификатор коллекции камер.
-  // Тип: Guid
-  string id = 1;
-  // Наименование.
-  // Диапазон: 3..256
-  string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1;
+    // Наименование.
+    // Диапазон: 3..256
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
     // Дата изменения коллекции камер.
-  // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
-  google.protobuf.Timestamp changed_at = 3 [(google.api.field_behavior) = REQUIRED];
+    // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
+    google.protobuf.Timestamp changed_at = 3 [(google.api.field_behavior) = REQUIRED];
     // Идентификатор компании
-  int32 company_id = 4 [(google.api.field_behavior) = REQUIRED];
-  // Дата удаления коллекции камер.
-  // Поле изменяется через методы Delete и Restore
-  google.protobuf.Timestamp deleted_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Описание.
-  // Диапазон: 3..256
-  string description = 6;
-  // Теги коллекции.
-  // Диапазон: 0..10
-  repeated string tags = 7;
+    int32 company_id = 4 [(google.api.field_behavior) = REQUIRED];
+    // Дата удаления коллекции камер.
+    // Поле изменяется через методы Delete и Restore
+    google.protobuf.Timestamp deleted_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Описание.
+    // Диапазон: 3..256
+    string description = 6;
+    // Теги коллекции.
+    // Диапазон: 0..10
+    repeated string tags = 7;
 }
-// Связка камеры и коллекции камер
+// Связь камеры и коллекции камер
 message CameraCollectionCamera {
-  // Идентификатор коллекции камер.
-  // Тип: Guid
-  string camera_collection_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string camera_collection_id = 1 [(google.api.field_behavior) = REQUIRED];
     // Идентификатор камеры.
-  // Используется идентификатор внешнего сервиса.
-  // Тип: Guid
-  string external_camera_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Используется идентификатор внешнего сервиса.
+    // Тип: Guid
+    string external_camera_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 // Фильтр для запроса связей камеры и коллекции камер.
 // При передаче массива в параметр фильтра элементы массива работают в выборке через ИЛИ.
 // При передаче нескольких разных параметров фильтра они работают в выборке через И
 message CameraCollectionCameraFilter {
-  // По Идентификаторам коллекций камер
-  repeated string camera_collection_ids = 1;
-  // По Идентификаторам камер
-  repeated string external_camera_ids = 2;
+    // По Идентификаторам коллекций камер
+    repeated string camera_collection_ids = 1;
+    // По Идентификаторам камер
+    repeated string external_camera_ids = 2;
 }
 // Постраничный вывод
 message CameraCollectionCameraPaging {
     // Справочник типов направлений сортировки.
     // # Тип: byte
-  enum DirectionType {
-    // Значение не указано
-    DIRECTION_TYPE_UNKNOWN = 0;
-    // От большего к меньшему
-    DESC = 1;
-    // От меньшего к большему
-    ASC = 2;
-  }
+    enum DirectionType {
+        // Значение не указано
+        DIRECTION_TYPE_UNKNOWN = 0;
+        // От большего к меньшему
+        DESC = 1;
+        // От меньшего к большему
+        ASC = 2;
+    }
     // Справочник типов значений сортировки.
     // # Тип: byte
-  enum OrderByType {
-    // Значение не указано
-    ORDER_BY_TYPE_UNKNOWN = 0;
-    // По Идентификатору коллекции
-    CAMERA_COLLECTION_ID = 1;
-    // По Идентификатору камеры
-    EXTERNAL_CAMERA_ID = 2;
-  }
-  // Тип значения сортировки.
-  // Если значение не передано, то будет взято значение по умолчанию
-  OrderByType order_by_type = 1;
-  // Тип направления сортировки.
+    enum OrderByType {
+        // Значение не указано
+        ORDER_BY_TYPE_UNKNOWN = 0;
+        // По Идентификатору коллекции
+        CAMERA_COLLECTION_ID = 1;
+        // По Идентификатору камеры
+        EXTERNAL_CAMERA_ID = 2;
+    }
+    // Тип значения сортировки.
+    // Если значение не передано, то будет взято значение по умолчанию
+    OrderByType order_by_type = 1;
+    // Тип направления сортировки.
     // # По умолчанию: DESC
-  DirectionType direction_type = 2;
-  // Количество записей на страницу.
-  // Если значение 0 (не передано), то будет взято значение по умолчанию
-  int32 limit = 3;
-  // Сдвиг.
+    DirectionType direction_type = 2;
+    // Количество записей на страницу.
+    // Если значение 0 (не передано), то будет взято значение по умолчанию.
+    // # Диапазон: 0..100.
+    // # По умолчанию: 20
+    int32 limit = 3;
+    // Сдвиг.
     // # Диапазон: 0..2147483647
-  int32 offset = 4;
+    int32 offset = 4;
 }
 // Фильтр коллекций камер
 message CameraCollectionFilter {
-  // По тексту.
-  // Если значение не передано то поиск по нему не производится.
-  // # Диапазон: 3..64.
-  // # Поиск производится по полям:
-  // # - Наименование.
-  // # - Описание.
-  // # - Теги коллекции
-  string text = 1;
-  // По тегам.
-  // Диапазон: 0..10
-  repeated string tags = 2;
-  // По компаниям.
-  // Диапазон: 0..10
-  repeated int32 company_ids = 3;
-  // Показывать удаленные.
-  // Если поле не передано, по умолчанию false, фильтр исключает удаленные
-  google.protobuf.BoolValue is_deleted = 4;
+    // По тексту.
+    // Если значение не передано то поиск по нему не производится.
+    // # Диапазон: 3..64.
+    // # Поиск производится по полям:
+    // # - Наименование.
+    // # - Описание.
+    // # - Теги коллекции
+    string text = 1;
+    // По тегам.
+    // Диапазон: 0..10
+    repeated string tags = 2;
+    // По компаниям.
+    // Диапазон: 0..10
+    repeated int32 company_ids = 3;
+    // Показывать удаленные.
+    // Если поле не передано, по умолчанию false, фильтр исключает удаленные
+    google.protobuf.BoolValue is_deleted = 4;
 }
 // Постраничный вывод
 message CameraCollectionPaging {
     // Справочник типов направлений сортировки.
     // # Тип: byte
-  enum DirectionType {
-    // Значение не указано
-    DIRECTION_TYPE_UNKNOWN = 0;
-    // От большего к меньшему
-    DESC = 1;
-    // От меньшего к большему
-    ASC = 2;
-  }
-  // Справочник типов значений сортировки.
+    enum DirectionType {
+        // Значение не указано
+        DIRECTION_TYPE_UNKNOWN = 0;
+        // От большего к меньшему
+        DESC = 1;
+        // От меньшего к большему
+        ASC = 2;
+    }
+    // Справочник типов значений сортировки.
     // # Тип: byte
-  enum OrderByType {
-    // Значение не указано
-    ORDER_BY_TYPE_UNKNOWN = 0;
-    // По идентификатору
-    ID = 1;
-    // По имени
-    NAME = 2;
-    // По времени изменения
-    CHANGED_AT = 3;
-  }
+    enum OrderByType {
+        // Значение не указано
+        ORDER_BY_TYPE_UNKNOWN = 0;
+        // По идентификатору
+        ID = 1;
+        // По имени
+        NAME = 2;
+        // По времени изменения
+        CHANGED_AT = 3;
+    }
     // Тип значения сортировки.
-  // Если значение не передано, то будет взято значение по умолчанию.
-  // По умолчанию: CHANGED_AT
-  OrderByType order_by_type = 1;
-  // Тип направления сортировки.
+    // Если значение не передано, то будет взято значение по умолчанию
+    OrderByType order_by_type = 1;
+    // Тип направления сортировки.
     // # По умолчанию: DESC
-  DirectionType direction_type = 2;
-  // Количество записей на страницу.
-  // Если значение 0 (не передано), то будет взято значение по умолчанию.
+    DirectionType direction_type = 2;
+    // Количество записей на страницу.
+    // Если значение 0 (не передано), то будет взято значение по умолчанию.
     // # Диапазон: 0..100.
     // # По умолчанию: 20
-  int32 limit = 3;
-  // Сдвиг.
+    int32 limit = 3;
+    // Сдвиг.
     // # Диапазон: 0..2147483647
-  int32 offset = 4;
+    int32 offset = 4;
 }
 // Запрос удаления коллекции камер
 message DeleteCameraCollectionRequest {
-  // Идентификатор коллекции камер.
-  // Тип: Guid
-  string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос удаления коллекции камер
 message DeleteCameraCollectionResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
-      // Тип ответа
-  oneof type {
-    // Ошибка
-    Error error = 1;
-  }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
 }
 // Запрос получения количества связей камеры и коллекции камер
 message GetCameraCollectionCameraCountRequest {
-    // Фильтр
-  CameraCollectionCameraFilter filter = 1;
+    // Фильтр для запроса связей камеры и коллекции камер.
+    // При передаче массива в параметр фильтра элементы массива работают в выборке через ИЛИ.
+    // При передаче нескольких разных параметров фильтра они работают в выборке через И
+    CameraCollectionCameraFilter filter = 1;
 }
 // Ответ на запрос получения количества связей камеры и коллекции камер
 message GetCameraCollectionCameraCountResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
     // Тип ответа
-  oneof type {
+    oneof type {
         // Всего количество
-    int32 data = 1;
-    // Ошибка
-    Error error = 2;
-  }
-  }
+        int32 data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
 // Запрос получения списка связей камеры и коллекции камер
 message GetCameraCollectionCameraListRequest {
-    // Фильтр
-  CameraCollectionCameraFilter filter = 1;
-  // Вариант разбиения на страницы
-  oneof pagination {
+    // Фильтр для запроса связей камеры и коллекции камер.
+    // При передаче массива в параметр фильтра элементы массива работают в выборке через ИЛИ.
+    // При передаче нескольких разных параметров фильтра они работают в выборке через И
+    CameraCollectionCameraFilter filter = 1;
+    // Вариант разбиения на страницы
+    oneof pagination {
         // Постраничный вывод
-    CameraCollectionCameraPaging paging = 2;
-  }
+        CameraCollectionCameraPaging paging = 2;
+    }
 }
 // Ответ на запрос получения списка связей камеры и коллекции камер
 message GetCameraCollectionCameraListResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
     // Тип ответа
-  oneof type {
-    // Связь камеры и коллекции камер
-    CameraCollectionCamera data = 1;
-    // Ошибка
-    Error error = 2;
-  }
+    oneof type {
+        // Связь камеры и коллекции камер
+        CameraCollectionCamera data = 1;
+        // Ошибка
+        Error error = 2;
+    }
 }
 // Запрос получения количества коллекций камер
 message GetCameraCollectionCountRequest {
-  // Фильтр
-  CameraCollectionFilter filter = 1;
+    // Фильтр коллекций камер
+    CameraCollectionFilter filter = 1;
 }
 // Ответ на запрос получения количества коллекций камер
 message GetCameraCollectionCountResponse {
@@ -339,24 +344,24 @@ message GetCameraCollectionCountResponse {
             // Ошибка валидации
             ValidationError validation = 1;
         }
-  }
+    }
     // Тип ответа
-  oneof type {
+    oneof type {
         // Всего количество
-    int32 data = 1;
+        int32 data = 1;
         // Ошибка
         Error error = 2;
     }
 }
 // Запрос получения списка коллекций камер
 message GetCameraCollectionListRequest {
-  // Фильтр
-  CameraCollectionFilter filter = 1;
-  // Вариант разбиения на страницы
-  oneof pagination {
-    // Постраничный вывод
-    CameraCollectionPaging paging = 2;
-  }
+    // Фильтр коллекций камер
+    CameraCollectionFilter filter = 1;
+    // Вариант разбиения на страницы
+    oneof pagination {
+        // Постраничный вывод
+        CameraCollectionPaging paging = 2;
+    }
 }
 // Ответ на запрос получения списка коллекций камер
 message GetCameraCollectionListResponse {
@@ -367,40 +372,40 @@ message GetCameraCollectionListResponse {
             // Ошибка валидации
             ValidationError validation = 1;
         }
-  }
+    }
     // Тип ответа
-  oneof type {
-    // Коллекция камер
-    CameraCollection data = 1;
+    oneof type {
+        // Коллекция камер
+        CameraCollection data = 1;
         // Ошибка
         Error error = 2;
     }
 }
 // Запрос получения коллекции камер
 message GetCameraCollectionRequest {
-  // Идентификатор коллекции камер.
-  // Тип: Guid
-  string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос получения коллекции камер
 message GetCameraCollectionResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
     // Тип ответа
-  oneof type {
-    // Коллекция камер
-    CameraCollection data = 1;
-    // Ошибка
-    Error error = 2;
-  }
+    oneof type {
+        // Коллекция камер
+        CameraCollection data = 1;
+        // Ошибка
+        Error error = 2;
+    }
 }
-// Запрос метода GetPet
+// Запрос получения единичной сущности Pet по ключу
 message GetPetRequest {
     // Идентификатор животного.
     // Тип: Guid
@@ -409,7 +414,7 @@ message GetPetRequest {
     // Диапазон: 3..256
     string name = 2 [(google.api.field_behavior) = REQUIRED];
 }
-// Ответ на запрос метода GetPet
+// Ответ на запрос получения единичной сущности Pet по ключу
 message GetPetResponse {
     // Ошибка запроса
     message Error {
@@ -419,7 +424,7 @@ message GetPetResponse {
             ValidationError validation = 1;
         }
     }
-        // Тип ответа
+    // Тип ответа
     oneof type {
         // Животное
         Pet data = 1;
@@ -435,101 +440,112 @@ message Pet {
     // Наименование.
     // Диапазон: 3..256
     string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Тип
+    Type type = 3;
 }
 // Запрос восстановления удаленной коллекции камер
 message PostCameraCollectionRestoreRequest {
-  // Идентификатор коллекции камер.
-  // Тип: Guid
-  string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос восстановления удаленной коллекции камер
 message PostCameraCollectionRestoreResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
     // Тип ответа
-  oneof type {
-    // Ошибка
-    Error error = 1;
-  }
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
 }
 // Запрос на добавление связи камеры и коллекции камер
 message PutCameraCollectionCameraAttachRequest {
-  // Связь камеры и коллекции камер
-  CameraCollectionCamera data = 1 [(google.api.field_behavior) = REQUIRED];
+    // Связь камеры и коллекции камер
+    CameraCollectionCamera data = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос на добавление связи камеры и коллекции камер
 message PutCameraCollectionCameraAttachResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
-      // Тип ответа
-  oneof type {
-    // Ошибка
-    Error error = 1;
-  }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
 }
 // Запрос на удаление связи камеры и коллекции камер
 message PutCameraCollectionCameraDetachRequest {
-  // Связь камеры и коллекции камер
-  CameraCollectionCamera data = 1 [(google.api.field_behavior) = REQUIRED];
+    // Связь камеры и коллекции камер
+    CameraCollectionCamera data = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос удаления связи камеры и коллекции камер
 message PutCameraCollectionCameraDetachResponse {
-  // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
     }
-  }
-      // Тип ответа
-  oneof type {
-    // Ошибка
-    Error error = 1;
-  }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
 }
 // Запрос на создание коллекции камер
 message SaveCameraCollectionRequest {
-  // Коллекция камер
-  CameraCollection data = 1 [(google.api.field_behavior) = REQUIRED];
+    // Коллекция камер
+    CameraCollection data = 1 [(google.api.field_behavior) = REQUIRED];
 }
 // Ответ на запрос на создание коллекции камер
 message SaveCameraCollectionResponse {
     // Ошибка запроса
-  message Error {
-    // Причина ошибки
-    oneof reason {
-      // Ошибка валидации
-      ValidationError validation = 1;
-      // Ошибка сохранения
-      CameraCollection.SavingError saving = 2;
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+            // Ошибка сохранения
+            CameraCollection.SavingError saving = 2;
+        }
     }
-  }
-      // Тип ответа
-  oneof type {
-    // Коллекция камер
-    CameraCollection data = 1;
-    // Ошибка
-    Error error = 2;
-  }
+    // Тип ответа
+    oneof type {
+        // Коллекция камер
+        CameraCollection data = 1;
+        // Ошибка
+        Error error = 2;
+    }
 }
 // Ошибки валидации.
 // Эти проверки выполняются до обращения в базу данных
 message ValidationError {
-  // Путь к полю в формате наименования прото
-  string path = 1 [(google.api.field_behavior) = REQUIRED];
+    // Путь к полю в формате наименования прото
+    string path = 1 [(google.api.field_behavior) = REQUIRED];
     // Валидационное сообщение
-  string message = 2 [(google.api.field_behavior) = REQUIRED];
+    string message = 2 [(google.api.field_behavior) = REQUIRED];
+}
+// Тип
+enum Type {
+    // Тип не известен
+    TYPE_UNKNOWN = 0;
+    // Кот
+    CAT = 1;
+    // Собака
+    DOG = 2;
 }

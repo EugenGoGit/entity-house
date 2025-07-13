@@ -31,7 +31,6 @@ message Specification {
               leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
               request_leading_comment: "Запрос получения единичной сущности {EntityTypeName} по ключу"
               response_leading_comment: "Ответ на запрос получения единичной сущности {EntityTypeName} по ключу"
-
             }
             name:"Get{EntityTypeName}"
             request_name: "Get{EntityTypeName}Request"
@@ -50,7 +49,6 @@ message Specification {
               leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
               request_leading_comment: "Запрос получения списка сущностей {EntityTypeName} по фильтру"
               response_leading_comment: "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру"
-
             }
             name:"Get{EntityTypeName}List"
             request_name:"Get{EntityTypeName}ListRequest"
@@ -70,7 +68,6 @@ message Specification {
               leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
               request_leading_comment: "Запрос на создание/редактирование сущности {EntityTypeName}"
               response_leading_comment: "Ответ на запрос на создание/редактирование сущности {EntityTypeName}"
-
             }
             name: "Save{EntityTypeName}"
             request_name: "Save{EntityTypeName}Request"
@@ -88,6 +85,8 @@ message Specification {
           attributes:{
             override_default:{
               leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+              request_leading_comment: "Запрос получения количества сущностей {EntityTypeName} по фильтру"
+              response_leading_comment: "Ответ на запрос получения количества сущностей {EntityTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}Count"
             request_name: "Get{EntityTypeName}CountRequest"
@@ -104,6 +103,8 @@ message Specification {
           attributes:{
             override_default:{
               leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+              request_leading_comment: "Запрос получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+              response_leading_comment: "Ответ на запрос получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}{LinkedTypeName}Count"
             request_name: "Get{EntityTypeName}{LinkedTypeName}CountRequest";
@@ -120,6 +121,8 @@ message Specification {
           attributes:{
             override_default:{
               leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+              request_leading_comment: "Запрос получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+              response_leading_comment: "Ответ на запрос получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
             }
             name: "Get{EntityTypeName}{LinkedTypeName}List"
             request_name: "Get{EntityTypeName}{LinkedTypeName}ListRequest"
@@ -136,6 +139,8 @@ message Specification {
           attributes:{
             override_default:{
               leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
+              request_leading_comment: "Запрос удаления единичной сущности {EntityTypeName} по ключу"
+              response_leading_comment: "Ответ на запрос удаления единичной сущности {EntityTypeName} по ключу"
             }
             name: "Delete{EntityTypeName}"
             request_name: "Delete{EntityTypeName}Request"
@@ -152,6 +157,8 @@ message Specification {
           attributes:{
             override_default:{
               leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
+              request_leading_comment: "Запрос восстановления удаленной сущности {EntityTypeName} по ключу"
+              response_leading_comment: "Ответ на запрос восстановления удаленной сущности {EntityTypeName} по ключу"
             }
             name: "Post{EntityTypeName}Restore"
             request_name: "Post{EntityTypeName}RestoreRequest"
