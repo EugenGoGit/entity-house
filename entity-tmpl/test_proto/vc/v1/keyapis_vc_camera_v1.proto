@@ -50,7 +50,7 @@ message Camera {
         unique_field_group: PK
       }
       method_set: {
-        get: {
+        get_by_id: {
           attributes:{
             override_default:{
               leading_comment:"Метод получения камеры"

@@ -82,7 +82,7 @@ package impl.api.service;
 
 message ServersideEntityCRUD {
   message MethodSet {
-    method.Get get = 1;
+    method.GetById get_by_id = 1;
     //      method.GetByIdScope get_scope = 21;
     method.GetList get_list = 2;
     //      method.GetListScope get_list_scope = 19;
@@ -102,8 +102,8 @@ message ServersideEntityCRUD {
     //    }
     //    method.EditById edit = 10;
     //    method.EditList edit_list = 11;
-    method.DeleteById delete = 12;
-    method.RestoreById restore = 13;
+    method.DeleteById delete_by_id = 12;
+    method.RestoreById restore_by_id = 13;
     //    method.DeleteList delete_list = 14;
     repeated method.Attach attach = 15;
     repeated method.Detach detach = 16;

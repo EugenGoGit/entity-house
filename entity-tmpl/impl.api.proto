@@ -25,7 +25,7 @@ message Specification {
         name: "{EntityTypeName}Service"
       }
       method_set: {
-        get:{
+        get_by_id:{
           attributes:{
             override_default:{
               leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
@@ -135,7 +135,7 @@ message Specification {
           request_template: {link_filter_paging:{}}
           response_template: {link_error:{}}
         }
-        delete:{
+        delete_by_id:{
           attributes:{
             override_default:{
               leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
@@ -153,7 +153,7 @@ message Specification {
           response_template: {valid_error:{}}
           request_template: {entity_key:{}}
         }
-        restore: {
+        restore_by_id: {
           attributes:{
             override_default:{
               leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"

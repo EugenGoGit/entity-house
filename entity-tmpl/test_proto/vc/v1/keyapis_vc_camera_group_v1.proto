@@ -79,7 +79,7 @@ message CameraCollection {
         http_root: "vc/api/v1/camera_collection"
       }
       method_set: {
-        get: {
+        get_by_id: {
           attributes:{
             override_default:{
               leading_comment: "Метод получения коллекции камер"
@@ -130,7 +130,7 @@ message CameraCollection {
             additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
-        delete: {
+        delete_by_id: {
           attributes:{
             override_default:{
               leading_comment: "Метод удаления коллекции камер"
@@ -142,7 +142,7 @@ message CameraCollection {
             additional_leading_comment: "Проставляет в поле deleted_at текущую дату.\nДля owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
-        restore: {
+        restore_by_id: {
           attributes:{
             override_default:{
               leading_comment: "Метод восстановления удаленной коллекции камер"
@@ -268,7 +268,7 @@ message Pet {
         http_root: "vc/api/v1/pet"
       }
       method_set: {
-        get: {
+        get_by_id: {
           key_fields_definition:{
             key_field_list:{
               key_fields:"id"

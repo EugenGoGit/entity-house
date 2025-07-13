@@ -19,7 +19,7 @@ message Post {
       }
       method_set: {
         get_list:{}
-        get:{}
+        get_by_id:{}
         save_create_replace:{}
       }
     }

@@ -155,7 +155,7 @@ message RestoreById {
 //  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
 //}
 
-message Get {
+message GetById {
   message RequestTemplate {
     oneof template {
       dto.EntityKey entity_key = 1;
