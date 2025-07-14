@@ -6,6 +6,24 @@ import "entity.feature.proto";
 
 package impl.api.method;
 
+message SaveCreateOnly {
+  message RequestTemplate {
+    oneof template {
+      dto.Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.EntityWSavingError entity_saving_error = 1;
+      dto.Entity entity = 2;
+      dto.Empty empty = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
 message SaveCreateReplace {
   message RequestTemplate {
     oneof template {
@@ -19,10 +37,9 @@ message SaveCreateReplace {
       dto.Empty empty = 3;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
-  entity.feature.api.method.Variables variables = 6;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
 }
 
 //message SaveListCreateReplace {
@@ -48,17 +65,6 @@ message SaveCreateReplace {
 //  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
 //}
 
-//message SaveListCreateOnly {
-//  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
-//  option (entity.feature.api.method.request_name) = "Save{EntityTypeName}ListRequest";
-//  option (entity.feature.api.method.response_name) = "Save{EntityTypeName}ListResponse";
-//  option (entity.feature.api.method.http_rule) = {
-//    post: "/{HttpRoot}/list",
-//    body: "*"
-//  };
-//  option (entity.feature.api.method.key_field_behavior) = OUTPUT_ONLY;
-//}
-//
 
 //message EditById {
 //  option (entity.feature.api.method.name) = "Edit{EntityTypeName}";
@@ -96,6 +102,23 @@ message SaveCreateReplace {
 //  option (entity.feature.api.method.key_field_behavior) = REQUIRED;
 //}
 
+message Delete {
+  message RequestTemplate {
+    oneof template {
+      dto.Empty empty = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+      dto.Empty empty = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
 
 message DeleteById {
   message RequestTemplate {
@@ -109,10 +132,10 @@ message DeleteById {
       dto.Empty empty = 2;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
-  entity.feature.api.method.Variables variables = 6;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
 }
 
 message RestoreById {
@@ -127,23 +150,13 @@ message RestoreById {
       dto.Empty empty = 2;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
-  entity.feature.api.method.Variables variables = 6;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
 }
 
-//message Delete {
-//
-//  option (entity.feature.api.method.name) = "Delete{EntityTypeName}";
-//  option (entity.feature.api.method.request_name) = "Delete{EntityTypeName}Request";
-//  option (entity.feature.api.method.response_name) = "Delete{EntityTypeName}Response";
-//  option (entity.feature.api.method.http_rule) = {
-//    delete: "/{HttpRoot}"
-//  };
-//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-//}
-//
+
 //message DeleteList {
 //
 //  option (entity.feature.api.method.name) = "Delete{EntityTypeName}List";
@@ -169,29 +182,28 @@ message GetById {
       dto.EntityWError entity_error = 2;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
-  // Определение ключевых полей сущности для использования в методе
-  // Переопределяет key_fields сервиса
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   entity.feature.KeyFieldsDefinition key_fields_definition = 4;
-  entity.feature.api.method.Variables variables = 6;
 }
 
-//
-//message Get {
-//  option (entity.feature.api.method.name) = "Get{EntityTypeName}";
-//  option (entity.feature.api.method.request_name) = "Get{EntityTypeName}Request";
-//  option (entity.feature.api.method.response_name) = "Get{EntityTypeName}Response";
-//  option (entity.feature.api.method.http_rule) = {
-//    get: "/{HttpRoot}"
-//  };
-//  option (entity.feature.api.method.key_field_behavior) = FIELD_BEHAVIOR_UNSPECIFIED;
-//  entity.feature.api.method.Comments comments = 1;
-//  entity.feature.api.method.Attributes attributes = 2;
-//  RequestTemplate request_template = 3;
-//  ResponseTemplate response_template = 4;
-//}
+message Get {
+  message RequestTemplate {
+    oneof template {
+      dto.Empty empty = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.Entity entity = 1;
+      dto.EntityWError entity_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
 
 message GetList {
   message RequestTemplate {
@@ -207,11 +219,10 @@ message GetList {
       dto.EntityWError entity_error = 2;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   repeated entity.feature.api.method.EnumValue order_by_values = 4;
-  entity.feature.api.method.Variables variables = 6;
 }
 
 
@@ -228,10 +239,9 @@ message GetCount {
       dto.CountEntityWError count_entity_error = 1;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
-  entity.feature.api.method.Variables variables = 6;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
 }
 
 // TODO: в extension  Exists
@@ -252,11 +262,10 @@ message Attach {
       dto.OnlyValidError valid_error = 1;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   entity.feature.api.method.LinkedType linked_type = 4;
-  entity.feature.api.method.Variables variables = 6;
 }
 
 message Detach {
@@ -270,11 +279,10 @@ message Detach {
       dto.OnlyValidError valid_error = 1;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   entity.feature.api.method.LinkedType linked_type = 4;
-  entity.feature.api.method.Variables variables = 6;
 }
 
 message GetLinkList {
@@ -289,12 +297,11 @@ message GetLinkList {
       dto.LinkWError link_error = 7;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   entity.feature.api.method.LinkedType linked_type = 4;
   repeated entity.feature.api.method.EnumValue order_by_values = 5;
-  entity.feature.api.method.Variables variables = 6;
 }
 
 message GetLinkCount {
@@ -308,11 +315,10 @@ message GetLinkCount {
       dto.CountEntityWError count_entity_error = 1;
     }
   }
-  entity.feature.api.method.Attributes attributes = 1;
-  RequestTemplate request_template = 2;
-  ResponseTemplate response_template = 3;
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
   entity.feature.api.method.LinkedType linked_type = 4;
-  entity.feature.api.method.Variables variables = 6;
 }
 
 

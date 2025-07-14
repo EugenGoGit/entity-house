@@ -78,3 +78,4 @@ func TestGenProto(t *testing.T) {
 
 	}
 }
+

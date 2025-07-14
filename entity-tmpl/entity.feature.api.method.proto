@@ -3,44 +3,47 @@ syntax = "proto3";
 import "google/api/http.proto";
 import "google/api/field_behavior.proto";
 import "entity.feature.proto";
+import "entity.feature.api.dto.proto";
 
 package entity.feature.api.method;
 
-// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-message Default {
-  string leading_comment = 1;
-  // Комментарий к запросу метода
-  string request_leading_comment = 2;
-  // Комментарий к ответу метода
-  string response_leading_comment = 3;
-}
-
-// Расширение Enum
-message EnumValue {
-  string name = 1;
-  string title = 2;
-}
-
-// TODO: возможно тут подойдет MethodDescriptorProto
 // TODO: как навернуть опции на метод
 // Атрибуты, которые определяются в шаблоне спецификации
-message Attributes {
-  Default override_default = 1;
-  string name = 3;
-  string request_name = 4;
-  string response_name = 5;
-  bool server_streaming = 6;
-  bool client_streaming = 7;
+message AttributesTmpl {
+  message Comments {
+    string leading_comment = 1;
+    // Комментарий к запросу метода
+    string request_leading_comment = 2;
+    // Комментарий к ответу метода
+    string response_leading_comment = 3;
+  }
+  Comments comments = 1;
+  string name = 2;
+  string request_name = 3;
+  string response_name = 4;
+  bool server_streaming = 5;
+  bool client_streaming = 6;
   // TODO: вычислить key_field_behavior для ключевых полей
   // Строгость (Cardinality) ключевых полей, требуемая для метода
-  google.api.FieldBehavior key_field_behavior = 8;
+  google.api.FieldBehavior key_field_behavior = 7;
   // TODO: сделать подстановки в additional_bindings
-  google.api.HttpRule http_rule = 9;
+  google.api.HttpRule http_rule = 8;
 }
 
-// TODO: убрать все кроме additional_leading_comment
-// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
-message Variables {
+
+// TODO: Включить тип в имплементацию
+// Атрибуты, которые задаются в конкретной спецификации метода в описании сущности
+// При совпадении имени поля с атрибутами шаблона, атрибуты шаблона будут переопределены
+message Attributes {
+  message Comments {
+    // Дополнительный комментарий к методу
+    string additional_leading_comment = 1;
+    string leading_comment = 2;
+    // Комментарий к запросу метода
+    string request_leading_comment = 3;
+    // Комментарий к ответу метода
+    string response_leading_comment = 4;
+  }
   // Определение ключевых полей сущности для использования в методе
   // Переопределяет key_fields сервиса
   entity.feature.KeyFieldsDefinition key_fields_definition = 1;
@@ -48,6 +51,20 @@ message Variables {
   string additional_leading_comment = 2;
   LinkedType linked_type = 3;
   repeated entity.feature.api.method.EnumValue order_by_values = 5;
+}
+
+message MethodTmpl {
+  // Имя поля с методом в конкретной спецификации, которому соответствует шаблон
+  string spec_field_name = 1;
+  entity.feature.api.method.AttributesTmpl attributes = 2;
+  dto.DtoTmpl request_template = 3;
+  dto.DtoTmpl response_template = 4;
+}
+
+// Расширение Enum
+message EnumValue {
+  string name = 1;
+  string title = 2;
 }
 
 // Определение связанной сущности

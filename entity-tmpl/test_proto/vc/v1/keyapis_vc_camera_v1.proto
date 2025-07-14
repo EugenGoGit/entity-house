@@ -38,27 +38,17 @@ service CameraService {
 message Camera {
   option (impl.api.specification) = {
     serverside_entity_crud: {
-      variables: {
-        http_root: "vc/api/v1/camera"
-      }
-      attributes:{
-        override_default:{
-          leading_comment: "Сервис работы с камерами"
-        }
-      }
+      http_root: "vc/api/v1/camera"
+      leading_comment: "Сервис работы с камерами"
       key_fields_definition:{
-        unique_field_group: PK
+        unique_field_group: UG1
       }
       method_set: {
         get_by_id: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения камеры"
-              request_leading_comment:"Запрос получения камеры",
-              response_leading_comment:"Ответ на запрос получения камеры"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения камеры"
+            request_leading_comment:"Запрос получения камеры",
+            response_leading_comment:"Ответ на запрос получения камеры"
             additional_leading_comment:"Для owner, employee параметр filter.vc_company_id подставляется из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           request_template:{
@@ -66,14 +56,10 @@ message Camera {
           }
         }
         get_list: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения списка камер"
-              request_leading_comment:"Запрос на получение списка камер",
-              response_leading_comment:"Ответ на получение списка камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения списка камер"
+            request_leading_comment:"Запрос на получение списка камер",
+            response_leading_comment:"Ответ на получение списка камер"
             additional_leading_comment:"Для owner, employee параметр filter.vc_company_id подставляется из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           request_template:{
@@ -82,14 +68,11 @@ message Camera {
           order_by_values: {name:"UID", title: "По идентификатору"}
         }
         get_count: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения количества камер"
-              request_leading_comment:"Запрос на получение количества камер",
-              response_leading_comment:"Ответ на получение количества камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения количества камер"
+            request_leading_comment:"Запрос на получение количества камер",
+            response_leading_comment:"Ответ на получение количества камер"
+
             additional_leading_comment:"Для owner, employee параметр filter.vc_company_id подставляется из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           request_template:{
@@ -97,15 +80,10 @@ message Camera {
           }
         }
         attach: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод привязки камеры и квартиры"
-              request_leading_comment:"Запрос привязки камеры и квартиры",
-              response_leading_comment:"Ответ привязки камеры и квартиры"
-            }
-
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод привязки камеры и квартиры"
+            request_leading_comment:"Запрос привязки камеры и квартиры",
+            response_leading_comment:"Ответ привязки камеры и квартиры"
             additional_leading_comment:"Метод доступен для: admin, service, bti, owner, employee"
           }
           linked_type:{
@@ -114,54 +92,40 @@ message Camera {
           }
         }
         detach: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод отвязки камеры и квартиры"
-              request_leading_comment:"Запрос отвязки камеры и квартиры",
-              response_leading_comment:"Ответ отвязки камеры и квартиры"
-            }
-
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод отвязки камеры и квартиры"
+            request_leading_comment:"Запрос отвязки камеры и квартиры",
+            response_leading_comment:"Ответ отвязки камеры и квартиры"
             additional_leading_comment:"Метод доступен для: admin, service, bti, owner, employee"
-            linked_type:{
-              name: "Room"
-              key_field_path: "{data.camera_uid}/room/{data.orpon}/{data.room_number}"
-            }
+          }
+          linked_type:{
+            name: "Room"
+            key_field_path: "{data.camera_uid}/room/{data.orpon}/{data.room_number}"
           }
         }
         get_link_list: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения списка связей камеры и квартиры"
-              request_leading_comment:"Запрос получения списка связей камеры и квартиры",
-              response_leading_comment:"Ответ получения списка связей камеры и квартиры"
-            }
-
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения списка связей камеры и квартиры"
+            request_leading_comment:"Запрос получения списка связей камеры и квартиры",
+            response_leading_comment:"Ответ получения списка связей камеры и квартиры"
             additional_leading_comment:"Метод доступен для: admin, service, bti, owner, employee"
-            order_by_values: {name:"CAMERA_UID", title: "По Идентификатору камеры"}
-            order_by_values: {name:"ORPON_ROOM_NUMBER", title: "По ОРПОН и номеру квартиры"}
-            linked_type:{
-              name: "Room"
-            }
           }
+          order_by_values: {name:"CAMERA_UID", title: "По Идентификатору камеры"}
+          order_by_values: {name:"ORPON_ROOM_NUMBER", title: "По ОРПОН и номеру квартиры"}
+          linked_type:{
+            name: "Room"
+          }
+
         }
         get_link_count: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения количества связей камеры и квартиры"
-              request_leading_comment:"Запрос получения количества связей камеры и квартиры",
-              response_leading_comment:"Ответ получения количества связей камеры и квартиры"
-            }
-
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения количества связей камеры и квартиры"
+            request_leading_comment:"Запрос получения количества связей камеры и квартиры",
+            response_leading_comment:"Ответ получения количества связей камеры и квартиры"
             additional_leading_comment:"Метод доступен для: admin, service, bti, owner, employee"
-            linked_type:{
-              name: "Room"
-            }
+          }
+          linked_type:{
+            name: "Room"
           }
         }
       }
@@ -170,7 +134,7 @@ message Camera {
   // Идентификатор камеры
   string id = 1;
   // uid камеры
-  string uid = 2 [(entity.feature.unique_field_group) = PK];
+  string uid = 2 [(entity.feature.unique_field_group) = UG1];
   // Название камеры
   string name = 3;
   // Признак: онлайн камера или нет

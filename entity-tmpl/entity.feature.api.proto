@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-
+import "entity.feature.api.service.proto";
 package entity.feature.api;
 
 // TODO: проверить расширяемость
@@ -17,4 +17,12 @@ extend google.protobuf.FieldOptions {
   string specification = 3020;
 }
 
+extend google.protobuf.MessageOptions {
+  // Шаблон спецификации
+  entity.feature.api.SpecificationTmpl specification_tmpl = 3001;
+}
+
+message SpecificationTmpl {
+  repeated service.ServiceTmpl service_tmpl = 1;
+}
 

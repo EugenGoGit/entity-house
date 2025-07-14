@@ -57,7 +57,8 @@ func printEnumEl(el Field) {
 }
 
 func createTypeDescByTemplateParent(
-	templateParent *pref.Value,
+	templateDesc pref.MessageDescriptor,
+	// templateParent *pref.Value,
 	messageName string,
 	messageFullName string,
 	entityTypeName string,
@@ -68,39 +69,24 @@ func createTypeDescByTemplateParent(
 	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
 	linkedTypeName string,
 ) (*descriptorpb.DescriptorProto, error) {
-	var templatePrefDesc pref.MessageDescriptor
-	var resultProtodesc *descriptorpb.DescriptorProto
-	if templateParent.String() != "<nil>" {
-		// Берем шаблон из поля, поле там одно
-		for _, v := range getFieldMap(templateParent.Message()) {
-			templatePrefDesc = v.val.Message().Descriptor()
-			break
-		}
-
-		resultProtodesc = protodesc.ToDescriptorProto(templatePrefDesc)
-		resultProtodesc.Name = &messageName
-		err := getTypeDescByTemplate(
-			resultProtodesc,
-			templatePrefDesc,
-			entityTypeName,
-			entityKeyFields,
-			string(templatePrefDesc.FullName()),
-			methodDescFields,
-			messageName,
-			string(entityPrefDesc.ParentFile().Package()),
-			messageFullName,
-			fileCommentsMap,
-			addMessageToProtoRoot,
-			linkedTypeName,
-		)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Если template не задан используем пустой message
-		resultProtodesc = &descriptorpb.DescriptorProto{
-			Name: &messageName,
-		}
+	resultProtodesc := protodesc.ToDescriptorProto(templateDesc)
+	resultProtodesc.Name = &messageName
+	err := getTypeDescByTemplate(
+		resultProtodesc,
+		templateDesc,
+		entityTypeName,
+		entityKeyFields,
+		string(templateDesc.FullName()),
+		methodDescFields,
+		messageName,
+		string(entityPrefDesc.ParentFile().Package()),
+		messageFullName,
+		fileCommentsMap,
+		addMessageToProtoRoot,
+		linkedTypeName,
+	)
+	if err != nil {
+		return nil, err
 	}
 	return resultProtodesc, nil
 }
@@ -509,6 +495,27 @@ func fillMessageComments(messJhumpDesc *desc.MessageDescriptor, messBuilder *bui
 
 }
 
+func getDtoTemplDesc(containerFieldName string, varFieldMap, tmplFieldMap map[string]Field, varMethod pref.Message) (pref.MessageDescriptor, error) {
+	var requestTemplateDesc pref.MessageDescriptor
+	// Берем Шаблон из спецификации в описании сущности
+	if val, ok := varFieldMap[containerFieldName]; ok {
+		requestTemplateFieldMap := getFieldMap(val.val.Message())
+		if len(requestTemplateFieldMap) > 0 {
+			// Тут только одно поле DTO
+			for _, v := range getFieldMap(val.val.Message()) {
+				requestTemplateDesc = v.val.Message().Descriptor()
+				break
+			}
+		}
+	}
+	// Если Шаблон не задан в спецификации описании сущности, то берем указанный в шаблоне
+	if requestTemplateDesc == nil {
+		requestTemplateDesc = varMethod.Descriptor().Fields().ByName(pref.Name(containerFieldName)).Message().Fields().ByName(
+			pref.Name(getFieldMap(tmplFieldMap[containerFieldName].val.Message())["spec_field_name"].val.String())).Message()
+	}
+	return requestTemplateDesc, nil
+}
+
 func genMethod(
 	tmplMethod pref.Message,
 	varMethod pref.Message,
@@ -529,34 +536,32 @@ func genMethod(
 	varFieldMap := getFieldMap(varMethod)
 	// Атрибуты, которые определяются в шаблоне спецификации
 	maps.Copy(methodParameters, getFieldMap(tmplFieldMap["attributes"].val.Message()))
+	maps.Copy(methodParameters, getFieldMap(methodParameters["comments"].val.Message()))
 
-	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-	maps.Copy(methodParameters, getFieldMap(methodParameters["override_default"].val.Message()))
-	if val, ok := varFieldMap["attributes"]; ok {
-		if def, ok := getFieldMap(val.val.Message())["override_default"]; ok {
-			maps.Copy(methodParameters, getFieldMap(def.val.Message()))
-		}
-	}
-
-	// Шаблон запроса берем из описания сущности, если не задан, то из шаблона
-	if val, ok := varFieldMap["request_template"]; ok {
-		methodParameters["request_template"] = val
-	} else {
-		methodParameters["request_template"] = tmplFieldMap["request_template"]
-	}
-	// Шаблон ответа берем из описания сущности, если не задан, то из шаблона
-	if val, ok := varFieldMap["response_template"]; ok {
-		methodParameters["response_template"] = val
-	} else {
-		methodParameters["response_template"] = tmplFieldMap["response_template"]
-	}
-
-	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
-	if val, ok := varFieldMap["variables"]; ok {
-		maps.Copy(methodParameters, getFieldMap(val.val.Message()))
-	}
-	// Перезаписываем значениями описания метода в описании сущности
+	// Атрибуты, заданные в описании сущности переопределяют те, что заданы в шаблоне
 	maps.Copy(methodParameters, varFieldMap)
+	maps.Copy(methodParameters, getFieldMap(methodParameters["comments"].val.Message()))
+
+	requestTemplateDesc, err :=
+		getDtoTemplDesc(
+			"request_template",
+			varFieldMap,
+			tmplFieldMap,
+			varMethod,
+		)
+	if err != nil {
+		return err
+	}
+	responseTemplateDesc, err :=
+		getDtoTemplDesc(
+			"response_template",
+			varFieldMap,
+			tmplFieldMap,
+			varMethod,
+		)
+	if err != nil {
+		return err
+	}
 
 	var linkedTypeName string
 	var linkedTypeKeyFieldPath string
@@ -591,11 +596,11 @@ func genMethod(
 	// Переопределяем этот параметр сервиса
 	keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
 
-	// шаблон запроса в request_template
-	requestTmpl := methodParameters["request_template"]
+	// // шаблон запроса в request_template
+	// requestTmpl := methodParameters["request_template"]
 
 	requestMessageProtodesc, err := createTypeDescByTemplateParent(
-		&requestTmpl.val,
+		requestTemplateDesc,
 		requestName,
 		requestFullName,
 		*entityMessageProtodesc.Name,
@@ -610,10 +615,10 @@ func genMethod(
 		return err
 	}
 
-	responseTmpl := methodParameters["response_template"]
+	// responseTmpl := methodParameters["response_template"]
 
 	responseMessageProtodesc, err := createTypeDescByTemplateParent(
-		&responseTmpl.val,
+		responseTemplateDesc,
 		responseName,
 		responseFullName,
 		*entityMessageProtodesc.Name,
@@ -735,7 +740,6 @@ func genMethod(
 
 func genEntityApiSpec(apiSpecOpt Field,
 	entityPrefDesc pref.MessageDescriptor,
-	sourceFileJhumpDesc *desc.FileDescriptor,
 	genFileProto *descriptorpb.FileDescriptorProto,
 	googleApiAnnotationsPrefDesc pref.FileDescriptor,
 	genFileComments map[string]string,
@@ -744,38 +748,35 @@ func genEntityApiSpec(apiSpecOpt Field,
 	// Возьмем описание сервиса из опции сущности
 	// Считаем, что там только один сервис
 	// TODO: обработать несколько сервисов
-	var entitySourceService map[string]Field
+	var entitySourceService Field
 	for _, v := range getFieldMap(apiSpecOpt.val.Message()) {
-		entitySourceService = getFieldMap(v.val.Message())
+		entitySourceService = v
 		break
 	}
+	entitySourceServiceFieldMap := getFieldMap(entitySourceService.val.Message())
+
 	// Возьмем описание сервиса из имплементации шаблона спецификации
 	// Считаем, что там только один сервис
 	// TODO: обработать несколько сервисов
-	var tmplService map[string]Field
-	for _, v := range getFieldMap(getFieldMap(apiSpecOpt.val.Message().Descriptor().Options().ProtoReflect())["specification"].val.Message()) {
-		tmplService = getFieldMap(v.val.Message())
-		break
-	}
-
-	var serviceParameters map[string]Field = make(map[string]Field)
-	// Атрибуты, которые определяются в шаблоне спецификации
-	maps.Copy(serviceParameters, getFieldMap(tmplService["attributes"].val.Message()))
-
-	// Атрибуты, которые можно задать в шаблоне спецификации и можно переопределить в описании сущности
-	maps.Copy(serviceParameters, getFieldMap(serviceParameters["override_default"].val.Message()))
-	if val, ok := entitySourceService["attributes"]; ok {
-		if def, ok := getFieldMap(val.val.Message())["override_default"]; ok {
-			maps.Copy(serviceParameters, getFieldMap(def.val.Message()))
+	// TODO: Взять не по имени поля specification_tmpl (оно из имплементации), взять по опции
+	serviceTmplList := getFieldMap(getFieldMap(apiSpecOpt.val.Message().Descriptor().Options().ProtoReflect())["specification_tmpl"].val.Message())["service_tmpl"].val.List()
+	var tmplServiceFieldMap map[string]Field
+	for i := range serviceTmplList.Len() {
+		tmplServiceFieldMap = getFieldMap(serviceTmplList.Get(i).Message())
+		if tmplServiceFieldMap["spec_field_name"].val.String() == string(entitySourceService.desc.Name()) {
+			break
 		}
 	}
+	fmt.Println("tmplService", getFieldMap(getFieldMap(apiSpecOpt.val.Message().Descriptor().Options().ProtoReflect())["specification_tmpl"].val.Message()))
+	fmt.Println("tmplService", tmplServiceFieldMap)
+	var serviceParameters map[string]Field = make(map[string]Field)
+	// Атрибуты, которые определяются в шаблоне спецификации
+	maps.Copy(serviceParameters, getFieldMap(tmplServiceFieldMap["attributes"].val.Message()))
 
+	// Добавим атрибуты из описания спецификации на сущности
+	// При совпадении имени они переопределят атрибуты из шаблона
 	// Атрибуты, которые нельзя задать в шаблоне спецификации, а только в описании сущности
-	if val, ok := entitySourceService["variables"]; ok {
-		maps.Copy(serviceParameters, getFieldMap(val.val.Message()))
-	}
-	// Перезаписываем значениями описания метода в описании сущности
-	maps.Copy(serviceParameters, entitySourceService)
+	maps.Copy(serviceParameters, entitySourceServiceFieldMap)
 
 	serviceName := serviceParameters["name"].val.String()
 	serviceComment := serviceParameters["leading_comment"].val.String()
@@ -815,19 +816,26 @@ func genEntityApiSpec(apiSpecOpt Field,
 	// TODO: смержить определение методов
 	// в method_set описания сущности требуемые методы
 	var requiredMethods map[string]Field
-	if val, ok := entitySourceService["method_set"]; ok {
+	if val, ok := entitySourceServiceFieldMap["method_set"]; ok {
 		requiredMethods = getFieldMap(val.val.Message())
 	}
 	// В шаблоне спецификации шаблоны методов
-	tmplMethodSet := tmplService["method_set"].val.Message()
+	var tmplMethods map[string]pref.Message = make(map[string]pref.Message)
+	methodTmplList := getFieldMap(tmplServiceFieldMap["method_set"].val.Message())["method_tmpl"].val.List()
+	for i := range methodTmplList.Len() {
+		tmplMethods[getFieldMap(methodTmplList.Get(i).Message())["spec_field_name"].val.String()] = methodTmplList.Get(i).Message()
+	}
 
 	// Добавим методы
 	for _, method := range requiredMethods {
 		//  TODO: смержить массив
 		if method.desc.IsList() {
 			for j := range method.val.List().Len() {
+				fmt.Println("string(method.desc.Name())", string(method.desc.Name()))
+				fmt.Println("string(method.desc.Name())", entitySourceServiceFieldMap)
+				fmt.Println("string(method.desc.Name())", tmplMethods)
 				err := genMethod(
-					tmplMethodSet.Get(method.desc).List().Get(0).Message(),
+					tmplMethods[string(method.desc.Name())],
 					method.val.List().Get(j).Message(),
 					serviceKeyFieldsDefinition,
 					genFileProto,
@@ -845,8 +853,11 @@ func genEntityApiSpec(apiSpecOpt Field,
 				}
 			}
 		} else {
+			fmt.Println("string(method.desc.Name())", string(method.desc.Name()))
+			fmt.Println("string(method.desc.Name())", entitySourceServiceFieldMap)
+			fmt.Println("string(method.desc.Name())", tmplMethods)
 			err := genMethod(
-				tmplMethodSet.Get(method.desc).Message(),
+				tmplMethods[string(method.desc.Name())],
 				method.val.Message(),
 				serviceKeyFieldsDefinition,
 				genFileProto,
@@ -959,7 +970,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("sourceFilePrefDesc: ", sourceFilePrefDesc)
 
 	googleApiAnnotationsFiles, err := compiler.Compile(context.Background(), "google/api/annotations.proto")
 	if err != nil {
@@ -1095,7 +1105,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				// Обработаем cущность
 				err := genEntityApiSpec(apiSpecOpt,
 					entityPrefDesc,
-					sourceFileJhumpDesc,
 					genFileProto,
 					googleApiAnnotationsFiles[0],
 					genFileComments,

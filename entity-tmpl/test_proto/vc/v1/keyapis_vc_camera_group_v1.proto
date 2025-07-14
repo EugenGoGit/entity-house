@@ -70,36 +70,22 @@ message CameraCollectionFilter {
 message CameraCollection {
   option (impl.api.specification) = {
     serverside_entity_crud: {
-      attributes:{
-        override_default:{
-          leading_comment: "Сервис управления коллекциями камер"
-        }
-      }
-      variables:{
-        http_root: "vc/api/v1/camera_collection"
-      }
+      leading_comment: "Сервис управления коллекциями камер"
+      http_root: "vc/api/v1/camera_collection"
       method_set: {
         get_by_id: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод получения коллекции камер"
-              request_leading_comment: "Запрос получения коллекции камер"
-              response_leading_comment: "Ответ на запрос получения коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод получения коллекции камер"
+            request_leading_comment: "Запрос получения коллекции камер"
+            response_leading_comment: "Ответ на запрос получения коллекции камер"
             additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
         get_list: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод получения списка коллекций камер"
-              request_leading_comment: "Запрос получения списка коллекций камер"
-              response_leading_comment: "Ответ на запрос получения списка коллекций камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод получения списка коллекций камер"
+            request_leading_comment: "Запрос получения списка коллекций камер"
+            response_leading_comment: "Ответ на запрос получения списка коллекций камер"
             additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           order_by_values: {name:"ID", title: "По идентификатору"}
@@ -107,62 +93,42 @@ message CameraCollection {
           order_by_values: {name:"CHANGED_AT", title: "По времени изменения"}
         }
         get_count: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод получения количества коллекций камер"
-              request_leading_comment: "Запрос получения количества коллекций камер"
-              response_leading_comment: " Ответ на запрос получения количества коллекций камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод получения количества коллекций камер"
+            request_leading_comment: "Запрос получения количества коллекций камер"
+            response_leading_comment: " Ответ на запрос получения количества коллекций камер"
             additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
         save_create_replace:{
-          attributes:{
-            override_default:{
-              leading_comment: "Метод создания и изменения коллекции камер"
-              request_leading_comment: "Запрос на создание коллекции камер"
-              response_leading_comment: "Ответ на запрос на создание коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод создания и изменения коллекции камер"
+            request_leading_comment: "Запрос на создание коллекции камер"
+            response_leading_comment: "Ответ на запрос на создание коллекции камер"
             additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
         delete_by_id: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод удаления коллекции камер"
-              request_leading_comment: "Запрос удаления коллекции камер"
-              response_leading_comment: "Ответ на запрос удаления коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод удаления коллекции камер"
+            request_leading_comment: "Запрос удаления коллекции камер"
+            response_leading_comment: "Ответ на запрос удаления коллекции камер"
             additional_leading_comment: "Проставляет в поле deleted_at текущую дату.\nДля owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
         restore_by_id: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод восстановления удаленной коллекции камер"
-              request_leading_comment: "Запрос восстановления удаленной коллекции камер"
-              response_leading_comment: "Ответ на запрос восстановления удаленной коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод восстановления удаленной коллекции камер"
+            request_leading_comment: "Запрос восстановления удаленной коллекции камер"
+            response_leading_comment: "Ответ на запрос восстановления удаленной коллекции камер"
             additional_leading_comment: "Проставляет null в поле deleted_at.\nДля owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
         }
         attach: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод привязки камеры к коллекции камер"
-              request_leading_comment: "Запрос на добавление связи камеры и коллекции камер"
-              response_leading_comment: "Ответ на запрос на добавление связи камеры и коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод привязки камеры к коллекции камер"
+            request_leading_comment: "Запрос на добавление связи камеры и коллекции камер"
+            response_leading_comment: "Ответ на запрос на добавление связи камеры и коллекции камер"
             additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           linked_type:{
@@ -171,14 +137,10 @@ message CameraCollection {
           }
         }
         detach: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод удаления привязки камеры к коллекции камер"
-              request_leading_comment: "Запрос на удаление связи камеры и коллекции камер"
-              response_leading_comment: "Ответ на запрос удаления связи камеры и коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод удаления привязки камеры к коллекции камер"
+            request_leading_comment: "Запрос на удаление связи камеры и коллекции камер"
+            response_leading_comment: "Ответ на запрос удаления связи камеры и коллекции камер"
             additional_leading_comment: "Для owner, employee сравнивается COMPANY_ID из токена и company_id коллекции, при несовпадении ошибка доступа.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           linked_type:{
@@ -187,14 +149,10 @@ message CameraCollection {
           }
         }
         get_link_list: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод получения списка связей камер и коллекций камер"
-              request_leading_comment: "Запрос получения списка связей камеры и коллекции камер"
-              response_leading_comment: "Ответ на запрос получения списка связей камеры и коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод получения списка связей камер и коллекций камер"
+            request_leading_comment: "Запрос получения списка связей камеры и коллекции камер"
+            response_leading_comment: "Ответ на запрос получения списка связей камеры и коллекции камер"
             additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           order_by_values: {name:"CAMERA_COLLECTION_ID", title: "По Идентификатору коллекции"}
@@ -204,14 +162,10 @@ message CameraCollection {
           }
         }
         get_link_count: {
-          attributes:{
-            override_default:{
-              leading_comment: "Метод получения количества связей камер и коллекций камер"
-              request_leading_comment: "Запрос получения количества связей камеры и коллекции камер"
-              response_leading_comment: "Ответ на запрос получения количества связей камеры и коллекции камер"
-            }
-          }
-          variables:{
+          comments:{
+            leading_comment: "Метод получения количества связей камер и коллекций камер"
+            request_leading_comment: "Запрос получения количества связей камеры и коллекции камер"
+            response_leading_comment: "Ответ на запрос получения количества связей камеры и коллекции камер"
             additional_leading_comment: "Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.\nМетод доступен для: admin, service, bti, owner, employee"
           }
           linked_type:{
@@ -264,9 +218,7 @@ message CameraCollection {
 message Pet {
   option (impl.api.specification) = {
     serverside_entity_crud: {
-      variables:{
-        http_root: "vc/api/v1/pet"
-      }
+      http_root: "vc/api/v1/pet"
       method_set: {
         get_by_id: {
           key_fields_definition:{

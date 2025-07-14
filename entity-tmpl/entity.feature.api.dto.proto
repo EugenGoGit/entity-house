@@ -5,10 +5,10 @@ import "google/protobuf/descriptor.proto";
 package entity.feature.api.dto;
 
 extend google.protobuf.MessageOptions {
-  string message_comments = 3008;
+  string message_comments = 3002;
   // Тип в шаблоне заменяется на тип, указанный в опции
   // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле
-  string replace_message_type_name_to = 3009;
+  string replace_message_type_name_to = 3003;
 }
 
 extend google.protobuf.FieldOptions {
@@ -37,6 +37,12 @@ extend google.protobuf.OneofOptions {
 // Тип заглушка для замены на тип, указанный в опции поля replace_field_type_to
 // Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
 message ReplaceTypeDummy {}
+
+// Шаблон DTO
+message DtoTmpl {
+  // Имя поля с DTO в конкретной спецификации, которому соответствует шаблон
+  string spec_field_name = 1;
+}
 
 
 

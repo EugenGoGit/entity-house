@@ -7,17 +7,16 @@ import "google/protobuf/descriptor.proto";
 import "entity.feature.proto";
 import "impl.api.proto";
 
-package post.v1;
+package post.v3;
 
 // Сущность
 message Post {
   option (impl.api.specification) = {
-    serverside_entity_crud:{
+    serverside_singleton_crud:
+    {
       http_root: "post/api/v1/post"
       method_set: {
-        get_list:{}
-        get_by_id:{}
-        save_create_replace:{}
+        get:{}
       }
     }
   };

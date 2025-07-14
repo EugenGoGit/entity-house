@@ -27,41 +27,26 @@ option optimize_for = LITE_RUNTIME;
 message CameraVideoData {
   option (impl.api.specification) = {
     serverside_entity_crud: {
-      attributes:{
-        override_default:{
-          leading_comment:"Сервис управления видеоданными камер"
-        }
-      }
-      variables:{
-        http_root: "vc/api/v1/camera_videodata"
-      }
+      leading_comment:"Сервис управления видеоданными камер"
+      http_root: "vc/api/v1/camera_videodata"
       method_set: {
         get_list: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения списка камер"
-              request_leading_comment:"Запрос на получение списка камер",
-              response_leading_comment:"Ответ на получение списка камер"
-            }
-          }
-          variables:{
-            order_by_values:[{name: "ID", title:"По идентификатору"}]
+          comments:{
+            leading_comment:"Метод получения списка камер"
+            request_leading_comment:"Запрос на получение списка камер",
+            response_leading_comment:"Ответ на получение списка камер"
             additional_leading_comment:"Для master, owner, employee поля scope подставляем из токена.\nМетод доступен для: admin, service, master, owner, employee"
           }
+          order_by_values:[{name: "ID", title:"По идентификатору"}]
           request_template:{
             filter_paging_req_scope:{}
           }
         }
         get_count: {
-          attributes:{
-            override_default:{
-              leading_comment:"Метод получения количества камер"
-              request_leading_comment:"Запрос на получение количества камер",
-              response_leading_comment:"Ответ на получение количества камер"
-            }
-
-          }
-          variables:{
+          comments:{
+            leading_comment:"Метод получения количества камер"
+            request_leading_comment:"Запрос на получение количества камер",
+            response_leading_comment:"Ответ на получение количества камер"
             additional_leading_comment:"Для master, owner, employee поля scope подставляем из токена.\nМетод доступен для: admin, service, master, owner, employee"
           }
           request_template:{

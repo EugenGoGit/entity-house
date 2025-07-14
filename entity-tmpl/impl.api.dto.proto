@@ -5,33 +5,6 @@ import "google/api/field_behavior.proto";
 import "entity.feature.api.dto.proto";
 
 package impl.api.dto;
-//
-//message RequestTemplate {
-//  oneof template {
-//    EntityKey entity_key = 1;
-//    Entity entity = 2;
-//    FilterPaging filter_paging = 3;
-//    LinkFilterPaging link_filter_paging = 4;
-//    Filter filter = 5;
-//    LinkFilter link_filter = 6;
-//    Link link = 7;
-//    FilterPagingScope filter_paging_scope = 8;
-//    FilterScope filter_scope = 9;
-//    EntityKeyScope entity_key_scope = 10;
-//  }
-//}
-//
-//message ResponseTemplate {
-//  oneof template {
-//    EntityWError entity_error = 1;
-//    EntityList entity_list = 2;
-//    CountEntityWError count_entity_error = 3;
-//    ValidError valid_error = 4;
-//    EntityWSavingError one_entity_saving_error = 5;
-//    Entity entity = 6;
-//    LinkWError link_error = 7;
-//  }
-//}
 
 message Empty {
 }

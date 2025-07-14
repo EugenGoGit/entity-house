@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "impl.api.method.proto";
-import "entity.feature.api.service.proto";
 import "entity.feature.proto";
 
 package impl.api.service;
@@ -17,7 +16,7 @@ package impl.api.service;
 //    Редактирование частичное единичной - Edit PATCH DTO сущности с ключом в path, fieldMask в body, возврат ошибок
 //    Редактирование частичное списка - Edit_List PATCH repeated DTO сущности с ключом в path, fieldMask в body, возврат stream ошибок
 //    Удаление единичной - Delete DELETE в request только ключ, с ключом в path, возврат ошибок
-//Удаление списка - Delete_List DELETE c фильтром в query, возврат количества или ошибок
+//    Удаление списка - Delete_List DELETE c фильтром в query, возврат количества или ошибок
 //    Удаление всех - Delete_List DELETE c пустым или отсутствующим фильтром в query, возврат количества или ошибок
 //Сущности с созданным вовне ключом
 //    Ключ в DTO сущности строго помечен REQUIRED
@@ -28,20 +27,20 @@ package impl.api.service;
 //    Редактирование частичное единичной - Edit PATCH DTO сущности с ключом в path, fieldMask в body, возврат ошибок
 //    Редактирование частичное списка - Edit_List PATCH repeated DTO сущности с ключом в path, fieldMask в body, возврат stream ошибок
 //    Удаление единичной - Delete DELETE в request только ключ, с ключом в path, возврат ошибок
-//Удаление списка - Delete_List DELETE c фильтром в query, возврат количества или ошибок
+//    Удаление списка - Delete_List DELETE c фильтром в query, возврат количества или ошибок
 //    Удаление всех - Delete_List DELETE c пустым или отсутствующим фильтром в query, возврат количества или ошибок
 //Сущности из уже существующего набора экземпляров сущности, набор поменять нельзя
 //    Ключ в DTO сущности строго помечен REQUIRED
 //    Создание единичной - отсутствует
 //    Создание списка - отсутствует
 //    Редактирование целиком единичной - Save POST DTO сущности с ключом в body, возврат сущности или ошибок
-//Редактирование целиком списка - Save_List POST repeated DTO сущности с ключом в body, возврат stream сущности или ошибок
+//    Редактирование целиком списка - Save_List POST repeated DTO сущности с ключом в body, возврат stream сущности или ошибок
 //    Редактирование частичное единичной - Edit PATCH DTO сущности с ключом в path, fieldMask в body, возврат ошибок
 //    Редактирование частичное списка - Edit_List PATCH repeated DTO сущности с ключом в path, fieldMask в body, возврат stream ошибок
 //    Удаление единичной - отсутствует
 //    Удаление списка - отсутствует
 //    Удаление всех - отсутствует
-//    Сущности с только одним экземпляром без ключа (как правило это глобальные параметры)
+//Сущности с только одним экземпляром без ключа (как правило это глобальные параметры)
 //    Ключ в DTO сущности отсутствует
 //    Создание единичной - отсутствует
 //    Создание списка - отсутствует
@@ -50,35 +49,33 @@ package impl.api.service;
 //    Редактирование частичное единичной - Edit PATCH DTO сущности, fieldMask в body, возврат ошибок
 //    Редактирование частичное списка - отсутствует
 //    Удаление единичной (Очистка параметров) - Delete DELETE, возврат ошибок
-//Удаление списка - отсутствует
+//    Удаление списка - отсутствует
 //    Удаление всех - отсутствует
-//Получение единичной - Get GET, возврат сущности
-//    Сущности любые
-//Реализация пагинации необязательна
+//    Получение единичной - Get GET, возврат сущности
+//Сущности любые
+//    Реализация пагинации необязательна
 //    Методы операции, меняющие состояние cущности, но не атрибуты - Post POST параметры операции с ключом в path, возврат ошибок
 //    Методы операции, меняющие состояние сервера, но не атрибуты - Post POST параметры операции, возврат ошибок
 //    Получение единичной - Get GET в request только ключ, с ключом в path, возврат сущности
 //    Получение списка - Get_List GET c фильтром, пагинацией в query, возврат stream сущности
-//Получение количества - Get_Count GET c фильтром в query, возврат количества
+//    Получение количества - Get_Count GET c фильтром в query, возврат количества
 //    Получение всех - Get_List GET c пустым или отсутствующим фильтром, пагинацией в query, возврат stream сущности
 //    Attach - Put(Link) PUT DTO связи REQUIRED с ключами REQUIRED, ключи в path, attach на конце path, возврат ошибок
 //    Detach - Put(UnLink) PUT DTO связи REQUIRED с ключами REQUIRED, ключи в path, attach на конце path, возврат ошибок
 //    Получение всех связей - Get_List GET c фильтром, пагинацией в query, возврат stream DTO связи
 //    Запрос существования по ключу, по параметрам
 
-//message ServersideSingletonCRUD {
-//  option (entity.feature.api.service.name) = "{EntityTypeName}Service";
-//  option (entity.feature.api.service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
-//  message MethodSet {
-//    method.Get get = 1;
-//    method.SaveCreateReplace save_create_replace = 2;
-//    method.Edit edit = 3;
-//    method.Delete delete = 4;
-//  }
-//  string http_root = 1;
-//  MethodSet method_set = 2;
-//  entity.feature.api.service.CustomComments custom_comments = 3;
-//}
+message ServersideSingletonCRUD {
+  message MethodSet {
+    method.Get get = 1;
+    method.SaveCreateReplace save = 2;
+    method.Delete delete = 3;
+  }
+  MethodSet method_set = 1;
+  string leading_comment = 2;
+  string http_root = 3;
+  string additional_leading_comment = 4;
+}
 
 message ServersideEntityCRUD {
   message MethodSet {
@@ -91,9 +88,11 @@ message ServersideEntityCRUD {
     //    method.ExistsKey exists_key = 4;
     //    method.Exists exists = 5;
     // .
-    // .
-    //      method.SaveCreateOnly save_create_only = 6;
-    method.SaveCreateReplace save_create_replace = 7;
+    oneof save {
+      // .
+      method.SaveCreateOnly save_create_only = 6;
+      method.SaveCreateReplace save_create_replace = 7;
+    }
     // .
     //    oneof save_list {
     //      // .
@@ -111,9 +110,10 @@ message ServersideEntityCRUD {
     repeated method.GetLinkCount get_link_count = 18;
   }
   MethodSet method_set = 1;
-  entity.feature.KeyFieldsDefinition key_fields_definition = 2;
-  entity.feature.api.service.Attributes attributes = 3;
-  entity.feature.api.service.Variables variables = 4;
+  string leading_comment = 2;
+  string http_root = 3;
+  string additional_leading_comment = 4;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 5;
 }
 
 
