@@ -758,7 +758,6 @@ func genEntityApiSpec(apiSpecOpt Field,
 	// Возьмем описание сервиса из имплементации шаблона спецификации
 	// Считаем, что там только один сервис
 	// TODO: обработать несколько сервисов
-	// TODO: Взять не по имени поля specification_tmpl (оно из имплементации), взять по опции
 	serviceTmplList := getFieldMap(getFieldMap(apiSpecOpt.val.Message().Descriptor().Options().ProtoReflect())["specification_tmpl"].val.Message())["service_tmpl"].val.List()
 	var tmplServiceFieldMap map[string]Field
 	for i := range serviceTmplList.Len() {
@@ -813,7 +812,6 @@ func genEntityApiSpec(apiSpecOpt Field,
 			i = i - 1
 		}
 	}
-	// TODO: смержить определение методов
 	// в method_set описания сущности требуемые методы
 	var requiredMethods map[string]Field
 	if val, ok := entitySourceServiceFieldMap["method_set"]; ok {
@@ -828,12 +826,8 @@ func genEntityApiSpec(apiSpecOpt Field,
 
 	// Добавим методы
 	for _, method := range requiredMethods {
-		//  TODO: смержить массив
 		if method.desc.IsList() {
 			for j := range method.val.List().Len() {
-				fmt.Println("string(method.desc.Name())", string(method.desc.Name()))
-				fmt.Println("string(method.desc.Name())", entitySourceServiceFieldMap)
-				fmt.Println("string(method.desc.Name())", tmplMethods)
 				err := genMethod(
 					tmplMethods[string(method.desc.Name())],
 					method.val.List().Get(j).Message(),
@@ -853,9 +847,6 @@ func genEntityApiSpec(apiSpecOpt Field,
 				}
 			}
 		} else {
-			fmt.Println("string(method.desc.Name())", string(method.desc.Name()))
-			fmt.Println("string(method.desc.Name())", entitySourceServiceFieldMap)
-			fmt.Println("string(method.desc.Name())", tmplMethods)
 			err := genMethod(
 				tmplMethods[string(method.desc.Name())],
 				method.val.Message(),

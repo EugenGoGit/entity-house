@@ -4,9 +4,9 @@ import "google/protobuf/descriptor.proto";
 import "entity.feature.api.service.proto";
 package entity.feature.api;
 
-// TODO: проверить расширяемость
+
 // TODO: Определить политики доступа
-// TODO: Определить передачу обязательных параметров пользователя в UserData
+// TODO: Определить передачу обязательных параметров пользователя в UserData, Scope?
 // TODO: Определить аутентификацию, авторизацию
 // TODO: прописать работу с клаймами в запросе, апикей
 // TODO: Сделать генерируемый объект связки
