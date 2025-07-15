@@ -2,11 +2,30 @@ syntax = "proto3";
 
 
 import "google/api/field_behavior.proto";
-import "entity_feature/entity.feature.api.dto.proto";
+import "entity.feature.api.dto.proto";
+import "google/protobuf/field_mask.proto";
 
 package impl.api.dto;
 
 message Empty {
+}
+
+message EntityWMask {
+  entity.feature.api.dto.ReplaceTypeDummy data = 1 [
+    (entity.feature.api.dto.field_comments) = "{EntityTypeComment}",
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}",
+    (google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 2 [(entity.feature.api.dto.field_comments) = "Маска полей обновления"];
+}
+
+message EntityOneof {
+  oneof type {
+    option (entity.feature.api.dto.oneof_comments) = "Тип ответа";
+    entity.feature.api.dto.ReplaceTypeDummy data = 1 [
+      (entity.feature.api.dto.field_comments) = "{EntityTypeComment}",
+      (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}"
+      ];
+  }
 }
 
 message EntityWError {

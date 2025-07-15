@@ -106,6 +106,7 @@ func getTypeDescByTemplate(
 	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
 	linkedTypeName string,
 ) error {
+	// TODO: Если тип уже нашелся в импорте, он не из типов impl.dto не добавлять в addMessageToProtoRoot
 	var i int32 = 0
 	for len(resultDescProto.Field) > int(i) {
 		fieldPrefDesc := templatePrefDesc.Fields().ByName(pref.Name(*resultDescProto.Field[i].Name))
@@ -827,6 +828,9 @@ func genEntityApiSpec(apiSpecOpt Field,
 
 	// Добавим методы
 	for _, method := range requiredMethods {
+		if tmplMethods[string(method.desc.Name())] == nil {
+			return errors.New("Отсутствует шаблон метода " + string(method.desc.Name()))
+		}
 		if method.desc.IsList() {
 			for j := range method.val.List().Len() {
 				err := genMethod(
@@ -1220,22 +1224,14 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 func main() {
 	protoPath := os.Getenv("PROTO_PATH")
 	protoOutPath := os.Getenv("PROTO_OUT_PATH")
-	m := BuildEntityFeatures(protoPath, []string{".", "proto_deps"})
+	protoImportPath := os.Getenv("PROTO_IMPORT_PATH")
+	m := BuildEntityFeatures(protoPath, strings.Split(protoImportPath, ";"))
 	fmt.Println("PROTO_PATH", protoPath)
 	fmt.Println("PROTO_OUT_PATH", protoOutPath)
+	fmt.Println("PROTO_IMPORT_PATH", protoImportPath)
 	if protoOutPath != "" {
 		for k, v := range m {
-			os.MkdirAll(filepath.Dir(protoOutPath+k),0755)
-
-			// permissions := os.FileMode(0644)
-
-			// file, err := os.Create(protoOutPath + k)
-			// if err != nil {
-			// 	log.Fatalf("Error creating file: %v", err)
-			// }
-			// defer file.Close() // Ensure the file is closed
-
-			// Write the string content (converted to a byte slice) to the file
+			os.MkdirAll(filepath.Dir(protoOutPath+k), 0755)
 			err := os.WriteFile(protoOutPath+k, []byte(v), 0644)
 			if err != nil {
 				log.Fatalf("Failed to write to file: %v", err)

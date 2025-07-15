@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "impl_api_spec/impl.api.method.proto";
-import "entity_feature/entity.feature.proto";
+import "impl.api.method.proto";
+import "entity.feature.proto";
 
 package impl.api.service;
 
@@ -70,6 +70,7 @@ message ServersideSingletonCRUD {
     method.Get get = 1;
     method.SaveCreateReplace save = 2;
     method.Delete delete = 3;
+    method.Edit edit = 4;
   }
   MethodSet method_set = 1;
   string leading_comment = 2;

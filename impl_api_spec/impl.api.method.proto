@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-import "impl_api_spec/impl.api.dto.proto";
-import "entity_feature/entity.feature.api.method.proto";
-import "entity_feature/entity.feature.proto";
+import "impl.api.dto.proto";
+import "entity.feature.api.method.proto";
+import "entity.feature.proto";
 
 package impl.api.method;
 
@@ -120,6 +120,23 @@ message Delete {
 }
 
 
+message Edit {
+  message RequestTemplate {
+    oneof template {
+      dto.EntityWMask entity_mask = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.OnlyValidError valid_error = 1;
+      dto.Empty empty = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
 message DeleteById {
   message RequestTemplate {
     oneof template {
@@ -198,6 +215,7 @@ message Get {
     oneof template {
       dto.Entity entity = 1;
       dto.EntityWError entity_error = 2;
+      dto.EntityOneof entity_oneof= 3;
     }
   }
   RequestTemplate request_template = 1;

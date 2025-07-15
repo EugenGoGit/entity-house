@@ -1,8 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "impl_api_spec/impl.api.service.proto";
-import "entity_feature/entity.feature.api.proto";
+import "impl.api.service.proto";
+import "entity.feature.api.proto";
 
 package impl.api;
 
@@ -281,6 +281,29 @@ message Specification {
           }
           response_template: {
             spec_field_name: "entity_error"
+          }
+        }
+        method_tmpl:{
+          spec_field_name: "edit"
+          attributes:{
+            comments:{
+              leading_comment: "Метод редактирования сущности {EntityTypeName}"
+              request_leading_comment: "Запрос редактирования сущности {EntityTypeName}"
+              response_leading_comment: "Ответ на запрос редактирования сущности {EntityTypeName}"
+            }
+            name:"Edit{EntityTypeName}"
+            request_name: "Edit{EntityTypeName}Request"
+            response_name: "Edit{EntityTypeName}Response"
+            http_rule:{
+              patch: "/{HttpRoot}"
+              body: "data"
+            }
+          }
+          request_template: {
+            spec_field_name: "entity_mask"
+          }
+          response_template: {
+            spec_field_name: "valid_error"
           }
         }
       }
