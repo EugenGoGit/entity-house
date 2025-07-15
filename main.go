@@ -29,6 +29,7 @@ import (
 	pref "google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/dynamicpb"
+
 	// "google.golang.org/protobuf/types/dynamicpb"
 	// "github.com/bufbuild/protocompile/protoutil"
 	// "google.golang.org/protobuf/encoding/protojson"
@@ -1217,5 +1218,28 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 }
 
 func main() {
-	BuildEntityFeatures("./templates", []string{".", "proto_deps"})
+	protoPath := os.Getenv("PROTO_PATH")
+	protoOutPath := os.Getenv("PROTO_OUT_PATH")
+	m := BuildEntityFeatures(protoPath, []string{".", "proto_deps"})
+	fmt.Println("PROTO_PATH", protoPath)
+	fmt.Println("PROTO_OUT_PATH", protoOutPath)
+	if protoOutPath != "" {
+		for k, v := range m {
+			os.MkdirAll(filepath.Dir(protoOutPath+k),0755)
+
+			// permissions := os.FileMode(0644)
+
+			// file, err := os.Create(protoOutPath + k)
+			// if err != nil {
+			// 	log.Fatalf("Error creating file: %v", err)
+			// }
+			// defer file.Close() // Ensure the file is closed
+
+			// Write the string content (converted to a byte slice) to the file
+			err := os.WriteFile(protoOutPath+k, []byte(v), 0644)
+			if err != nil {
+				log.Fatalf("Failed to write to file: %v", err)
+			}
+		}
+	}
 }

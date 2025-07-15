@@ -4,21 +4,15 @@
 syntax = "proto3";
 
 import "google/protobuf/descriptor.proto";
-import "entity.feature.proto";
-import "impl.api.proto";
+import "entity_feature/entity.feature.proto";
+import "impl_api_spec/impl.api.proto";
 
-package post.v1;
+package post.v2;
 
 // Сущность
 message Post {
   option (impl.api.specification) = {
-    serverside_entity_crud:{
-      http_root: "post/api/v1/post"
-      method_set: {
-        get_list:{}
-        get_by_id:{}
-        save_create_replace:{}
-      }
+    serverside_entity_crud: {
     }
   };
   // Идентификатор

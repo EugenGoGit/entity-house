@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-import "impl.api.dto.proto";
-import "entity.feature.api.method.proto";
-import "entity.feature.proto";
+import "impl_api_spec/impl.api.dto.proto";
+import "entity_feature/entity.feature.api.method.proto";
+import "entity_feature/entity.feature.proto";
 
 package impl.api.method;
 

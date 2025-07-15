@@ -2,7 +2,7 @@ syntax = "proto3";
 
 
 import "google/api/field_behavior.proto";
-import "entity.feature.api.dto.proto";
+import "entity_feature/entity.feature.api.dto.proto";
 
 package impl.api.dto;
 

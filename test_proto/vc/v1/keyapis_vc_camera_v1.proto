@@ -5,8 +5,8 @@ syntax = "proto3";
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
-import "entity.feature.proto";
-import "impl.api.proto";
+import "entity_feature/entity.feature.proto";
+import "impl_api_spec/impl.api.proto";
 
 package keyapis.vc.v1;
 

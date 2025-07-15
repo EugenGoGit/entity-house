@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "impl.api.method.proto";
-import "entity.feature.proto";
+import "impl_api_spec/impl.api.method.proto";
+import "entity_feature/entity.feature.proto";
 
 package impl.api.service;
 
