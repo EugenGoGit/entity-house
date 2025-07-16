@@ -72,7 +72,6 @@ func getTypeDescByTemplate(
 	addImportToProtoRoot map[string]pref.FileImport,
 	linkedTypeName string,
 ) error {
-	// TODO: Если тип уже нашелся в импорте, он не из типов impl.dto не добавлять в addMessageToProtoRoot
 	var i int32 = 0
 	for len(resultDescProto.Field) > int(i) {
 		fieldPrefDesc := templatePrefDesc.Fields().ByName(pref.Name(*resultDescProto.Field[i].Name))
@@ -565,6 +564,8 @@ func genMethod(
 		linkedTypeKeyFieldPath = linkedType["key_field_path"].val.String()
 	}
 
+	// TODO: Выкинуть ошибку, если в шаблоне не найден метод, сервис, dto
+	// TODO: Если сущность в реквесте вкладывается, то ключевые поля в http_path должны получить префикс
 	// Определение уникальных полей сервиса
 	// TODO: переопределить с сервиса
 	keyFieldsDefinition := serviceKeyFieldsDefinition

@@ -45,6 +45,29 @@ message Specification {
           }
         }
         method_tmpl:{
+          spec_field_name: "edit_by_id"
+          attributes:{
+            comments:{
+              leading_comment: "Метод редактирования единичной сущности {EntityTypeName} по ключу"
+              request_leading_comment: "Запрос редактирования единичной сущности {EntityTypeName} по ключу"
+              response_leading_comment: "Ответ на запрос редактирования единичной сущности {EntityTypeName} по ключу"
+            }
+            name:"Edit{EntityTypeName}"
+            request_name: "Edit{EntityTypeName}Request"
+            response_name: "Edit{EntityTypeName}Response"
+            http_rule:{
+              get: "/{HttpRoot}/{KeyFields}"
+            }
+            key_field_behavior: REQUIRED
+          }
+          request_template: {
+            spec_field_name: "entity_mask"
+          }
+          response_template: {
+            spec_field_name: "entity_error"
+          }
+        }
+        method_tmpl:{
           spec_field_name: "get_list"
           attributes:{
             comments:{

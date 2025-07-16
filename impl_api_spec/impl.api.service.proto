@@ -100,7 +100,7 @@ message ServersideEntityCRUD {
     //      method.SaveListCreateOnly save_list_create_only = 8;
     //      method.SaveListCreateReplace save_list_create_replace = 9;
     //    }
-    //    method.EditById edit = 10;
+    method.EditById edit_by_id = 10;
     //    method.EditList edit_list = 11;
     method.DeleteById delete_by_id = 12;
     method.RestoreById restore_by_id = 13;
