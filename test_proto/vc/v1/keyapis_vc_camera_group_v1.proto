@@ -6,8 +6,8 @@ syntax = "proto3";
 import "google/api/field_behavior.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
-import "impl_api_spec/impl.api.proto";
-import "entity_feature/entity.feature.proto";
+import "impl.api.proto";
+import "entity.feature.proto";
 
 package keyapis.vc.v1;
 
@@ -231,6 +231,15 @@ message Pet {
       }
     }
   };
+  // Тип
+  enum Type {
+    // Тип не известен
+    TYPE_UNKNOWN = 0;
+    // Кот
+    CAT = 1;
+    // Собака
+    DOG = 2;
+  }
   // Идентификатор животного.
   // Тип: Guid
   string id = 1 [(entity.feature.unique_field_group) = PK];

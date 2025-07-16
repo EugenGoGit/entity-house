@@ -458,7 +458,16 @@ func getMessageComments(messJhumpDesc *desc.MessageDescriptor, commentsMap map[s
 	for i := range messJhumpDesc.GetOneOfs() {
 		if messJhumpDesc.GetOneOfs()[i].GetSourceInfo().LeadingComments != nil {
 			commentsMap[messJhumpDesc.GetFullyQualifiedName()+"."+messJhumpDesc.GetOneOfs()[i].GetName()] = *messJhumpDesc.GetOneOfs()[i].GetSourceInfo().LeadingComments
-
+		}
+	}
+	for i := range messJhumpDesc.GetNestedEnumTypes() {
+		if messJhumpDesc.GetNestedEnumTypes()[i].GetSourceInfo().LeadingComments != nil {
+			commentsMap[messJhumpDesc.GetNestedEnumTypes()[i].GetFullyQualifiedName()] = *messJhumpDesc.GetNestedEnumTypes()[i].GetSourceInfo().LeadingComments
+		}
+		for j := range messJhumpDesc.GetNestedEnumTypes()[i].GetValues() {
+			if messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetSourceInfo().LeadingComments != nil {
+				commentsMap[messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetFullyQualifiedName()] = *messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetSourceInfo().LeadingComments
+				}
 		}
 	}
 }

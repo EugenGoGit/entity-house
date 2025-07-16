@@ -434,6 +434,15 @@ message GetPetResponse {
 }
 // Животное
 message Pet {
+    // Тип
+    enum Type {
+        // Тип не известен
+        TYPE_UNKNOWN = 0;
+        // Кот
+        CAT = 1;
+        // Собака
+        DOG = 2;
+    }
     // Идентификатор животного.
     // Тип: Guid
     string id = 1;
