@@ -3,7 +3,6 @@
 */
 syntax = "proto3";
 
-import "google/protobuf/descriptor.proto";
 import "entity.feature.proto";
 import "impl.api.proto";
 
@@ -17,6 +16,7 @@ message Post {
       http_root: "post/api/v1/post"
       method_set: {
         get:{}
+        edit:{}
       }
     }
   };

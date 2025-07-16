@@ -57,41 +57,6 @@ func printEnumEl(el Field) {
 	fmt.Println()
 }
 
-func createTypeDescByTemplateParent(
-	templateDesc pref.MessageDescriptor,
-	// templateParent *pref.Value,
-	messageName string,
-	messageFullName string,
-	entityTypeName string,
-	entityPrefDesc pref.MessageDescriptor,
-	entityKeyFields []FieldFullName,
-	methodDescFields map[string]Field,
-	fileCommentsMap map[string]string,
-	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
-	linkedTypeName string,
-) (*descriptorpb.DescriptorProto, error) {
-	resultProtodesc := protodesc.ToDescriptorProto(templateDesc)
-	resultProtodesc.Name = &messageName
-	err := getTypeDescByTemplate(
-		resultProtodesc,
-		templateDesc,
-		entityTypeName,
-		entityKeyFields,
-		string(templateDesc.FullName()),
-		methodDescFields,
-		messageName,
-		string(entityPrefDesc.ParentFile().Package()),
-		messageFullName,
-		fileCommentsMap,
-		addMessageToProtoRoot,
-		linkedTypeName,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return resultProtodesc, nil
-}
-
 func getTypeDescByTemplate(
 	resultDescProto *descriptorpb.DescriptorProto,
 	templatePrefDesc pref.MessageDescriptor,
@@ -104,6 +69,7 @@ func getTypeDescByTemplate(
 	parentFullNameToType string,
 	fileCommentsMap map[string]string,
 	addMessageToProtoRoot map[string]*descriptorpb.DescriptorProto,
+	addImportToProtoRoot map[string]pref.FileImport,
 	linkedTypeName string,
 ) error {
 	// TODO: Если тип уже нашелся в импорте, он не из типов impl.dto не добавлять в addMessageToProtoRoot
@@ -178,6 +144,7 @@ func getTypeDescByTemplate(
 							packageNameToType+"."+msgDescProto.GetName(),
 							fileCommentsMap,
 							addMessageToProtoRoot,
+							addImportToProtoRoot,
 							linkedTypeName,
 						)
 						if err != nil {
@@ -219,36 +186,50 @@ func getTypeDescByTemplate(
 				*resultDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_ENUM {
 				// заменяем тип на тип поля в результате применения шаблона
 				s := strings.Replace(*resultDescProto.Field[i].TypeName, "."+templateTypeName+".", parentNameToType+".", -1)
-				// Если замены не произошло, значит тип не в Nested типах шаблона и нужно добавить его в генерацию отдельно от результата шаблона
+				// Если замены не произошло, значит тип не в Nested типах шаблона типа
 				if s == *resultDescProto.Field[i].TypeName {
 					if *resultDescProto.Field[i].Type == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
-						// resParentFullNameToType = packageNameToType
 						msgDescProto := protodesc.ToDescriptorProto(templatePrefDesc.Fields().Get(int(i)).Message())
-						err := getTypeDescByTemplate(
-							msgDescProto,
-							templatePrefDesc.Fields().Get(int(i)).Message(),
-							entityTypeName,
-							entityKeyFields,
-							string(templatePrefDesc.Fields().Get(int(i)).Message().FullName()),
-							methodDescFields,
-							string(templatePrefDesc.Fields().Get(int(i)).Message().Name()),
-							packageNameToType,
-							string(templatePrefDesc.ParentFile().Package())+"."+msgDescProto.GetName(),
-							fileCommentsMap,
-							addMessageToProtoRoot,
-							linkedTypeName,
-						)
-						if err != nil {
-							return err
+						// Если это тип из пакета типа шаблона, нужно добавить его в генерацию отдельно от результата шаблона
+						// Если тип из внешнего импорта, нет трогаем его, добавим импорт
+						fmt.Println("resultDescProto.Field[i].TypeName1", *resultDescProto.Field[i].TypeName, templateTypeName, templatePrefDesc.ParentFile().Imports().Get(2))
+						fmt.Println("resultDescProto.Field[i].TypeName2", templatePrefDesc.Fields().Get(int(i)).Message().ParentFile().Name())
+						fmt.Println("resultDescProto.Field[i].TypeName3", templatePrefDesc.Parent().FullName(), templatePrefDesc.Fields().Get(int(i)).Message().ParentFile().Package(), templatePrefDesc.Parent().Name())
+
+						if string(templatePrefDesc.Parent().FullName()) == string(templatePrefDesc.Fields().Get(int(i)).Message().ParentFile().FullName())+"."+string(templatePrefDesc.Parent().Name()) {
+							err := getTypeDescByTemplate(
+								msgDescProto,
+								templatePrefDesc.Fields().Get(int(i)).Message(),
+								entityTypeName,
+								entityKeyFields,
+								string(templatePrefDesc.Fields().Get(int(i)).Message().FullName()),
+								methodDescFields,
+								string(templatePrefDesc.Fields().Get(int(i)).Message().Name()),
+								packageNameToType,
+								string(templatePrefDesc.ParentFile().Package())+"."+msgDescProto.GetName(),
+								fileCommentsMap,
+								addMessageToProtoRoot,
+								addImportToProtoRoot,
+								linkedTypeName,
+							)
+							if err != nil {
+								return err
+							}
+							// Добавим этот тип в генерацию и коммент для него
+							if val, ok := getFieldMap(msgDescProto.GetOptions().ProtoReflect())["message_comments"]; ok {
+								fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
+								fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", linkedTypeName, -1)
+								msgDescProto.GetOptions().ProtoReflect().Clear(val.desc)
+							}
+							addMessageToProtoRoot[string(templatePrefDesc.Fields().Get(int(i)).Message().Name())] = msgDescProto
+							s = string(templatePrefDesc.Fields().Get(int(i)).Message().Name())
+						} else {
+							for j := range templatePrefDesc.ParentFile().Imports().Len() {
+								if templatePrefDesc.ParentFile().Imports().Get(j).Package() == templatePrefDesc.Fields().Get(int(i)).Message().ParentFile().Package() {
+									addImportToProtoRoot[string(templatePrefDesc.ParentFile().Imports().Get(j).Package().Name())] = templatePrefDesc.ParentFile().Imports().Get(j)
+								}
+							}
 						}
-						// Добавим этот тип в генерацию и коммент для него
-						if val, ok := getFieldMap(msgDescProto.GetOptions().ProtoReflect())["message_comments"]; ok {
-							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(val.val.String(), "{EntityTypeComment}", fileCommentsMap[packageNameToType+"."+entityTypeName], -1)
-							fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()] = strings.Replace(fileCommentsMap[packageNameToType+"."+msgDescProto.GetName()], "{LinkedTypeName}", linkedTypeName, -1)
-							msgDescProto.GetOptions().ProtoReflect().Clear(val.desc)
-						}
-						addMessageToProtoRoot[string(templatePrefDesc.Fields().Get(int(i)).Message().Name())] = msgDescProto
-						s = string(templatePrefDesc.Fields().Get(int(i)).Message().Name())
 					}
 				}
 				// ставим комменты из опции field_comments поля в шаблоне, убираем опцию
@@ -339,6 +320,7 @@ func getTypeDescByTemplate(
 			parentFullNameToType+"."+resultDescProto.NestedType[i].GetName(),
 			fileCommentsMap,
 			addMessageToProtoRoot,
+			addImportToProtoRoot,
 			linkedTypeName,
 		)
 		if err != nil {
@@ -467,7 +449,7 @@ func getMessageComments(messJhumpDesc *desc.MessageDescriptor, commentsMap map[s
 		for j := range messJhumpDesc.GetNestedEnumTypes()[i].GetValues() {
 			if messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetSourceInfo().LeadingComments != nil {
 				commentsMap[messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetFullyQualifiedName()] = *messJhumpDesc.GetNestedEnumTypes()[i].GetValues()[j].GetSourceInfo().LeadingComments
-				}
+			}
 		}
 	}
 }
@@ -536,6 +518,7 @@ func genMethod(
 	entityMessageProtodesc *descriptorpb.DescriptorProto,
 	genFileComments map[string]string,
 	addProtoRoot map[string]*descriptorpb.DescriptorProto,
+	addImportToProtoRoot map[string]pref.FileImport,
 	httpRoot string,
 	googleApiAnnotationsPrefDesc pref.FileDescriptor,
 	genServiceProto *descriptorpb.ServiceDescriptorProto,
@@ -607,37 +590,42 @@ func genMethod(
 	// Переопределяем этот параметр сервиса
 	keyFieldList := getKeyFields(&keyFieldsDefinition, entityPrefDesc)
 
-	// // шаблон запроса в request_template
-	// requestTmpl := methodParameters["request_template"]
-
-	requestMessageProtodesc, err := createTypeDescByTemplateParent(
+	requestMessageProtodesc := protodesc.ToDescriptorProto(requestTemplateDesc)
+	requestMessageProtodesc.Name = &requestName
+	err = getTypeDescByTemplate(
+		requestMessageProtodesc,
 		requestTemplateDesc,
-		requestName,
-		requestFullName,
 		*entityMessageProtodesc.Name,
-		entityPrefDesc,
 		keyFieldList,
+		string(requestTemplateDesc.FullName()),
 		methodParameters,
+		requestName,
+		string(entityPrefDesc.ParentFile().Package()),
+		requestFullName,
 		genFileComments,
 		addProtoRoot,
+		addImportToProtoRoot,
 		linkedTypeName,
 	)
 	if err != nil {
 		return err
 	}
 
-	// responseTmpl := methodParameters["response_template"]
-
-	responseMessageProtodesc, err := createTypeDescByTemplateParent(
+	responseMessageProtodesc := protodesc.ToDescriptorProto(responseTemplateDesc)
+	responseMessageProtodesc.Name = &responseName
+	err = getTypeDescByTemplate(
+		responseMessageProtodesc,
 		responseTemplateDesc,
-		responseName,
-		responseFullName,
 		*entityMessageProtodesc.Name,
-		entityPrefDesc,
 		keyFieldList,
+		string(responseTemplateDesc.FullName()),
 		methodParameters,
+		responseName,
+		string(entityPrefDesc.ParentFile().Package()),
+		responseFullName,
 		genFileComments,
 		addProtoRoot,
+		addImportToProtoRoot,
 		linkedTypeName,
 	)
 	if err != nil {
@@ -755,6 +743,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 	googleApiAnnotationsPrefDesc pref.FileDescriptor,
 	genFileComments map[string]string,
 	addProtoRoot map[string]*descriptorpb.DescriptorProto,
+	addImportToProtoRoot map[string]pref.FileImport,
 ) error {
 	// Возьмем описание сервиса из опции сущности
 	// Считаем, что там только один сервис
@@ -851,6 +840,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 					entityMessageProtodesc,
 					genFileComments,
 					addProtoRoot,
+					addImportToProtoRoot,
 					httpRoot,
 					googleApiAnnotationsPrefDesc,
 					genServiceProto,
@@ -870,6 +860,7 @@ func genEntityApiSpec(apiSpecOpt Field,
 				entityMessageProtodesc,
 				genFileComments,
 				addProtoRoot,
+				addImportToProtoRoot,
 				httpRoot,
 				googleApiAnnotationsPrefDesc,
 				genServiceProto,
@@ -1020,6 +1011,7 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 			sourceFileDescriptorProto := protodesc.ToFileDescriptorProto(sourceFilePrefDesc[k])
 			sourceFileJhumpDesc := getProtoJ(compiler, sourceFileDescriptorProto, filesJhumpDesc)
 			addProtoRoot := make(map[string]*descriptorpb.DescriptorProto)
+			addImportToProtoRoot := make(map[string]pref.FileImport)
 			genFileProto := &descriptorpb.FileDescriptorProto{
 				Syntax:     proto.String("proto3"),
 				Name:       proto.String(string(sourceFilePrefDesc[k].FullName())),
@@ -1113,7 +1105,9 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 					genFileProto,
 					googleApiAnnotationsFiles[0],
 					genFileComments,
-					addProtoRoot)
+					addProtoRoot,
+					addImportToProtoRoot,
+				)
 				if err != nil {
 					panic(err)
 				}
@@ -1143,22 +1137,34 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				}
 				genFileProto.MessageType = append(genFileProto.MessageType, v)
 			}
-			// Уберем опции entity.feature
+
+
+
+			fmt.Println("addImportToProtoRoot", genFileProto.Dependency)
 			var deps map[string]string = make(map[string]string)
-			for _, v := range entityMsgApiSpecOpt {
-				// убираем импорт entity-tmpl/entity-feature.proto
-				for i := range genFileProto.Dependency {
-					if genFileProto.Dependency[i] != string(v.desc.ParentFile().FullName())+".proto" &&
-						genFileProto.Dependency[i] != "entity.feature.proto" {
-						deps[genFileProto.Dependency[i]] = genFileProto.Dependency[i]
-					}
-				}
+			// убираем импорт entity.feature.proto
+			for i := range genFileProto.Dependency {
+				deps[genFileProto.Dependency[i]] = genFileProto.Dependency[i]
 			}
+			// убираем импорт entity.feature.proto
+			delete(deps, "entity.feature.proto")
+			// убираем импорт спецификации
+			for _, v := range entityMsgApiSpecOpt {
+				delete(deps, string(v.desc.ParentFile().FullName())+".proto")
+			}
+			// Добавим импорты, которые пришли с шаблонами
+			for _, v := range addImportToProtoRoot {
+				fmt.Println("addImportToProtoRoot", v.Path())
+				deps[v.Path()] = v.Path()
+			}
+
 			var depsArr []string
 			for k := range deps {
 				depsArr = append(depsArr, k)
 			}
 			genFileProto.Dependency = depsArr
+
+			
 
 			var dpj []*desc.FileDescriptor
 			for _, v := range filesJhumpDesc {
