@@ -33,7 +33,7 @@ message SaveCreateReplace {
   message ResponseTemplate {
     oneof template {
       dto.EntityWSavingError entity_saving_error = 1;
-      dto.Entity entity = 2;
+      dto.EntityNReq entity_not_req = 2;
       dto.Empty empty = 3;
     }
   }

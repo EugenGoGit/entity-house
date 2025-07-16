@@ -111,6 +111,13 @@ message Entity {
   ];
 }
 
+message EntityNReq {
+  entity.feature.api.dto.ReplaceTypeDummy data = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}",
+    (entity.feature.api.dto.field_comments) = "{EntityTypeComment}"
+  ];
+}
+
 message FilterPaging {
   entity.feature.api.dto.ReplaceTypeDummy filter = 1 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}Filter",

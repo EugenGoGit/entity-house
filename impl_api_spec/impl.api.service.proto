@@ -4,7 +4,6 @@ import "impl.api.method.proto";
 import "entity.feature.proto";
 
 package impl.api.service;
-
 //
 //
 //Сущности с генерацией при создании

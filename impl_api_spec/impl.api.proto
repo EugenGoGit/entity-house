@@ -56,7 +56,8 @@ message Specification {
             request_name: "Edit{EntityTypeName}Request"
             response_name: "Edit{EntityTypeName}Response"
             http_rule:{
-              get: "/{HttpRoot}/{KeyFields}"
+              patch: "/{HttpRoot}/{KeyFields}"
+              body: "data"
             }
             key_field_behavior: REQUIRED
           }
