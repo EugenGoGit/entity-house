@@ -6,6 +6,7 @@ import "entity.feature.proto";
 
 package impl.api.method;
 
+
 message SaveCreateOnly {
   message RequestTemplate {
     oneof template {
@@ -41,6 +42,7 @@ message SaveCreateReplace {
   ResponseTemplate response_template = 2;
   entity.feature.api.method.Attributes.Comments comments = 3;
 }
+
 
 //message SaveListCreateReplace {
 //  option (entity.feature.api.method.name) = "Save{EntityTypeName}List";
@@ -258,6 +260,28 @@ message GetList {
     oneof template {
       dto.Entity entity = 1;
       dto.EntityWError entity_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  repeated entity.feature.api.method.EnumValue order_by_values = 4;
+}
+
+
+message GetArray {
+  message RequestTemplate {
+    oneof template {
+      dto.FilterPaging filter_paging = 1;
+      dto.FilterPagingScope filter_paging_scope = 2;
+      dto.FilterPagingReqScope filter_paging_req_scope = 3;
+      dto.Filter filter = 4;
+      dto.Empty empty = 5;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      dto.EntityArray entity_array = 1;
     }
   }
   RequestTemplate request_template = 1;

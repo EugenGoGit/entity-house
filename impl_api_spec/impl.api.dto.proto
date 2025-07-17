@@ -7,6 +7,7 @@ import "google/protobuf/field_mask.proto";
 
 package impl.api.dto;
 
+
 message Empty {
 }
 
@@ -111,6 +112,13 @@ message Entity {
   ];
 }
 
+message EntityArray {
+  repeated entity.feature.api.dto.ReplaceTypeDummy data = 1 [
+    (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}",
+    (entity.feature.api.dto.field_comments) = "{EntityTypeComment}"
+  ];
+}
+
 message EntityNReq {
   entity.feature.api.dto.ReplaceTypeDummy data = 1 [
     (entity.feature.api.dto.replace_field_type_to) = "{EntityTypeName}",
@@ -187,7 +195,7 @@ message LinkFilterPaging {
 
 message Filter {
   entity.feature.api.dto.ReplaceTypeDummy filter = 1 [(entity.feature.api.dto.replace_field_type_to) =
-      "{EntityTypeName}Filter", (entity.feature.api.dto.field_comments) = "Фильтр"];
+    "{EntityTypeName}Filter", (entity.feature.api.dto.field_comments) = "Фильтр"];
 }
 
 message FilterScope {
@@ -215,7 +223,7 @@ message FilterReqScope {
 
 message LinkFilter {
   entity.feature.api.dto.ReplaceTypeDummy filter = 1 [(entity.feature.api.dto.replace_field_type_to) =
-      "{EntityTypeName}{LinkedTypeName}Filter", (entity.feature.api.dto.field_comments) = "Фильтр"];
+    "{EntityTypeName}{LinkedTypeName}Filter", (entity.feature.api.dto.field_comments) = "Фильтр"];
 }
 
 // TODO: Отказаться от отдельного типа для связок
@@ -252,7 +260,7 @@ message Paging {
     ORDER_BY_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
   }
   OrderByType order_by_type = 1 [(entity.feature.api.dto.field_comments) =
-      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+    "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
   enum DirectionType {
     option (entity.feature.api.dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
     DIRECTION_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
@@ -260,9 +268,9 @@ message Paging {
     ASC = 2 [(entity.feature.api.dto.enum_value_comments) = "От меньшего к большему"];
   }
   DirectionType direction_type = 2 [(entity.feature.api.dto.field_comments) =
-      "Тип направления сортировки.\n# По умолчанию: DESC"];
+    "Тип направления сортировки.\n# По умолчанию: DESC"];
   int32 limit = 3 [(entity.feature.api.dto.field_comments) =
-      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+    "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
   int32 offset = 4 [(entity.feature.api.dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
 }
 
@@ -276,7 +284,7 @@ message LinkPaging {
     ORDER_BY_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
   }
   OrderByType order_by_type = 1 [(entity.feature.api.dto.field_comments) =
-      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+    "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
   enum DirectionType {
     option (entity.feature.api.dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
     DIRECTION_TYPE_UNKNOWN = 0 [(entity.feature.api.dto.enum_value_comments) = "Значение не указано"];
@@ -284,9 +292,9 @@ message LinkPaging {
     ASC = 2 [(entity.feature.api.dto.enum_value_comments) = "От меньшего к большему"];
   }
   DirectionType direction_type = 2 [(entity.feature.api.dto.field_comments) =
-      "Тип направления сортировки.\n# По умолчанию: DESC"];
+    "Тип направления сортировки.\n# По умолчанию: DESC"];
   int32 limit = 3 [(entity.feature.api.dto.field_comments) =
-      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+    "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
   int32 offset = 4 [(entity.feature.api.dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
 }
 

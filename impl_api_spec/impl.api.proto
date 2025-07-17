@@ -332,10 +332,67 @@ message Specification {
         }
       }
     }
+    service_tmpl: {
+      spec_field_name: "serverside_fixed_set"
+      attributes:{
+        leading_comment: "Сервис управления сущностью {EntityTypeName}"
+        name: "{EntityTypeName}Service"
+      }
+      method_set: {
+        method_tmpl:{
+          spec_field_name: "edit_by_id"
+          attributes:{
+            comments:{
+              leading_comment: "Метод редактирования единичной сущности {EntityTypeName} по ключу"
+              request_leading_comment: "Запрос редактирования единичной сущности {EntityTypeName} по ключу"
+              response_leading_comment: "Ответ на запрос редактирования единичной сущности {EntityTypeName} по ключу"
+            }
+            name:"Edit{EntityTypeName}"
+            request_name: "Edit{EntityTypeName}Request"
+            response_name: "Edit{EntityTypeName}Response"
+            http_rule:{
+              patch: "/{HttpRoot}/{KeyFields}"
+              body: "data"
+            }
+            key_field_behavior: REQUIRED
+          }
+          request_template: {
+            spec_field_name: "entity_mask"
+          }
+          response_template: {
+            spec_field_name: "entity_error"
+          }
+        }
+        method_tmpl:{
+          spec_field_name: "get_array"
+          attributes:{
+            comments:{
+              leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+              request_leading_comment: "Запрос получения списка сущностей {EntityTypeName} по фильтру"
+              response_leading_comment: "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру"
+            }
+            name:"Get{EntityTypeName}List"
+            request_name:"Get{EntityTypeName}ListRequest"
+            response_name:"Get{EntityTypeName}ListResponse"
+            http_rule: {
+              get: "/{HttpRoot}/list"
+            }
+            key_field_behavior: FIELD_BEHAVIOR_UNSPECIFIED
+          }
+          request_template: {
+            spec_field_name: "filter_paging"
+          }
+          response_template: {
+            spec_field_name: "entity_array"
+          }
+        }
+      }
+    }
   };
   oneof service {
     service.ServersideEntityCRUD serverside_entity_crud = 1;
     service.ServersideSingletonCRUD serverside_singleton_crud = 2;
+    service.ServersideFixedSet serverside_fixed_set = 3;
   }
 }
 

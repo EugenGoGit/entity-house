@@ -488,24 +488,42 @@ func fillMessageComments(messJhumpDesc *desc.MessageDescriptor, messBuilder *bui
 }
 
 func getDtoTemplDesc(containerFieldName string, varFieldMap, tmplFieldMap map[string]Field, varMethod pref.Message) (pref.MessageDescriptor, error) {
-	var requestTemplateDesc pref.MessageDescriptor
+	var templateDesc pref.MessageDescriptor
 	// Берем Шаблон из спецификации в описании сущности
 	if val, ok := varFieldMap[containerFieldName]; ok {
 		requestTemplateFieldMap := getFieldMap(val.val.Message())
 		if len(requestTemplateFieldMap) > 0 {
 			// Тут только одно поле DTO
 			for _, v := range getFieldMap(val.val.Message()) {
-				requestTemplateDesc = v.val.Message().Descriptor()
+				templateDesc = v.val.Message().Descriptor()
 				break
 			}
 		}
 	}
 	// Если Шаблон не задан в спецификации описании сущности, то берем указанный в шаблоне
-	if requestTemplateDesc == nil {
-		requestTemplateDesc = varMethod.Descriptor().Fields().ByName(pref.Name(containerFieldName)).Message().Fields().ByName(
-			pref.Name(getFieldMap(tmplFieldMap[containerFieldName].val.Message())["spec_field_name"].val.String())).Message()
+	if templateDesc == nil {
+		if tmplContainer, ok := tmplFieldMap[containerFieldName]; ok {
+			if specFieldName, ok := getFieldMap(tmplContainer.val.Message())["spec_field_name"]; ok {
+				varContainer := varMethod.Descriptor().Fields().ByName(pref.Name(containerFieldName))
+				if varContainer != nil {
+					templateDescField := varContainer.Message().Fields().ByName(pref.Name(specFieldName.val.String()))
+					if templateDescField != nil {
+						templateDesc = templateDescField.Message()
+					} else {
+						return nil, errors.New("В описании спецификации не найдено поле " + string(varMethod.Descriptor().Name())+"."+containerFieldName + "." + specFieldName.val.String())
+					}
+				} else {
+					return nil, errors.New("В описании спецификации не найдено поле " + containerFieldName)
+				}
+
+			} else {
+				return nil, errors.New("В шаблоне не найдено поле " + containerFieldName + ".spec_field_name")
+			}
+		} else {
+			return nil, errors.New("В шаблоне не найдено поле " + containerFieldName)
+		}
 	}
-	return requestTemplateDesc, nil
+	return templateDesc, nil
 }
 
 func genMethod(
@@ -1139,8 +1157,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				genFileProto.MessageType = append(genFileProto.MessageType, v)
 			}
 
-
-
 			fmt.Println("addImportToProtoRoot", genFileProto.Dependency)
 			var deps map[string]string = make(map[string]string)
 			// убираем импорт entity.feature.proto
@@ -1164,8 +1180,6 @@ func BuildEntityFeatures(entityFilePath string, importPaths []string) map[string
 				depsArr = append(depsArr, k)
 			}
 			genFileProto.Dependency = depsArr
-
-			
 
 			var dpj []*desc.FileDescriptor
 			for _, v := range filesJhumpDesc {

@@ -77,6 +77,20 @@ message ServersideSingletonCRUD {
   string additional_leading_comment = 4;
 }
 
+message ServersideFixedSet {
+  message MethodSet {
+    method.GetById get = 1;
+    method.GetArray get_array = 2;
+    method.EditById edit_by_id = 3;
+  }
+  MethodSet method_set = 1;
+  string leading_comment = 2;
+  string http_root = 3;
+  string additional_leading_comment = 4;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 5;
+}
+
+
 message ServersideEntityCRUD {
   message MethodSet {
     method.GetById get_by_id = 1;
