@@ -12,6 +12,8 @@ package entity.feature.api;
 // TODO: Сделать генерируемый объект связки
 // TODO: проверка обязательности полей в LinkType
 // TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
+// TODO: в шаблоне непереопределяемые атрибуты, но сделать, чтобы их состав можно менять. А переопределять все, которые есть в спеке сущности
+// TODO: забивать шаблон в виде DescriptorProto или в виде Service и Method
 
 extend google.protobuf.FieldOptions {
   string specification = 3020;
