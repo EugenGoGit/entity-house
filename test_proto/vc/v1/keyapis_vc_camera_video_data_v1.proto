@@ -1,0 +1,110 @@
+/*
+  Сервис работы с камерами
+*/
+syntax = "proto3";
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/descriptor.proto";
+import "impl.api.proto";
+import "entity.feature.proto";
+
+package keyapis.vc.v1;
+
+option java_package = "ru.keyapis.vc.v1";
+option java_outer_classname = "KeyapisVcV1Proto";
+option java_multiple_files = false;
+option java_string_check_utf8 = true;
+option go_package = "/keyapis_vc_v1";
+option cc_enable_arenas = true;
+option csharp_namespace = "Keyapis.Vc.V1";
+option objc_class_prefix = "KEYAPISVCV1";
+option php_namespace = "Keyapis\\Vc\\V1";
+option ruby_package = "Keyapis::Vc::V1";
+option optimize_for = LITE_RUNTIME;
+
+
+// Камера
+message CameraVideoData {
+  option (impl.api.specification) = {
+    serverside_entity_crud: {
+      leading_comment:"Сервис управления видеоданными камер"
+      http_root: "vc/api/v1/camera_videodata"
+      method_set: {
+        get_list: {
+          comments:{
+            leading_comment:"Метод получения списка камер"
+            request_leading_comment:"Запрос на получение списка камер",
+            response_leading_comment:"Ответ на получение списка камер"
+            additional_leading_comment:"Для master, owner, employee поля scope подставляем из токена.\nМетод доступен для: admin, service, master, owner, employee"
+          }
+          order_by_values:[{name: "ID", title:"По идентификатору"}]
+          request_template:{
+            filter_paging_req_scope:{}
+          }
+        }
+        get_count: {
+          comments:{
+            leading_comment:"Метод получения количества камер"
+            request_leading_comment:"Запрос на получение количества камер",
+            response_leading_comment:"Ответ на получение количества камер"
+            additional_leading_comment:"Для master, owner, employee поля scope подставляем из токена.\nМетод доступен для: admin, service, master, owner, employee"
+          }
+          request_template:{
+            filter_req_scope:{}
+          }
+        }
+      }
+    }
+  };
+  // Статус камеры
+  message Status {
+    // Идентификатор статуса
+    int32 id = 1 [(google.api.field_behavior) = REQUIRED];
+    // online/offline
+    string type = 2 [(google.api.field_behavior) = REQUIRED];
+    // Доступна/Не доступна
+    string title = 3 [(google.api.field_behavior) = REQUIRED];
+  }
+  // Категория камеры
+  message Category {
+    // Идентификатор группы
+    int32 id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Тип группы
+    string type = 2 [(google.api.field_behavior) = REQUIRED];
+    // Имя группы
+    string title = 3 [(google.api.field_behavior) = REQUIRED];
+  }
+  // Идентификатор камеры
+  string id = 1 [(entity.feature.unique_field_group) = PK, (google.api.field_behavior) = REQUIRED];
+  // Категория камеры
+  Category category = 2;
+  // Наименование камеры
+  string title = 3 [(google.api.field_behavior) = REQUIRED];
+  // Модель камеры
+  string model = 4;
+  // Производитель камеры
+  string vendor = 5;
+  // Статус камеры
+  Status status = 6 [(google.api.field_behavior) = REQUIRED];
+  // Глубина хранения видео в минутах
+  int32 archive_length = 7;
+  // Дата создания
+  string created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Дата обновления
+  string updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+
+// Ограничение выборки камер
+message CameraVideoDataScope {
+  // Внешний идентификатор пользователя
+  int32 vc_user_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Идентификатор пользователя
+  int32 user_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Идентификатор компании
+  int64 company_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Фильтр камер
+message CameraVideoDataFilter {
+}

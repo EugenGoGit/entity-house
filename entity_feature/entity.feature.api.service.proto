@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+import "entity.feature.proto";
+import "entity.feature.api.method.proto";
+
+package entity.feature.api.service;
+
+// TODO: как навернуть опции на service
+// TODO: Мультиязычность
+// Атрибуты, которые определяются в шаблоне спецификации
+message AttributesTmpl {
+  string leading_comment = 1;
+  string name = 2;
+}
+
+// TODO: Включить тип в имплементацию
+// Атрибуты, которые задаются в конкретной спецификации сервиса в описании сущности
+// При совпадении имени поля с атрибутами шаблона, атрибуты шаблона будут переопределены
+message Attributes {
+  // Определение ключевых полей сущности для использования в сервисе
+  // Может быть переопределен в методах
+  entity.feature.KeyFieldsDefinition key_fields_definition = 1;
+  string http_root = 2;
+  // Дополнительный комментарий к сервису
+  // Не для опций, только для полей
+  string additional_leading_comment = 3;
+  string leading_comment = 4;
+}
+
+// Шаблон сервиса
+message ServiceTmpl {
+  message MethodSet {
+    repeated method.MethodTmpl method_tmpl = 1;
+  }
+  // Имя поля с сервисом в конкретной спецификации, которому соответствует шаблон
+  string spec_field_name =1;
+  MethodSet method_set = 2;
+  AttributesTmpl attributes = 3;
+}

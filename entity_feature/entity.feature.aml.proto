@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package entity.feature.aml;
+
+extend google.protobuf.MessageOptions {
+  // .
+  Specification specification = 3011;
+}
+
+// AML (Azimutt Markup Language)
+// https://azimutt.app/docs/aml
+// https://azimutt.app/converters/postgres/to/amlv1
+// TODO: генерация сущности по AMLv1
+// TODO: генерация AMLv1 по сущности
+message Specification {
+}

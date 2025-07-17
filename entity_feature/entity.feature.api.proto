@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "entity.feature.api.service.proto";
+package entity.feature.api;
+
+
+// TODO: Определить политики доступа
+// TODO: Определить передачу обязательных параметров пользователя в UserData, Scope?
+// TODO: Определить аутентификацию, авторизацию
+// TODO: прописать работу с клаймами в запросе, апикей
+// TODO: Сделать генерируемый объект связки
+// TODO: проверка обязательности полей в LinkType
+// TODO: Подстановки сделать не {EntityTypeName}{LinkedTypeName}, а из полей метода и сущности {entity:type_name}{method:linked_type},
+// TODO: в шаблоне непереопределяемые атрибуты, но сделать, чтобы их состав можно менять. А переопределять все, которые есть в спеке сущности
+// TODO: забивать шаблон в виде DescriptorProto или в виде Service и Method
+
+extend google.protobuf.FieldOptions {
+  string specification = 3020;
+}
+
+extend google.protobuf.MessageOptions {
+  // Шаблон спецификации
+  entity.feature.api.SpecificationTmpl specification_tmpl = 3001;
+}
+
+message SpecificationTmpl {
+  repeated service.ServiceTmpl service_tmpl = 1;
+}
+
