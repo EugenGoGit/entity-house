@@ -1,0 +1,794 @@
+syntax = "proto3";
+
+import "impl/baseapi/dto.proto";
+import "entity_feature/api/method.proto";
+import "entity_feature/feature.proto";
+
+package impl.base.api;
+
+
+message SaveCreateOnly {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод создания сущности {EntityTypeName}"
+        request_leading_comment: "Запрос на создание сущности {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос на создание сущности {EntityTypeName}"
+      }
+      name: "Save{EntityTypeName}"
+      request_name: "Save{EntityTypeName}Request"
+      response_name: "Save{EntityTypeName}Response"
+      http_rule: {
+        post: "/{HttpRoot}",
+        body: "*"
+      }
+    }
+    request_template: "entity"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity_oneof = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message SaveReplace {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод добавления/редактирования сущности {EntityTypeName}"
+        request_leading_comment: "Запрос на добавление/редактирование сущности {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос на добавление/редактирование сущности {EntityTypeName}"
+      }
+      name: "Save{EntityTypeName}"
+      request_name: "Save{EntityTypeName}Request"
+      response_name: "Save{EntityTypeName}Response"
+      http_rule: {
+        post: "/{HttpRoot}",
+        body: "*"
+      }
+    }
+    request_template: "entity"
+    response_template: "entity_oneof"
+  };
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+      EntityOneof entity_oneof = 5;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message SaveListCreateOnly {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод создания списка сущностей {EntityTypeName}"
+        request_leading_comment: "Запрос на создание списка сущностей {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос на создание списка сущностей {EntityTypeName}"
+      }
+      name: "Save{EntityTypeName}List"
+      request_name: "Save{EntityTypeName}ListRequest"
+      response_name: "Save{EntityTypeName}ListResponse"
+      http_rule: {
+        post: "/{HttpRoot}/list",
+        body: "*"
+      }
+    }
+    request_template: "entity_array"
+    response_template: "entity_array"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityListWSavingError entity_array_saving_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message SaveListCreateReplace {
+  option (entity.feature.api.method.method_tmpl) =
+  {
+    attributes:{
+      comments:{
+        leading_comment: "Метод создания/редактирования списка сущностей {EntityTypeName}"
+        request_leading_comment: "Запрос на создание/редактирование списка сущностей {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос на создание/редактирование списка сущностей {EntityTypeName}"
+      }
+      name: "Save{EntityTypeName}List"
+      request_name: "Save{EntityTypeName}ListRequest"
+      response_name: "Save{EntityTypeName}ListResponse"
+      http_rule: {
+        post: "/{HttpRoot}/list",
+        body: "*"
+      }
+    }
+    request_template: "entity_array"
+    response_template: "entity_array"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message SaveListReplace {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод добавления/редактирования списка сущностей {EntityTypeName}"
+        request_leading_comment: "Запрос на добавление/редактирование списка сущностей {EntityTypeName}"
+        response_leading_comment: "Ответ на добавление/запрос на редактирование списка сущностей {EntityTypeName}"
+      }
+      name: "Save{EntityTypeName}List"
+      request_name: "Save{EntityTypeName}ListRequest"
+      response_name: "Save{EntityTypeName}ListResponse"
+      http_rule: {
+        post: "/{HttpRoot}/list",
+        body: "*"
+      }
+    }
+    request_template: "entity_array"
+    response_template: "entity_array"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityListWSavingError entity_array_saving_error = 2;
+      EntityListWError entity_array_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+
+message SaveCreateReplace {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод создания/редактирования сущности {EntityTypeName}"
+        request_leading_comment: "Запрос создания/редактирования сущности {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос создания/редактирования сущности {EntityTypeName}"
+      }
+      name:"Save{EntityTypeName}"
+      request_name: "Save{EntityTypeName}Request"
+      response_name: "Save{EntityTypeName}Response"
+      http_rule:{
+        post: "/{HttpRoot}"
+        body: "*"
+      }
+    }
+    request_template: "entity"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity_oneof = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message Edit {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод редактирования сущности {EntityTypeName}"
+        request_leading_comment: "Запрос редактирования сущности {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос редактирования сущности {EntityTypeName}"
+      }
+      name:"Edit{EntityTypeName}"
+      request_name: "Edit{EntityTypeName}Request"
+      response_name: "Edit{EntityTypeName}Response"
+      http_rule:{
+        patch: "/{HttpRoot}"
+        body: "data"
+      }
+    }
+    request_template: "entity_mask"
+    response_template: "valid_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityWMask entity_mask = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+      EntityWError entity_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message DeleteById {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод удаления единичной сущности {EntityTypeName} по ключу"
+        request_leading_comment: "Запрос удаления единичной сущности {EntityTypeName} по ключу"
+        response_leading_comment: "Ответ на запрос удаления единичной сущности {EntityTypeName} по ключу"
+      }
+      name: "Delete{EntityTypeName}"
+      request_name: "Delete{EntityTypeName}Request"
+      response_name: "Delete{EntityTypeName}Response"
+      http_rule: {
+        delete: "/{HttpRoot}/{KeyFields}"
+      }
+    }
+    request_template: "entity_key"
+    response_template: "valid_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+      DeletedCount deleted_count = 3;
+      DeletedCountWDeletingError deleted_count_delete_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+}
+
+message DeleteList {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод удаления списка сущностей {EntityTypeName} по списку ключей"
+        request_leading_comment: "Запрос удаления списка сущностей {EntityTypeName} по списку ключей"
+        response_leading_comment: "Ответ на запрос удаления списка сущностей {EntityTypeName} по списку ключей"
+      }
+      name: "Delete{EntityTypeName}List"
+      request_name: "Delete{EntityTypeName}ListRequest"
+      response_name: "Delete{EntityTypeName}ListResponse"
+      http_rule: {
+        delete: "/{HttpRoot}/list"
+      }
+    }
+    request_template: "entity_key_array"
+    response_template: "empty"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityKeyArray entity_key_array = 1;
+      Empty empty = 2;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Empty empty = 1;
+      DeletedCount deleted_count = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+}
+
+message DeleteListFilter {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод удаления списка сущностей {EntityTypeName} по фильтру"
+        request_leading_comment: "Запрос удаления списка сущностей {EntityTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос удаления списка сущностей {EntityTypeName} по фильтру"
+      }
+      name: "Delete{EntityTypeName}List"
+      request_name: "Delete{EntityTypeName}ListRequest"
+      response_name: "Delete{EntityTypeName}ListResponse"
+      http_rule: {
+        delete: "/{HttpRoot}/list"
+      }
+    }
+    request_template: "filter"
+    response_template: "deleted_count"
+  };
+  message RequestTemplate {
+    oneof template {
+      Filter filter = 1;
+      Empty empty = 2;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Empty empty = 1;
+      DeletedCount deleted_count = 2;
+      DeletedCountWError deleted_count_error = 3;
+      DeletedCountWDeletingError deleted_count_delete_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+}
+
+message RestoreById {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{leading_comment: "Метод восстановления удаленной сущности {EntityTypeName} по ключу"
+        request_leading_comment: "Запрос восстановления удаленной сущности {EntityTypeName} по ключу"
+        response_leading_comment: "Ответ на запрос восстановления удаленной сущности {EntityTypeName} по ключу"
+      }
+      name: "Post{EntityTypeName}Restore"
+      request_name: "Post{EntityTypeName}RestoreRequest"
+      response_name: "Post{EntityTypeName}RestoreResponse"
+      http_rule: {
+        post: "/{HttpRoot}/restore/{KeyFields}"
+      }
+    }
+    request_template: "entity_key"
+    response_template: "valid_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+}
+message GetById {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения единичной сущности {EntityTypeName} по ключу"
+        request_leading_comment: "Запрос получения единичной сущности {EntityTypeName} по ключу"
+        response_leading_comment: "Ответ на запрос получения единичной сущности {EntityTypeName} по ключу"
+      }
+      name:"Get{EntityTypeName}"
+      request_name: "Get{EntityTypeName}Request"
+      response_name: "Get{EntityTypeName}Response"
+      http_rule:{
+        get: "/{HttpRoot}/{KeyFields}"
+      }
+    }
+    request_template: "entity_key"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+      EntityKeyScope entity_key_scope = 2;
+      EntityKeyReqScope entity_key_req_scope = 3;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWError entity_error = 1;
+      EntityOneof entity_oneof = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+}
+
+
+message EditById {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод редактирования единичной сущности {EntityTypeName} по ключу"
+        request_leading_comment: "Запрос редактирования единичной сущности {EntityTypeName} по ключу"
+        response_leading_comment: "Ответ на запрос редактирования единичной сущности {EntityTypeName} по ключу"
+      }
+      name:"Edit{EntityTypeName}"
+      request_name: "Edit{EntityTypeName}Request"
+      response_name: "Edit{EntityTypeName}Response"
+      http_rule:{
+        patch: "/{HttpRoot}/{KeyFields}"
+        body: "data"
+      }
+    }
+    request_template: "entity_mask"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      EntityWMask entity_mask = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityOneof entity_oneof = 1;
+      EntityWError entity_error = 2;
+      OnlyValidError valid_error = 3;
+      EntityWSavingError entity_saving_error = 4;
+      OnlySavingError saving_error = 5;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 4;
+  // Префикс ключевых полей в http path, на случай вложенной структуры
+  string key_field_prefix = 6;
+}
+
+
+
+message Get {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения сущности {EntityTypeName}"
+        request_leading_comment: "Запрос получения сущности {EntityTypeName}"
+        response_leading_comment: "Ответ на запрос получения сущности {EntityTypeName}"
+      }
+      name:"Get{EntityTypeName}"
+      request_name: "Get{EntityTypeName}Request"
+      response_name: "Get{EntityTypeName}Response"
+      http_rule:{
+        get: "/{HttpRoot}"
+      }
+    }
+    request_template: "empty"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Empty empty = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWError entity_error = 1;
+      EntityOneof entity_oneof = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+message GetList {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+        request_leading_comment: "Запрос получения списка сущностей {EntityTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру"
+      }
+      name:"Get{EntityTypeName}List"
+      request_name:"Get{EntityTypeName}ListRequest"
+      response_name:"Get{EntityTypeName}ListResponse"
+      http_rule: {
+        get: "/{HttpRoot}/list"
+      }
+      server_streaming: true
+    }
+    request_template: "filter_paging"
+    response_template: "entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      FilterPaging filter_paging = 1;
+      FilterPagingScope filter_paging_scope = 2;
+      FilterPagingReqScope filter_paging_req_scope = 3;
+      PagingOnly paging_only = 4;
+      PagingOffsetOnly paging_offset_only = 5;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityOneof entity_oneof = 1;
+      EntityWError entity_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  repeated entity.feature.api.method.EnumValue order_by_values = 4;
+}
+
+
+message GetArray {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения списка сущностей {EntityTypeName} по фильтру"
+        request_leading_comment: "Запрос получения списка сущностей {EntityTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру"
+      }
+      name:"Get{EntityTypeName}List"
+      request_name:"Get{EntityTypeName}ListRequest"
+      response_name:"Get{EntityTypeName}ListResponse"
+      http_rule: {
+        get: "/{HttpRoot}/list"
+      }
+    }
+    request_template: "filter_paging"
+    response_template: "entity_array"
+  };
+  message RequestTemplate {
+    oneof template {
+      FilterPaging filter_paging = 1;
+      FilterPagingScope filter_paging_scope = 2;
+      FilterPagingReqScope filter_paging_req_scope = 3;
+      Filter filter = 4;
+      Empty empty = 5;
+      PagingOffsetOnly paging_offset_only = 6;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityArrayCountError entity_array_count_error = 2;
+      EntityArrayError entity_array_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  // TODO: Переопределяются в спеке сущности только comments целиком, а раздельно по полям нет
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  repeated entity.feature.api.method.EnumValue order_by_values = 4;
+}
+
+
+message GetCount {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения количества сущностей {EntityTypeName} по фильтру"
+        request_leading_comment: "Запрос получения количества сущностей {EntityTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос получения количества сущностей {EntityTypeName} по фильтру"
+      }
+      name: "Get{EntityTypeName}Count"
+      request_name: "Get{EntityTypeName}CountRequest"
+      response_name: "Get{EntityTypeName}CountResponse"
+      http_rule: {
+        get: "/{HttpRoot}/count"
+      };
+    }
+    request_template: "filter"
+    response_template: "count_entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Filter filter = 1;
+      FilterScope filter_scope = 2;
+      FilterReqScope filter_req_scope = 3;
+      Empty empty = 4;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      CountEntityWError count_entity_error = 1;
+      CountEntity count_entity = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+}
+
+// TODO: в extension  Exists
+
+// TODO: в extension ExistsKey
+
+// TODO: в extension AttachList
+// TODO: в extension DetachList
+
+// TODO: в extension EditList
+
+message Attach {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод привязки {EntityTypeName} и {LinkedTypeName}"
+        request_leading_comment: "Запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+        response_leading_comment: "Ответ на запрос на добавление связи {EntityTypeName} и {LinkedTypeName}";
+      }
+      name: "Put{EntityTypeName}{LinkedTypeName}Attach"
+      request_name: "Put{EntityTypeName}{LinkedTypeName}AttachRequest"
+      response_name: "Put{EntityTypeName}{LinkedTypeName}AttachResponse"
+      http_rule: {
+        put: "/{HttpRoot}/{LinkKeyFieldPath}/attach"
+      }
+    }
+    request_template: "link"
+    response_template: "valid_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+}
+
+message Detach {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод отвязки {EntityTypeName} и {LinkedTypeName}"
+        request_leading_comment: "Запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+        response_leading_comment: "Ответ на запрос на удаление связи {EntityTypeName} и {LinkedTypeName}"
+      }
+      name: "Put{EntityTypeName}{LinkedTypeName}Detach"
+      request_name: "Put{EntityTypeName}{LinkedTypeName}DetachRequest"
+      response_name: "Put{EntityTypeName}{LinkedTypeName}DetachResponse"
+      http_rule: {
+        put: "/{HttpRoot}/{LinkKeyFieldPath}/detach"
+      }
+    }
+    request_template: "link"
+    response_template: "valid_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+}
+
+message GetLinkList {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+        request_leading_comment: "Запрос получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос получения списка связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+      }
+      name: "Get{EntityTypeName}{LinkedTypeName}List"
+      request_name: "Get{EntityTypeName}{LinkedTypeName}ListRequest"
+      response_name: "Get{EntityTypeName}{LinkedTypeName}ListResponse"
+      http_rule: {
+        get: "/{HttpRoot}/{LinkedTypeName}/list"
+      };
+      server_streaming: true
+    }
+    request_template: "link_filter_paging"
+    response_template: "link_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      LinkFilterPaging link_filter_paging = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Link link = 1;
+      LinkWError link_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+  repeated entity.feature.api.method.EnumValue order_by_values = 5;
+}
+
+message GetLinkCount {
+  option (entity.feature.api.method.method_tmpl) = {
+    attributes:{
+      comments:{
+        leading_comment: "Метод получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+        request_leading_comment: "Запрос получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+        response_leading_comment: "Ответ на запрос получения количества связей {EntityTypeName} и {LinkedTypeName} по фильтру"
+      }
+      name: "Get{EntityTypeName}{LinkedTypeName}Count"
+      request_name: "Get{EntityTypeName}{LinkedTypeName}CountRequest";
+      response_name: "Get{EntityTypeName}{LinkedTypeName}CountResponse"
+      http_rule: {
+        get: "/{HttpRoot}/{LinkedTypeName}/count"
+      }
+    }
+    request_template: "link_filter"
+    response_template: "count_entity_error"
+  };
+  message RequestTemplate {
+    oneof template {
+      LinkFilter link_filter = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      CountEntityWError count_entity_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  entity.feature.api.method.Attributes.Comments comments = 3;
+  entity.feature.api.method.LinkedType linked_type = 4;
+}
+
+
+

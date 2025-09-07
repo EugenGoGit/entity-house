@@ -1,0 +1,97 @@
+/*
+Спецификация АПИ управления сущностью Post
+*/
+syntax = "proto3";
+package post.v3;
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+// Сервис управления сущностью Post
+service PostService {
+    // Метод редактирования сущности Post
+    rpc EditPost ( EditPostRequest ) returns ( EditPostResponse ) {
+        option (google.api.http) = { patch: "/post/api/v1/post", body: "data" };
+    }
+    // Метод получения сущности Post
+    rpc GetPost ( GetPostRequest ) returns ( GetPostResponse ) {
+        option (google.api.http) = { get: "/post/api/v1/post" };
+    }
+}
+// Запрос редактирования сущности Post
+message EditPostRequest {
+    // Сущность
+    Post data = 1 [(google.api.field_behavior) = REQUIRED];
+    // Маска полей обновления
+    google.protobuf.FieldMask update_mask = 2;
+}
+// Ответ на запрос редактирования сущности Post
+message EditPostResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
+}
+// Запрос получения сущности Post
+message GetPostRequest {
+}
+// Ответ на запрос получения сущности Post
+message GetPostResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Сущность
+        Post data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Сущность
+message Post {
+    // Ошибка сохранения
+    message SavingError {
+        // Конфликт версий.
+        // Причины:
+        // - В базе хранится другая версия строки, значения changed_at отличаются
+        message Conflict {
+        }
+        // Причина ошибки
+        oneof reason {
+            // Конфликт версий
+            Conflict conflict = 1;
+        }
+    }
+    // Идентификатор
+    string uid = 1;
+    // Наименование
+    string name = 2;
+    // Тип
+    string type = 3;
+}
+// Фильтр
+message PostFilter {
+    repeated string types = 1;
+}
+// Ошибки валидации.
+// Эти проверки выполняются до обращения в базу данных
+message ValidationError {
+    // Путь к полю в формате наименования прото
+    string path = 1 [(google.api.field_behavior) = REQUIRED];
+    // Валидационное сообщение
+    string message = 2 [(google.api.field_behavior) = REQUIRED];
+}

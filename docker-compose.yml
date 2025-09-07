@@ -6,10 +6,8 @@ services:
     environment:
       PROTO_PATH: /templates
       PROTO_OUT_PATH: /gen_out
-      PROTO_IMPORT_PATH: .;/proto_deps;/impl_api_spec;/entity_feature
+      PROTO_IMPORT_PATH: .;/proto_deps
     volumes:
       - ./templates:/templates
       - ./gen_out:/gen_out
-      - ./proto_deps:/proto_deps
-      - ./impl_api_spec:/impl_api_spec
-      - ./entity_feature:/entity_feature
+#    command: ["sleep","600"]

@@ -1,4 +1,4 @@
-module entity-tmpl
+module entity-house
 
 go 1.24.3
 
