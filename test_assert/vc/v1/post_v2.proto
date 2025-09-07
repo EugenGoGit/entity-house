@@ -1,0 +1,35 @@
+/*
+Спецификация АПИ управления сущностью Post
+*/
+syntax = "proto3";
+package post.v2;
+import "google/protobuf/descriptor.proto";
+// Сервис управления сущностью Post
+service PostService {
+}
+// Сущность
+message Post {
+    // Ошибка сохранения
+    message SavingError {
+        // Конфликт версий.
+        // Причины:
+        // - В базе хранится другая версия строки, значения changed_at отличаются
+        message Conflict {
+        }
+        // Причина ошибки
+        oneof reason {
+            // Конфликт версий
+            Conflict conflict = 1;
+        }
+    }
+    // Идентификатор
+    string uid = 1;
+    // Наименование
+    string name = 2;
+    // Тип
+    string type = 3;
+}
+// Фильтр
+message PostFilter {
+    repeated string types = 1;
+}

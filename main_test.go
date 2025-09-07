@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"entity-house/generator"
+	"strings"
+
 	"fmt"
-	// "fmt"
 	"io"
 	"log"
 	"os"
@@ -56,26 +58,34 @@ func compareFilesByteByByte(fileOut, fileAssert string) (bool, error) {
 }
 
 func TestGenProto(t *testing.T) {
-	m := BuildEntityFeatures("./test_proto/vc/v1", []string{".", "proto_deps", "./impl_api_spec","entity_feature"})
-	// m := BuildEntityFeatures("./test_proto/vc/v1/keyapis_vc_camera_group_v1.proto", []string{".", "../proto_deps", ".."})
-	for k, v := range m {
+	m, err := generator.BuildEntityFeatures("./test_proto", []string{".", "proto_deps", "./impl", "entity_feature"})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("BuildEntityFeatures основная функция генерации.")
+	bb := ""
+	for genFileName, v := range m {
 		// The file permissions (e.g., 0644 for read/write by owner, read-only by others)
 		// You can adjust these permissions as needed.
-		permissions := os.FileMode(0644)
+		// permissions := os.FileMode(0644)
 
-		// Write the string content (converted to a byte slice) to the file
-		err := os.WriteFile(k+"_out", []byte(v), permissions)
+		assertFileName := strings.Replace(genFileName, "test_proto/", "test_assert/", 1)
+		outFileName := assertFileName + "_out"
+		err := os.WriteFile(outFileName, []byte(v), 0644)
 		if err != nil {
 			log.Fatalf("Failed to write to file: %v", err)
 		}
 
-		b, err := compareFilesByteByByte(k+"_out", k+"_out_assert")
+		b, err := compareFilesByteByByte(outFileName, assertFileName)
 		if err != nil {
 			log.Fatalf("unable to read file: %v", err)
 		}
-		fmt.Println("assert: ", k, b)
-		
-
+		fmt.Println("assert: ", assertFileName, b)
+		if !b {
+			bb = bb + ";\n" + assertFileName
+		}
+	}
+	if bb != "" {
+		log.Fatalf("Failed assertion %v", bb)
 	}
 }
-
