@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package api_spec_tmpl.dsl.dto;
+
+extend google.protobuf.MessageOptions {
+  // Комментарий к типу
+  string message_comments = 3040;
+  // Тип в шаблоне заменяется на тип, указанный в опции
+  string replace_message_type_name_to = 3041;
+}
+
+extend google.protobuf.FieldOptions {
+  // Комментарий к полю
+  string field_comments = 3020;
+  // TODO: Добавить возможность менять имя поля
+  // Тип поля в шаблоне заменяется на тип, указанный в опции
+  // Тип, указанный в опции, ДОЛЖЕН присутствовать в исходном файле, либо генерироваться из шаблона
+  // Если значение опции EntityKeyFields, то поле заменяется на массив ключевых полей сущности
+  string replace_field_type_to = 3021;
+}
+
+extend google.protobuf.EnumOptions {
+  // В Enum будут добавлены элементы из указанного поля опций метода. Поле ДОЛЖНО иметь тип массив api_spec_tmpl.dsl.method.EnumValue
+  string enum_by_method_attribute = 3001;
+  // Комментарий Enum
+  string enum_comments = 3002;
+}
+
+extend google.protobuf.EnumValueOptions {
+  // Комментарий значения Enum
+  string enum_value_comments = 3001;
+}
+
+extend google.protobuf.OneofOptions {
+  // Комментарий OneOf
+  string oneof_comments = 3001;
+}
+
+// Тип заглушка для замены на тип, указанный в опции поля replace_field_type_to
+// Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
+message ReplaceTypeDummy {}
+
+
+
+
+
+
+
+
+

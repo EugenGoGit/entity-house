@@ -1,13 +1,13 @@
 services:
   app:
-    image: entity-house
+    image: registry.infra.rtkit.dev/mvp/entity-house/main
     build:
       context: .
     environment:
-      PROTO_PATH: /templates
-      PROTO_OUT_PATH: /gen_out
+      PROTO_PATH: /protos
+      PROTO_OUT_PATH: /protos_gen_out
       PROTO_IMPORT_PATH: .;/proto_deps
     volumes:
-      - ./templates:/templates
-      - ./gen_out:/gen_out
+      - ./protos:/protos
+      - ./protos_gen_out:/protos_gen_out
 #    command: ["sleep","600"]

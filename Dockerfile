@@ -6,17 +6,13 @@ WORKDIR /usr/src/app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY ./comment ./comment
-COPY ./generator ./generator
-COPY ./printer ./printer
-COPY ./template ./template
-COPY ./comment ./comment
-COPY ./util ./util
-COPY ./main.go ./main.go
+COPY ./internal ./internal
+COPY ./cmd/main.go ./cmd/main.go
 RUN go build -v -o /usr/local/bin/app/ ./...
 
 FROM alpine
 COPY --from=builder /usr/local/bin/app /usr/local/bin/app
-COPY ./impl /impl
+COPY ./api_spec_tmpl /api_spec_tmpl
 COPY ./proto_deps /proto_deps
-CMD ["/usr/local/bin/app/entity-house"]
+COPY ./entity_feature /entity_feature
+CMD ["/usr/local/bin/app/cmd"]

@@ -1,0 +1,535 @@
+syntax = "proto3";
+
+
+import "google/api/field_behavior.proto";
+import "api_spec_tmpl/dsl/dto.proto";
+import "google/protobuf/field_mask.proto";
+
+package api_spec_tmpl.impls.base;
+
+
+message Empty {
+}
+
+message EntityWMask {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}",
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Маска полей обновления"];
+}
+
+message EntityOneof {
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}"
+    ];
+  }
+}
+
+message EntityWError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}"
+    ];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+message DeletedCountWError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Всего количество удаленных"];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+message DeletedCountWDeletingError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+      api_spec_tmpl.dsl.dto.ReplaceTypeDummy deleting = 2 [
+        (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка удаления",
+        (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}.DeletingError"
+      ];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Всего количество удаленных"];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+
+message OnlySavingError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+      api_spec_tmpl.dsl.dto.ReplaceTypeDummy saving = 2 [
+        (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка сохранения",
+        (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}.SavingError"
+      ];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    Error error = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+
+message EntityWSavingError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+      api_spec_tmpl.dsl.dto.ReplaceTypeDummy saving = 2 [
+        (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка сохранения",
+        (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}.SavingError"
+      ];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}"
+    ];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+message EntityListWSavingError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
+      (google.api.field_behavior) = REQUIRED,
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityKeyFieldDescription} сущности {EntityTypeName}, к которой относится ошибка",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+    ];
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+      api_spec_tmpl.dsl.dto.ReplaceTypeDummy saving = 3 [
+        (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка сохранения",
+        (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}.SavingError"
+      ];
+    }
+  }
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+  ];
+  repeated Error errors = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Список ошибок"];
+}
+
+
+message EntityListWError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
+      (google.api.field_behavior) = REQUIRED,
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityKeyFieldDescription} сущности {EntityTypeName}, к которой относится ошибка",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+    ];
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+  ];
+  repeated Error errors = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Список ошибок"];
+}
+
+message EntityArrayCountError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  message Data {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Список";
+    repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy items = 1 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+    ];
+    int32 total = 2 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "Всего количество"
+    ];
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    Data data = 1 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "Список"
+    ];
+    Error error = 2 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"
+    ];
+  }
+}
+
+
+message EntityArrayError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy items = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+  ];
+  Error error = 2 [
+    (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"
+  ];
+}
+
+
+message EntityList {
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+  ];
+}
+
+message EntityKey {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message EntityKeyArray {
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message EntityKeyScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope"
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+message EntityKeyReqScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (google.api.field_behavior) = REQUIRED
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+  ];
+}
+
+
+message Entity {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}"
+  ];
+}
+
+message EntityNReq {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+    (api_spec_tmpl.dsl.dto.field_comments) = "{EntityTypeComment}"
+  ];
+}
+
+message FilterPaging {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 2 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message PagingOnly {
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 1 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message PagingOffsetOnly {
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    OffsetOnly paging = 1 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message FilterPagingScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope"
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 2 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 3 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+
+message FilterPagingReqScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (google.api.field_behavior) = REQUIRED
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 2 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    Paging paging = 3 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message LinkFilterPaging {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}Filter"
+  ];
+  oneof pagination {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Вариант разбиения на страницы";
+    LinkPaging paging = 2 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}Paging",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Постраничный вывод"
+    ];
+  }
+}
+
+message Filter {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+}
+
+message FilterScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope"
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 2 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+}
+
+message FilterReqScope {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy scope = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Scope",
+    (google.api.field_behavior) = REQUIRED
+  ];
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 2 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}Filter"
+  ];
+}
+
+message LinkFilter {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy filter = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}Filter"
+  ];
+}
+
+message Link {
+  api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}",
+    (google.api.field_behavior) = REQUIRED];
+}
+
+message LinkList {
+  repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+    (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}"
+  ];
+}
+
+message LinkWError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy data = 1 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}{method:linked_type_name}"
+    ];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+message OffsetOnly {
+  option (api_spec_tmpl.dsl.dto.replace_message_type_name_to) = "{EntityTypeName}Paging";
+  option (api_spec_tmpl.dsl.dto.message_comments) = "Постраничный вывод";
+  int32 limit = 1 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+message Paging {
+  option (api_spec_tmpl.dsl.dto.replace_message_type_name_to) = "{EntityTypeName}Paging";
+  option (api_spec_tmpl.dsl.dto.message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (api_spec_tmpl.dsl.dto.enum_by_method_attribute) = "order_by_values";
+    option (api_spec_tmpl.dsl.dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (api_spec_tmpl.dsl.dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(api_spec_tmpl.dsl.dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+message LinkPaging {
+  option (api_spec_tmpl.dsl.dto.replace_message_type_name_to) = "{EntityTypeName}{method:linked_type_name}Paging";
+  option (api_spec_tmpl.dsl.dto.message_comments) = "Постраничный вывод";
+  enum OrderByType {
+    option (api_spec_tmpl.dsl.dto.enum_by_method_attribute) = "order_by_values";
+    option (api_spec_tmpl.dsl.dto.enum_comments) = "Справочник типов значений сортировки.\n# Тип: byte";
+    ORDER_BY_TYPE_UNKNOWN = 0 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "Значение не указано"];
+  }
+  OrderByType order_by_type = 1 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Тип значения сортировки.\nЕсли значение не передано, то будет взято значение по умолчанию"];
+  enum DirectionType {
+    option (api_spec_tmpl.dsl.dto.enum_comments) = "Справочник типов направлений сортировки.\n # Тип: byte";
+    DIRECTION_TYPE_UNKNOWN = 0 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "Значение не указано"];
+    DESC = 1 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "От большего к меньшему"];
+    ASC = 2 [(api_spec_tmpl.dsl.dto.enum_value_comments) = "От меньшего к большему"];
+  }
+  DirectionType direction_type = 2 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Тип направления сортировки.\n# По умолчанию: DESC"];
+  int32 limit = 3 [(api_spec_tmpl.dsl.dto.field_comments) =
+      "Количество записей на страницу.\nЕсли значение 0 (не передано), то будет взято значение по умолчанию.\n # Диапазон: 0..100.\n # По умолчанию: 20"];
+  int32 offset = 4 [(api_spec_tmpl.dsl.dto.field_comments) = "Сдвиг.\n# Диапазон: 0..2147483647"];
+}
+
+message CountEntityWError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Всего количество"];
+    Error error = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+
+message CountEntity {
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Всего количество"];
+  }
+}
+
+message DeletedCount {
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    int32 data = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Всего количество удаленных"];
+  }
+}
+
+
+message OnlyValidError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип ответа";
+    Error error = 1 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"];
+  }
+}
+
+message ValidationError {
+  option (api_spec_tmpl.dsl.dto.message_comments) =
+      "Ошибки валидации.\n Эти проверки выполняются до обращения в базу данных";
+  string path = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.field_comments) = "Путь к полю в формате наименования прото"
+  ];
+  string message = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (api_spec_tmpl.dsl.dto.field_comments) = "Валидационное сообщение"
+  ];
+}
+
+
+
+
+
+
+
+

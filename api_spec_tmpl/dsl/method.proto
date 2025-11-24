@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+import "google/api/http.proto";
+import "entity_feature/feature.proto";
+import "google/protobuf/descriptor.proto";
+
+package api_spec_tmpl.dsl.method;
+
+// TODO: произвольные опции на метод
+// Опции шаблона метода.
+// Если шаблон содержит такие же поля, то значения опций шаблона будут переопределены значениями полей
+// Если нужно дать возможность переопределить значение через опции сущности, то добавляем поле в шаблон.
+// Если нужно задавать значение только через опции сущности, то добавляем поле в шаблон, а опцию в шаблоне не означиваем.
+// Если не нужно давать возможность переопределить значение через опции сущности, то оставляем значения только в опциях шаблона
+extend google.protobuf.MessageOptions {
+  // Имя метода
+  string name = 3020;
+  // Имя запроса
+  string request_name = 3021;
+  // Имя ответа
+  string response_name = 3022;
+  // Признак потокового ответа
+  bool server_streaming = 3023;
+  // Признак потокового запроса
+  bool client_streaming = 3024;
+  // TODO: сделать подстановки в additional_bindings
+  // Опция метода google.api.HttpRule
+  google.api.HttpRule http_rule = 3025;
+  // Комментарий к методу
+  string leading_comment = 3026;
+  // Комментарий к запросу метода
+  string request_leading_comment = 3027;
+  // Комментарий к ответу метода
+  string response_leading_comment = 3028;
+  // Дополнительный комментарий к методу
+  string additional_leading_comment = 3029;
+  // Имя поля с DTO запроса, который используется в шаблоне, если не указан иной.
+  // Поле должно быть из тех, что перечислены в oneof request_template.template
+  string request_template = 3030;
+  // Имя поля с DTO ответа, который используется в шаблоне, если не указан иной.
+  // Поле должно быть из тех, что перечислены в oneof response_template.template
+  string response_template = 3031;
+  // Определение ключевых полей сущности для использования в методе
+  // Переопределяет key_fields_definition сервиса
+  entity.feature.KeyFieldsDefinition key_fields_definition = 3032;
+  // TODO: Вычислять префикс от структуры
+  // Префикс ключевых полей в http path, на случай вложенной структуры Request
+  string key_field_prefix = 3035;
+}
+
+// Расширение Enum
+// Для использования с api_spec_tmpl.dsl.dto.enum_by_method_attribute
+message EnumValue {
+  string name = 1;
+  string title = 2;
+}
+
+
+

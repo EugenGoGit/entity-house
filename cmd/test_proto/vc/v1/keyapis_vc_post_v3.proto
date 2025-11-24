@@ -1,0 +1,48 @@
+/*
+  Сервис работы с камерами
+*/
+syntax = "proto3";
+
+import "entity_feature/feature.proto";
+import "api_spec_tmpl/impls/base/spec.proto";
+
+package post.v3;
+
+// Сущность
+message Post {
+  option (api_spec_tmpl.impls.base.specification) = {
+    service_set: {
+      serverside_singleton_crud:
+      {
+        http_root: "post/api/v1/post"
+        method_set: {
+          get:{}
+          edit:{}
+        }
+      }
+    }
+  };
+  // Идентификатор
+  string uid = 1 [(entity.feature.unique_field_group) = PK];
+  // Наименование
+  string name = 2;
+  // Тип
+  string type = 3;
+  // Ошибка сохранения
+  message SavingError {
+    // Конфликт версий.
+    // Причины:
+    // - В базе хранится другая версия строки, значения changed_at отличаются
+    message Conflict {}
+    // Причина ошибки
+    oneof reason {
+      // Конфликт версий
+      Conflict conflict = 1;
+    }
+  }
+}
+
+// Фильтр
+message PostFilter {
+  repeated string types = 1;
+}

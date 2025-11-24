@@ -1,0 +1,796 @@
+syntax = "proto3";
+
+import "api_spec_tmpl/impls/base/dto.proto";
+import "api_spec_tmpl/dsl/method.proto";
+import "entity_feature/feature.proto";
+
+package api_spec_tmpl.impls.base;
+
+
+message SaveCreateOnly {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод создания сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на создание сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на создание сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}",
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity_oneof = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message SaveReplace {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод добавления/редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на добавление/редактирование сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на добавление/редактирование сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}",
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_oneof";
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+      EntityOneof entity_oneof = 5;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message SaveListCreateOnly {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод создания списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на создание списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на создание списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}/list",
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_array";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_array";
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityListWSavingError entity_array_saving_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message SaveListCreateReplace {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод создания/редактирования списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на создание/редактирование списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на создание/редактирование списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}/list",
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_array";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_array";
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message SaveListReplace {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод добавления/редактирования списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на добавление/редактирование списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на добавление/запрос на редактирование списка сущностей {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}/list",
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_array";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_array";
+  message RequestTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityListWSavingError entity_array_saving_error = 2;
+      EntityListWError entity_array_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+
+message SaveCreateReplace {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод создания/редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос создания/редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос создания/редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Save{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Save{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Save{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}"
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      Entity entity = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWSavingError entity_saving_error = 1;
+      EntityOneof entity_oneof = 2;
+      Empty empty = 3;
+      EntityWError entity_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message Edit {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос редактирования сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Edit{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Edit{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Edit{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    patch: "/{HttpRoot}"
+    body: "data"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_mask";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  message RequestTemplate {
+    oneof template {
+      EntityWMask entity_mask = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+      EntityWError entity_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message DeleteById {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод удаления единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос удаления единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос удаления единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.name) = "Delete{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Delete{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Delete{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    delete: "/{HttpRoot}/{KeyFields}"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_key";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+      DeletedCount deleted_count = 3;
+      DeletedCountWDeletingError deleted_count_delete_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+}
+
+message DeleteList {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод удаления списка сущностей {EntityTypeName} по списку ключей";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос удаления списка сущностей {EntityTypeName} по списку ключей";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос удаления списка сущностей {EntityTypeName} по списку ключей";
+  option (api_spec_tmpl.dsl.method.name) = "Delete{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Delete{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Delete{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    delete: "/{HttpRoot}/list"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_key_array";
+  option (api_spec_tmpl.dsl.method.response_template) = "empty";
+  message RequestTemplate {
+    oneof template {
+      EntityKeyArray entity_key_array = 1;
+      Empty empty = 2;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Empty empty = 1;
+      DeletedCount deleted_count = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+}
+
+message DeleteListFilter {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод удаления списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос удаления списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос удаления списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Delete{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Delete{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Delete{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    delete: "/{HttpRoot}/list"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "filter";
+  option (api_spec_tmpl.dsl.method.response_template) = "deleted_count";
+  message RequestTemplate {
+    oneof template {
+      Filter filter = 1;
+      Empty empty = 2;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Empty empty = 1;
+      DeletedCount deleted_count = 2;
+      DeletedCountWError deleted_count_error = 3;
+      DeletedCountWDeletingError deleted_count_delete_error = 4;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+}
+
+message RestoreById {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод восстановления удаленной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос восстановления удаленной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос восстановления удаленной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.name) = "Post{EntityTypeName}Restore";
+  option (api_spec_tmpl.dsl.method.request_name) = "Post{EntityTypeName}RestoreRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Post{EntityTypeName}RestoreResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    post: "/{HttpRoot}/restore/{KeyFields}"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_key";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+      Empty empty = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+}
+message GetById {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/{KeyFields}"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_key";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      EntityKey entity_key = 1;
+      EntityKeyScope entity_key_scope = 2;
+      EntityKeyReqScope entity_key_req_scope = 3;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWError entity_error = 1;
+      EntityOneof entity_oneof = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+}
+
+
+message EditById {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод редактирования единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос редактирования единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос редактирования единичной сущности {EntityTypeName} по ключу";
+  option (api_spec_tmpl.dsl.method.name) = "Edit{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Edit{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Edit{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    patch: "/{HttpRoot}/{KeyFields}"
+    body: "data"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "entity_mask";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      EntityWMask entity_mask = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityOneof entity_oneof = 1;
+      EntityWError entity_error = 2;
+      OnlyValidError valid_error = 3;
+      EntityWSavingError entity_saving_error = 4;
+      OnlySavingError saving_error = 5;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string additional_leading_comment = 3;
+  string leading_comment = 4;
+  string request_leading_comment = 5;
+  string response_leading_comment = 6;
+  entity.feature.KeyFieldsDefinition key_fields_definition = 7;
+  string key_field_prefix = 8;
+}
+
+
+
+message Get {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения сущности {EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}Request";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}Response";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "empty";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      Empty empty = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityWError entity_error = 1;
+      EntityOneof entity_oneof = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+message GetList {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/list"
+  };
+  option (api_spec_tmpl.dsl.method.server_streaming) = true;
+  option (api_spec_tmpl.dsl.method.request_template) = "filter_paging";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_error";
+  message RequestTemplate {
+    oneof template {
+      FilterPaging filter_paging = 1;
+      FilterPagingScope filter_paging_scope = 2;
+      FilterPagingReqScope filter_paging_req_scope = 3;
+      PagingOnly paging_only = 4;
+      PagingOffsetOnly paging_offset_only = 5;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityOneof entity_oneof = 1;
+      EntityWError entity_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  repeated api_spec_tmpl.dsl.method.EnumValue order_by_values = 7;
+}
+
+
+message GetArray {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения списка сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/list"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "filter_paging";
+  option (api_spec_tmpl.dsl.method.response_template) = "entity_array";
+  message RequestTemplate {
+    oneof template {
+      FilterPaging filter_paging = 1;
+      FilterPagingScope filter_paging_scope = 2;
+      FilterPagingReqScope filter_paging_req_scope = 3;
+      Filter filter = 4;
+      Empty empty = 5;
+      PagingOffsetOnly paging_offset_only = 6;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      EntityList entity_array = 1;
+      EntityArrayCountError entity_array_count_error = 2;
+      EntityArrayError entity_array_error = 3;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  repeated api_spec_tmpl.dsl.method.EnumValue order_by_values = 7;
+}
+
+
+message GetCount {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения количества сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения количества сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения количества сущностей {EntityTypeName} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}Count";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}CountRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}CountResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/count"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "filter";
+  option (api_spec_tmpl.dsl.method.response_template) = "count_entity_error";
+  message RequestTemplate {
+    oneof template {
+      Filter filter = 1;
+      FilterScope filter_scope = 2;
+      FilterReqScope filter_req_scope = 3;
+      Empty empty = 4;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      CountEntityWError count_entity_error = 1;
+      CountEntity count_entity = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+}
+
+// TODO: в extension  Exists
+
+// TODO: в extension ExistsKey
+
+// TODO: в extension EditList
+
+
+message AttachList {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод привязки списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на добавление списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на добавление списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.name) = "Put{EntityTypeName}{method:linked_type_name}AttachList";
+  option (api_spec_tmpl.dsl.method.request_name) = "Put{EntityTypeName}{method:linked_type_name}AttachListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Put{EntityTypeName}{method:linked_type_name}AttachListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    put: "/{HttpRoot}/{method:linked_type_name}/attach/list"
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "link_list";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  message RequestTemplate {
+    oneof template {
+      LinkList link_list = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+}
+
+message DetachList {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод отвязки списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на удаление списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на удаление списка связей {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.name) = "Put{EntityTypeName}{method:linked_type_name}DetachList";
+  option (api_spec_tmpl.dsl.method.request_name) = "Put{EntityTypeName}{method:linked_type_name}DetachListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Put{EntityTypeName}{method:linked_type_name}DetachListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    put: "/{HttpRoot}/{method:linked_type_name}/detach/list"
+    body: "*"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "link_list";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  message RequestTemplate {
+    oneof template {
+      LinkList link_list = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+}
+
+message Attach {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод привязки {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на добавление связи {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на добавление связи {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.name) = "Put{EntityTypeName}{method:linked_type_name}Attach";
+  option (api_spec_tmpl.dsl.method.request_name) = "Put{EntityTypeName}{method:linked_type_name}AttachRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Put{EntityTypeName}{method:linked_type_name}AttachResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    put: "/{HttpRoot}/{KeyFields}/{method:linked_type_key_field_path}/attach"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "link";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  option (api_spec_tmpl.dsl.method.key_field_prefix) = "data";
+
+  message RequestTemplate {
+    oneof template {
+      Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+  string linked_type_key_field_path = 8;
+}
+
+message Detach {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод отвязки {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос на удаление связи {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос на удаление связи {EntityTypeName} и {method:linked_type_name}";
+  option (api_spec_tmpl.dsl.method.name) = "Put{EntityTypeName}{method:linked_type_name}Detach";
+  option (api_spec_tmpl.dsl.method.request_name) = "Put{EntityTypeName}{method:linked_type_name}DetachRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Put{EntityTypeName}{method:linked_type_name}DetachResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    put: "/{HttpRoot}/{KeyFields}/{method:linked_type_key_field_path}/detach"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "link";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  option (api_spec_tmpl.dsl.method.key_field_prefix) = "data";
+  message RequestTemplate {
+    oneof template {
+      Link link = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      OnlyValidError valid_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+  string linked_type_key_field_path = 8;
+}
+
+message GetLinkList {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения списка связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения списка связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения списка связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}{method:linked_type_name}List";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}{method:linked_type_name}ListRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}{method:linked_type_name}ListResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/{method:linked_type_name}/list"
+  };
+  option (api_spec_tmpl.dsl.method.server_streaming) = true;
+  option (api_spec_tmpl.dsl.method.request_template) = "link_filter_paging";
+  option (api_spec_tmpl.dsl.method.response_template) = "link_error";
+  message RequestTemplate {
+    oneof template {
+      LinkFilterPaging link_filter_paging = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      Link link = 1;
+      LinkWError link_error = 2;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+  repeated api_spec_tmpl.dsl.method.EnumValue order_by_values = 8;
+}
+
+message GetLinkCount {
+  option (api_spec_tmpl.dsl.method.leading_comment) = "Метод получения количества связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.request_leading_comment) = "Запрос получения количества связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.response_leading_comment) = "Ответ на запрос получения количества связей {EntityTypeName} и {method:linked_type_name} по фильтру";
+  option (api_spec_tmpl.dsl.method.name) = "Get{EntityTypeName}{method:linked_type_name}Count";
+  option (api_spec_tmpl.dsl.method.request_name) = "Get{EntityTypeName}{method:linked_type_name}CountRequest";
+  option (api_spec_tmpl.dsl.method.response_name) = "Get{EntityTypeName}{method:linked_type_name}CountResponse";
+  option (api_spec_tmpl.dsl.method.http_rule) = {
+    get: "/{HttpRoot}/{method:linked_type_name}/count"
+  };
+  option (api_spec_tmpl.dsl.method.request_template) = "link_filter";
+  option (api_spec_tmpl.dsl.method.response_template) = "count_entity_error";
+  message RequestTemplate {
+    oneof template {
+      LinkFilter link_filter = 1;
+    }
+  }
+  message ResponseTemplate {
+    oneof template {
+      CountEntityWError count_entity_error = 1;
+    }
+  }
+  RequestTemplate request_template = 1;
+  ResponseTemplate response_template = 2;
+  string leading_comment = 3;
+  string request_leading_comment = 4;
+  string response_leading_comment = 5;
+  string additional_leading_comment = 6;
+  string linked_type_name = 7;
+}
+
+
+

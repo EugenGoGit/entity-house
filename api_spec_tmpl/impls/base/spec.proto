@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+import "api_spec_tmpl/impls/base/service.proto";
+import "api_spec_tmpl/dsl/spec.proto";
+
+package api_spec_tmpl.impls.base;
+
+extend google.protobuf.MessageOptions {
+  Specification specification = 3009 [(api_spec_tmpl.dsl.specification) = "base.rev1"];
+}
+
+// Шаблон спецификации Rev1
+message Specification {
+  option (api_spec_tmpl.dsl.leading_comment) = "Спецификация АПИ управления сущностью {EntityTypeName}";
+  message ServiceSet {
+    oneof service {
+      ClientsideEntityCRUD clientside_entity_crud = 1;
+      ServersideEntityCRUD serverside_entity_crud = 2;
+      ServersideSingletonCRUD serverside_singleton_crud = 3;
+      ServersideFixedSet serverside_fixed_set = 4;
+    }
+  }
+  string leading_comment = 1;
+  ServiceSet service_set = 2;
+}
+

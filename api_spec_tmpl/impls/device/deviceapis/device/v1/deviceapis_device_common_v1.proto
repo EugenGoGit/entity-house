@@ -1,0 +1,27 @@
+/*
+  Общие функции
+*/
+syntax = "proto3";
+
+import "google/api/field_behavior.proto";
+
+package deviceapis.device.v1;
+
+option java_package = "ru.deviceapis.device.v1";
+option java_outer_classname = "DeviceapisDeviceV1Proto";
+option java_multiple_files = false;
+option java_string_check_utf8 = true;
+option go_package = "/deviceapis_device_v1";
+option cc_enable_arenas = true;
+option csharp_namespace = "Deviceapis.Device.V1";
+option objc_class_prefix = "DEVICEAPISDEVICEV1";
+option php_namespace = "Deviceapis\\Device\\V1";
+option ruby_package = "Deviceapis::Device::V1";
+
+// Ошибки валидации
+message ValidationError {
+  // Путь к полю в формате наименования прото
+  string path = 1 [(google.api.field_behavior) = REQUIRED];
+  // Валидационное сообщение
+  string message = 2 [(google.api.field_behavior) = REQUIRED];
+}

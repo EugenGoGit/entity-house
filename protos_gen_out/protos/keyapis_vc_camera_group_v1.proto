@@ -1,0 +1,249 @@
+/*
+Спецификация АПИ управления сущностью CameraCollection
+*/
+/*
+Спецификация АПИ управления сущностью Pet
+*/
+syntax = "proto3";
+package keyapis.vc.v1;
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+option cc_enable_arenas = true;
+option csharp_namespace = "Keyapis.Vc.V1";
+option go_package = "/keyapis_vc_v1";
+option java_multiple_files = false;
+option java_outer_classname = "KeyapisVcV1Proto";
+option java_package = "ru.keyapis.vc.v1";
+option java_string_check_utf8 = true;
+option objc_class_prefix = "KEYAPISVCV1";
+option optimize_for = LITE_RUNTIME;
+option php_namespace = "Keyapis\\Vc\\V1";
+option ruby_package = "Keyapis::Vc::V1";
+// Сервис управления коллекциями камер
+service CameraCollectionService {
+    // Метод получения коллекции камер.
+    // Для owner, employee возвращаются только коллекции камер c COMPANY_ID из токена.
+    // Метод доступен для: admin, service, bti, owner, employee
+    rpc GetCameraCollection ( GetCameraCollectionRequest ) returns ( GetCameraCollectionResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/camera_collection/{id}" };
+    }
+    // Метод привязки списка связей CameraCollection и Camera
+    rpc PutCameraCollectionCameraAttachList ( PutCameraCollectionCameraAttachListRequest ) returns ( PutCameraCollectionCameraAttachListResponse ) {
+        option (google.api.http) = { put: "/vc/api/v1/camera_collection/camera/attach/list", body: "*" };
+    }
+    // Метод отвязки списка связей CameraCollection и Camera
+    rpc PutCameraCollectionCameraDetachList ( PutCameraCollectionCameraDetachListRequest ) returns ( PutCameraCollectionCameraDetachListResponse ) {
+        option (google.api.http) = { put: "/vc/api/v1/camera_collection/camera/detach/list", body: "*" };
+    }
+}
+// Сервис управления сущностью Pet
+service PetService {
+    // Метод получения единичной сущности Pet по ключу
+    rpc GetPet ( GetPetRequest ) returns ( GetPetResponse ) {
+        option (google.api.http) = { get: "/vc/api/v1/pet/id/{id}/name/{name}" };
+    }
+}
+// Коллекция камер
+message CameraCollection {
+    // Ошибка сохранения
+    message SavingError {
+        // Конфликт версий.
+        // Причины:
+        // - В базе хранится другая версия строки, значения changed_at отличаются
+        message Conflict {
+        }
+        // Попытка сохранить коллекцию камер с company_id не своей компании.
+        // Для ролей owner, employee сохранение разрешено только с company_id своей компании
+        message WrongCompanyId {
+        }
+        // Причина ошибки
+        oneof reason {
+            // Конфликт версий
+            Conflict conflict = 1;
+            // Попытка сохранить коллекцию камер с company_id не своей компании
+            WrongCompanyId wrong_company_id = 2;
+        }
+    }
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1;
+    // Наименование.
+    // Диапазон: 3..256
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Дата изменения коллекции камер.
+    // Поле используется при редактировании и создании для контроля актуальности изменяемой версии
+    google.protobuf.Timestamp changed_at = 3 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор компании
+    int32 company_id = 4 [(google.api.field_behavior) = REQUIRED];
+    // Дата удаления коллекции камер.
+    // Поле изменяется через методы Delete и Restore
+    google.protobuf.Timestamp deleted_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Описание.
+    // Диапазон: 3..256
+    string description = 6;
+    // Теги коллекции.
+    // Диапазон: 0..10
+    repeated string tags = 7;
+}
+// Связь камеры и коллекции камер
+message CameraCollectionCamera {
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string camera_collection_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Идентификатор камеры.
+    // Используется идентификатор внешнего сервиса.
+    // Тип: Guid
+    string external_camera_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+// Фильтр для запроса связей камеры и коллекции камер.
+// При передаче массива в параметр фильтра элементы массива работают в выборке через ИЛИ.
+// При передаче нескольких разных параметров фильтра они работают в выборке через И
+message CameraCollectionCameraFilter {
+    // По Идентификаторам коллекций камер
+    repeated string camera_collection_ids = 1;
+    // По Идентификаторам камер
+    repeated string external_camera_ids = 2;
+}
+// Фильтр коллекций камер
+message CameraCollectionFilter {
+    // По тексту.
+    // Если значение не передано то поиск по нему не производится.
+    // # Диапазон: 3..64.
+    // # Поиск производится по полям:
+    // # - Наименование.
+    // # - Описание.
+    // # - Теги коллекции
+    string text = 1;
+    // По тегам.
+    // Диапазон: 0..10
+    repeated string tags = 2;
+    // По компаниям.
+    // Диапазон: 0..10
+    repeated int32 company_ids = 3;
+    // Показывать удаленные.
+    // Если поле не передано, по умолчанию false, фильтр исключает удаленные
+    google.protobuf.BoolValue is_deleted = 4;
+}
+// Запрос получения коллекции камер
+message GetCameraCollectionRequest {
+    // Идентификатор коллекции камер.
+    // Тип: Guid
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ на запрос получения коллекции камер
+message GetCameraCollectionResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Коллекция камер
+        CameraCollection data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Запрос получения единичной сущности Pet по ключу
+message GetPetRequest {
+    // Идентификатор животного.
+    // Тип: Guid
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Наименование.
+    // Диапазон: 3..256
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+}
+// Ответ на запрос получения единичной сущности Pet по ключу
+message GetPetResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Животное
+        Pet data = 1;
+        // Ошибка
+        Error error = 2;
+    }
+}
+// Животное
+message Pet {
+    // Идентификатор животного.
+    // Тип: Guid
+    string id = 1;
+    // Наименование.
+    // Диапазон: 3..256
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Тип
+    Type type = 3;
+}
+// Запрос на добавление списка связей CameraCollection и Camera
+message PutCameraCollectionCameraAttachListRequest {
+    // Связь камеры и коллекции камер
+    repeated CameraCollectionCamera data = 1;
+}
+// Ответ на запрос на добавление списка связей CameraCollection и Camera
+message PutCameraCollectionCameraAttachListResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
+}
+// Запрос на удаление списка связей CameraCollection и Camera
+message PutCameraCollectionCameraDetachListRequest {
+    // Связь камеры и коллекции камер
+    repeated CameraCollectionCamera data = 1;
+}
+// Ответ на запрос на удаление списка связей CameraCollection и Camera
+message PutCameraCollectionCameraDetachListResponse {
+    // Ошибка запроса
+    message Error {
+        // Причина ошибки
+        oneof reason {
+            // Ошибка валидации
+            ValidationError validation = 1;
+        }
+    }
+    // Тип ответа
+    oneof type {
+        // Ошибка
+        Error error = 1;
+    }
+}
+// Ошибки валидации.
+// Эти проверки выполняются до обращения в базу данных
+message ValidationError {
+    // Путь к полю в формате наименования прото
+    string path = 1 [(google.api.field_behavior) = REQUIRED];
+    // Валидационное сообщение
+    string message = 2 [(google.api.field_behavior) = REQUIRED];
+}
+// Тип
+enum Type {
+    // Тип не известен
+    TYPE_UNKNOWN = 0;
+    // Кот
+    CAT = 1;
+    // Собака
+    DOG = 2;
+}

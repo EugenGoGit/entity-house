@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "entity_feature/feature.proto";
+import "google/protobuf/descriptor.proto";
+import "google/api/field_behavior.proto";
+
+package api_spec_tmpl.dsl.service;
+
+// TODO: как навернуть опции на service
+// TODO: Мультиязычность
+// Опции шаблона сервиса.
+// Если шаблон содержит такие же поля, то значения опций шаблона будут переопределены значениями полей
+// Если нужно дать возможность переопределить значение через опции сущности, то добавляем поле в шаблон.
+// Если нужно задавать значение только через опции сущности, то добавляем поле в шаблон, а опцию в шаблоне не означиваем.
+// Если не нужно давать возможность переопределить значение через опции сущности, то оставляем знаячения только в опциях шаблона
+extend google.protobuf.MessageOptions {
+  // Имя поля шаблона сервиса, которое содержит шаблоны методов.
+  // Если не указано, берем поле method_set
+  string method_set_field_name = 3010;
+  // Комментарий сервиса
+  string leading_comment = 3011;
+  // Имя сервиса
+  string name = 3012;
+  // TODO: вычислить key_field_behavior для ключевых полей
+  // Строгость (Cardinality) ключевых полей, требуемая для метода
+  google.api.FieldBehavior key_field_behavior = 3013;
+  // Дополнительный комментарий к сервису
+  // Не для опций, только для полей
+  string additional_leading_comment = 3014;
+  // Корневой HTTP Path методов сервиса
+  string http_root = 3015;
+  // Определение ключевых полей сущности для использования в сервисе
+  entity.feature.KeyFieldsDefinition key_fields_definition = 3016;
+}
+
+
