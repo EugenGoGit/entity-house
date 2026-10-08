@@ -147,10 +147,40 @@ message EntityListWSavingError {
   repeated Error errors = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Список ошибок"];
 }
 
+message EntityListWOneError {
+  message Error {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка записи экземпляра сущности";
+    api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
+      (google.api.field_behavior) = REQUIRED,
+      (api_spec_tmpl.dsl.dto.field_comments) = "{EntityKeyFieldDescription} сущности {EntityTypeName}, к которой относится ошибка",
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "EntityKeyFields"
+    ];
+    oneof reason {
+      option (api_spec_tmpl.dsl.dto.oneof_comments) = "Причина ошибки";
+      ValidationError validation = 2 [(api_spec_tmpl.dsl.dto.field_comments) = "Ошибка валидации"];
+    }
+  }
+  message Data {
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Созданные экземпляры сущности {EntityTypeName}";
+    repeated api_spec_tmpl.dsl.dto.ReplaceTypeDummy items = 1 [
+      (api_spec_tmpl.dsl.dto.replace_field_type_to) = "{EntityTypeName}",
+      (api_spec_tmpl.dsl.dto.field_comments) = "Список {EntityTypeName}"
+    ];
+  }
+  oneof type {
+    option (api_spec_tmpl.dsl.dto.oneof_comments) = "Тип результата";
+    Data data = 1 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "Созданные экземпляры сущности {EntityTypeName}"
+    ];
+    Error error = 2 [
+      (api_spec_tmpl.dsl.dto.field_comments) = "Ошибка"
+    ];
+  }
+}
 
 message EntityListWError {
   message Error {
-    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка запроса";
+    option (api_spec_tmpl.dsl.dto.message_comments) = "Ошибка записи экземпляра сущности";
     api_spec_tmpl.dsl.dto.ReplaceTypeDummy entity_key = 1 [
       (google.api.field_behavior) = REQUIRED,
       (api_spec_tmpl.dsl.dto.field_comments) = "{EntityKeyFieldDescription} сущности {EntityTypeName}, к которой относится ошибка",

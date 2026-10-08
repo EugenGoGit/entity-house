@@ -3,7 +3,6 @@ syntax = "proto3";
 
 import "google/api/field_behavior.proto";
 import "api_spec_tmpl/dsl/dto.proto";
-import "google/protobuf/field_mask.proto";
 import "api_spec_tmpl/impls/device/deviceapis/device/v1/deviceapis_device_common_v1.proto";
 
 package api_spec_tmpl.impls.device;

@@ -1,6 +1,6 @@
 services:
   app:
-    image: registry.infra.rtkit.dev/mvp/entity-house/main
+    image: entity-house
     build:
       context: .
     environment:

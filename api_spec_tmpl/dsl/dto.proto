@@ -38,7 +38,7 @@ extend google.protobuf.OneofOptions {
   string oneof_comments = 3001;
 }
 
-// Тип заглушка для замены на тип, указанный в опции поля replace_field_type_to
+// Тип-заглушка для замены на тип, указанный в опции поля replace_field_type_to
 // Тип, указанный в опции replace_field_type_to, ДОЛЖЕН присутствовать в исходном файле
 message ReplaceTypeDummy {}
 
