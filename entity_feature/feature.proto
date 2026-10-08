@@ -5,10 +5,11 @@ import "google/protobuf/descriptor.proto";
 package entity.feature;
 
 extend google.protobuf.FieldOptions {
-  // .
+  // Опция для полей сущности, указывает составной ключ, к которому принадлежит поле сущности
   UniqueFieldGroup unique_field_group = 3001;
 }
 
+// Имя составного ключа
 enum UniqueFieldGroup {
   PK = 0;
   UG1 = 1;
@@ -18,13 +19,21 @@ enum UniqueFieldGroup {
   UG5 = 5;
 }
 
-message KeyFieldsList {
-  repeated string key_fields = 1;
-}
-
+// Определение ключевых полей сущности.
+// Используется как поле шаблона сервиса/метода, 
+// чтобы в опциях сущности определить ключевые поля, 
+// используемые в сервисе/методе.
+// В рамках сервиса/метода переопределяет использование составного ключа указанного в опциях полей сущности
 message KeyFieldsDefinition {
   oneof def {
+    // Массив имен ключевых полей
     KeyFieldsList key_field_list = 1;
+    // Имя составного ключа
     UniqueFieldGroup unique_field_group = 2;
   }
+}
+
+// Массив имен ключевых полей
+message KeyFieldsList {
+  repeated string key_fields = 1;
 }

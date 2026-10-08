@@ -27,10 +27,9 @@ message ServersideFixedSet {
   option (api_spec_tmpl.dsl.service.leading_comment) = "Сервис управления сущностью {EntityTypeName}";
   option (api_spec_tmpl.dsl.service.name) = "{EntityTypeName}Service";
   option (api_spec_tmpl.dsl.service.key_field_behavior) = REQUIRED;
+  option (api_spec_tmpl.dsl.service.additional_leading_comment) = "Внутри сервера набор сущностей фиксирован";
   message MethodSet {
     GetById get_by_id = 1;
-    // SaveReplace
-    // SaveListReplace
     // EditList
     // GetList
     // GetCount

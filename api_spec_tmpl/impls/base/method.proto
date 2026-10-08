@@ -98,6 +98,7 @@ message SaveListCreateOnly {
     oneof template {
       EntityList entity_array = 1;
       EntityListWSavingError entity_array_saving_error = 2;
+      EntityListWOneError entity_array_one_error = 3;
     }
   }
   RequestTemplate request_template = 1;
@@ -251,7 +252,7 @@ message DeleteById {
     delete: "/{HttpRoot}/{KeyFields}"
   };
   option (api_spec_tmpl.dsl.method.request_template) = "entity_key";
-  option (api_spec_tmpl.dsl.method.response_template) = "valid_error";
+  option (api_spec_tmpl.dsl.method.response_template) = "valid_error"; 
   message RequestTemplate {
     oneof template {
       EntityKey entity_key = 1;
